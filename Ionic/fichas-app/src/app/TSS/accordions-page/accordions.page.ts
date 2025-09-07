@@ -48,6 +48,7 @@ export class AccordionsPage {
       nativeEl.value = 'second';
     }
   };
+  
   constructor() 
   {}
 
