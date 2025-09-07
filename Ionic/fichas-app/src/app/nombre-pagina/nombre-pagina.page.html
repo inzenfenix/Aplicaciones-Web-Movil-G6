@@ -1,0 +1,35 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Suma de Variables</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-item>
+    <ion-label position="floating">Número 1</ion-label>
+    <ion-input type="number" [(ngModel)]="num1"></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label position="floating">Número 2</ion-label>
+    <ion-input type="number" [(ngModel)]="num2"></ion-input>
+  </ion-item>
+
+  <ion-button expand="block" (click)="sumar()">Sumar</ion-button>
+
+  <ion-text *ngIf="resultado !== null">
+    <h2>Resultado: {{ resultado }}</h2>
+  </ion-text>
+
+<ion-button expand="block" routerLink="/">
+  Ir al Inicio
+</ion-button>
+
+<ion-button expand="block" routerLink="/tabs/tab2">
+  Ir a Tab 2
+</ion-button>
+
+<ion-button expand="block" (click)="irATab3()">
+  Ir a Tab 3
+</ion-button>
+</ion-content>
