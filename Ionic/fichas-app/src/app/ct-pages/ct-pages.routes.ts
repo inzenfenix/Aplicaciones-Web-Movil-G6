@@ -1,15 +1,15 @@
 import { Routes } from '@angular/router';
-import { TomySPage } from './ts-pages.page';
+import { KKPage as CTPage } from './ct-pages.page';
 
 export const routes: Routes = [
   {
-    path: 'tomys',
-    component: TomySPage,
+    path: 'ct',
+    component: CTPage,
     children: [
       {
         path: 'accordions',
         loadComponent: () =>
-          import('../TSS/accordions-page/accordions.page').then(
+          import('../CT/accordions-page/accordions.page').then(
             (m) => m.AccordionsPage
           ),
       },

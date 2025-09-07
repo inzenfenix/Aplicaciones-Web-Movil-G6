@@ -13,4 +13,8 @@ export const routes: Routes = [
     path: '',
     loadChildren: () => import('./ts-pages/ts-pages.routes').then( m => m.routes)
   },
+  {
+    path: '',
+    loadChildren: () => import('./kk-pages/kk-pages.routes').then( m => m.routes)
+  },
 ];
