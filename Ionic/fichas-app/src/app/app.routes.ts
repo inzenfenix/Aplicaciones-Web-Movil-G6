@@ -9,4 +9,8 @@ export const routes: Routes = [
     path: 'nombre-pagina',
     loadComponent: () => import('./nombre-pagina/nombre-pagina.page').then( m => m.NombrePaginaPage)
   },
+  {
+    path: 'accordions',
+    loadComponent: () => import('./accordions-page/accordions.page').then( m => m.AccordionsPage)
+  },
 ];
