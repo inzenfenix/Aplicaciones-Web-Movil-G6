@@ -10,7 +10,7 @@ export const routes: Routes = [
     loadComponent: () => import('./nombre-pagina/nombre-pagina.page').then( m => m.NombrePaginaPage)
   },
   {
-    path: 'accordions',
-    loadComponent: () => import('./accordions-page/accordions.page').then( m => m.AccordionsPage)
+    path: '',
+    loadChildren: () => import('./ts-pages/ts-pages.routes').then( m => m.routes)
   },
 ];
