@@ -17,4 +17,8 @@ export const routes: Routes = [
     path: '',
     loadChildren: () => import('./kk-pages/kk-pages.routes').then( m => m.routes)
   },
+  {
+    path: '',
+    loadChildren: () => import('./ct-pages/ct-pages.routes').then( m => m.routes)
+  },
 ];
