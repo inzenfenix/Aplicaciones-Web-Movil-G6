@@ -1,16 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar,IonCard, IonCardSubtitle, IonCardTitle, IonCardHeader, IonCardContent,IonCheckbox, IonItem, IonLabel,IonButton, IonAlert } from '@ionic/angular/standalone';
-import { at } from 'ionicons/icons';
-import { min } from 'rxjs';
+import { IonicModule } from '@ionic/angular';
 
 @Component({
   selector: 'app-klaus2',
   templateUrl: './klaus2.page.html',
   styleUrls: ['./klaus2.page.scss'],
   standalone: true,
-  imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule,IonCard, IonCardSubtitle, IonCardTitle, IonCardHeader, IonCardContent, IonCheckbox, IonItem,IonLabel,IonButton, IonAlert]
+  imports: [IonicModule, CommonModule, FormsModule]
 })
 export class Klaus2Page implements OnInit {
   public alertButtons= ['OK'];

@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonList, IonItem, IonRadio, IonRadioGroup } from '@ionic/angular/standalone';
-
+import { IonicModule } from '@ionic/angular';
 interface Food {
   id: number;
   name: string;
@@ -14,7 +13,7 @@ interface Food {
   templateUrl: './klaus4.page.html',
   styleUrls: ['./klaus4.page.scss'],
   standalone: true,
-  imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule,  IonList, IonItem, IonRadio, IonRadioGroup]
+  imports: [IonicModule, CommonModule, FormsModule]
 })
 export class Klaus4Page implements OnInit {
   foods: Food[] = [
