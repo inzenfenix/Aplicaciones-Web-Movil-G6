@@ -1,0 +1,25 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>klaus4</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">klaus4</ion-title>
+    </ion-toolbar>
+  </ion-header>
+  <ion-content>
+    <ion-title>Selecciona un alimento</ion-title>
+    <ion-list>
+      <ion-radio-group [compareWith]="compareWith" (ionChange)="handleChange($event)">
+        @for (food of foods; track food.id) {
+        <ion-item>
+          <ion-radio [value]="food">{{ food.name }}</ion-radio>
+        </ion-item>
+        }
+      </ion-radio-group>
+    </ion-list>
+  </ion-content>
+</ion-content>
