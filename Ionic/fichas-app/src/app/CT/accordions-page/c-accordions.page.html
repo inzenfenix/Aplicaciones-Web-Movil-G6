@@ -1,0 +1,66 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Hellou!</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Tab 3</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-accordion-group #accordionGroup>
+    <ion-accordion value="first">
+      <ion-item slot="header" color="light">
+        <ion-label>To-Do List!</ion-label>
+      </ion-item>
+      <div class="ion-padding" slot="content">Crea tu To-Do list
+      <a href="/ct/todolist">aquí</a>!
+      </div>
+    </ion-accordion>
+    <ion-accordion value="second">
+      <ion-item slot="header" color="light">
+        <ion-label>Fotos de gatitos</ion-label>
+      </ion-item>
+      <div class="ion-padding" slot="content">
+        ¿Quieres ver fotos de gatitos?
+        <a href="/ct/cats">Gatitos!</a>!
+      </div>
+    </ion-accordion>
+    <ion-accordion value="third">
+      <ion-item slot="header" color="light">
+        <ion-label>Luna</ion-label>
+      </ion-item>
+      <div class="ion-padding" slot="content">
+        Juega con la luna
+        <ion-button routerLink="/ct/luna">
+          Ir a la Luna
+        </ion-button>
+      </div>
+    </ion-accordion>
+    <ion-accordion value="fourth">
+      <ion-item slot="header" color="light">
+        <ion-label>Alerta</ion-label>
+      </ion-item>
+      <div class="ion-padding" slot="content">
+        <ion-button color="danger" routerLink="/ct/alerta">
+         <ion-icon name="alert-circle" slot="start" color="light"></ion-icon>
+          Alerta
+        </ion-button>
+      </div>
+    </ion-accordion>
+    <ion-accordion value="fifth">
+      <ion-item slot="header" color="light">
+       <ion-label>Facts de Gatitos</ion-label>
+      <ion-button color="pink" routerLink="/ct/facts">
+       <ion-icon name="information-circle" slot="start" color="light"></ion-icon>
+          Ver Facts
+      </ion-button>
+
+      </ion-item>
+    </ion-accordion>
+  </ion-accordion-group>
+
+</ion-content>

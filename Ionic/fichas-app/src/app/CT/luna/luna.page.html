@@ -1,0 +1,21 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Luna Toggle</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <ion-item lines="none">
+    <ion-label>Luna Brillante / Oscura</ion-label>
+    <ion-toggle [(ngModel)]="lunaBrillante"></ion-toggle>
+  </ion-item>
+
+  <div class="luna-container">
+    <img 
+      [src]="lunaBrillante ? 'https://placekitten.com/300/300' : 'https://placekitten.com/301/301'" 
+      alt="Luna" 
+    />
+  </div>
+
+</ion-content>

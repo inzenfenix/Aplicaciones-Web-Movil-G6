@@ -1,0 +1,22 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Fun Facts</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-grid>
+    <ion-row>
+      <ion-col size="12" size-md="6" size-lg="4" *ngFor="let fact of facts">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>¿Sabías que?</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            {{ fact }}
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

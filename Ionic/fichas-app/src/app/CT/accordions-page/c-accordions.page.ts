@@ -1,4 +1,5 @@
 import { Component, ViewChild } from '@angular/core';
+import {RouterModule} from '@angular/router'
 import {
   IonHeader,
   IonToolbar,
@@ -8,16 +9,14 @@ import {
   IonAccordionGroup,
   IonButton,
   IonItem,
+  IonIcon,
   IonLabel,
-  IonDatetime, 
-  IonDatetimeButton,
-  IonModal
 } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-accordion-page',
-  templateUrl: 'accordions.page.html',
-  styleUrls: ['accordions.page.scss'],
+  templateUrl: 'c-accordions.page.html',
+  styleUrls: ['c-accordions.page.scss'],
   imports: [
     IonHeader,
     IonToolbar,
@@ -28,9 +27,8 @@ import {
     IonButton,
     IonItem,
     IonLabel,
-    IonDatetime, 
-    IonDatetimeButton,
-    IonModal
+    RouterModule,
+    IonIcon
   ],
 })
 export class AccordionsPage {
