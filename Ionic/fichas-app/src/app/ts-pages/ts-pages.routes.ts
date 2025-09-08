@@ -3,7 +3,7 @@ import { TomySPage } from './ts-pages.page';
 
 export const routes: Routes = [
   {
-    path: 'tomys',
+    path: '',
     component: TomySPage,
     children: [
       {

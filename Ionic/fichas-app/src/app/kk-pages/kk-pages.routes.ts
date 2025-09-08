@@ -3,7 +3,7 @@ import { KKPage } from './kk-pages.page';
 
 export const routes: Routes = [
   {
-    path: 'kk',
+    path: '',
     component: KKPage,
     children: [
       {
