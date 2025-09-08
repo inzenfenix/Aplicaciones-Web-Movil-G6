@@ -5,6 +5,10 @@ import {
   IonList,
   IonInputPasswordToggle,
   IonInputOtp,
+  IonContent,
+  IonHeader,
+  IonTitle,
+  IonToolbar,
 } from '@ionic/angular/standalone';
 
 @Component({
@@ -12,7 +16,17 @@ import {
   templateUrl: './input-stuff.page.html',
   styleUrls: ['./input-stuff.page.scss'],
   standalone: true,
-  imports: [IonInput, IonItem, IonList, IonInputPasswordToggle, IonInputOtp],
+  imports: [
+    IonInput,
+    IonItem,
+    IonList,
+    IonInputPasswordToggle,
+    IonInputOtp,
+    IonContent,
+    IonHeader,
+    IonTitle,
+    IonToolbar,
+  ],
 })
 export class InputStuffPage implements OnInit {
   constructor() {}
