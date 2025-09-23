@@ -35,3 +35,16 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import '@ionic/angular/css/palettes/dark.system.css';
+
+@font-face {
+    font-family: 'LePetitCochon';
+    src: url('assets/fonts/LePetitCochon/PetitCochon.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+.cora-title
+{
+    font-family: 'LePetitCochon';
+    font-size: 24px;
+}

@@ -8,7 +8,8 @@ export const routes: Routes = [
     children: [
       {
         path: 'home',
-        loadComponent: () => import('../home/home.page').then((m) => m.HomePage),
+        loadComponent: () =>
+          import('../home/home.page').then((m) => m.HomePage),
       },
       {
         path: 'search',
@@ -19,6 +20,16 @@ export const routes: Routes = [
         path: 'camera',
         loadComponent: () =>
           import('../camera/camera.page').then((m) => m.CameraPage),
+      },
+      {
+        path: 'records',
+        loadComponent: () =>
+          import('../records/records.page').then((m) => m.RecordsPage),
+      },
+      {
+        path: 'profile',
+        loadComponent: () =>
+          import('../profile/profile.page').then((m) => m.ProfilePage),
       },
       {
         path: '',
