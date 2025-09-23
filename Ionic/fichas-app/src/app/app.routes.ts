@@ -2,13 +2,6 @@ import { Routes } from '@angular/router';
 
 export const routes: Routes = [
   {
-    path: 'nombre-pagina',
-    loadComponent: () =>
-      import('./nombre-pagina/nombre-pagina.page').then(
-        (m) => m.NombrePaginaPage
-      ),
-  },
-  {
     path: 'ts',
     loadChildren: () =>
       import('./ts-pages/ts-pages.routes').then((m) => m.routes),
@@ -24,6 +17,10 @@ export const routes: Routes = [
       import('./ct-pages/ct-pages.routes').then((m) => m.routes),
   },
   {
+    path: 'relevant-information',
+    loadComponent: () => import('./relevant-information/relevant-information.page').then( m => m.RelevantInformationPage)
+  },
+  {
     path: '',
     loadComponent: () =>
       import('./home-page/home-page.page').then((m) => m.HomePagePage),
@@ -33,4 +30,6 @@ export const routes: Routes = [
     redirectTo: '',
     pathMatch: 'full',
   },
+  
+
 ];

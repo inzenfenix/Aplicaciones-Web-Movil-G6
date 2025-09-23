@@ -10,6 +10,7 @@ import {
 } from '@ionic/angular/standalone';
 import { Router } from '@angular/router';
 
+
 @Component({
   selector: 'app-home-page',
   templateUrl: './home-page.page.html',
@@ -30,8 +31,8 @@ export class HomePagePage implements OnInit {
 
   ngOnInit() {}
 
-  goToTS() {
-    this.router.navigate(['/ts']);
+  goToRelevant() {
+    this.router.navigate(['/relevant-information']);
   }
 
   goToCT() {

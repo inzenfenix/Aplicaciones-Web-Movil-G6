@@ -1,31 +1,39 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>home-page</ion-title>
+    <ion-title>Inicio</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">home-page</ion-title>
+      <ion-title size="large">Inicio</ion-title>
     </ion-toolbar>
   </ion-header>
 
-  <div class="wrapper">
-    <b>Páginas!</b>
 
-    <div class="ion-activatable ripple-parent rounded-rectangle" (click)="goToKK()">
-      Set 1
+  <div class="wrapper">
+    <b>Fichas celulares</b>
+    <div
+      class="ion-activatable ripple-parent rounded-rectangle"
+      (click)="goToRelevant()"
+    >
+      Información relevante
+      <ion-ripple-effect></ion-ripple-effect>
+    </div>
+    <div
+      class="ion-activatable ripple-parent rounded-rectangle"
+      (click)="goToKK()"
+    >
+      Subir fichas médicas
       <ion-ripple-effect></ion-ripple-effect>
     </div>
 
-    <div class="ion-activatable ripple-parent rounded-rectangle" (click)="goToTS()">
-      Set 2
-      <ion-ripple-effect ></ion-ripple-effect>
-    </div>
-
-    <div class="ion-activatable ripple-parent rounded-rectangle" (click)="goToCT()">
-      Set 3
+    <div
+      class="ion-activatable ripple-parent rounded-rectangle"
+      (click)="goToCT()"
+    >
+      Buscar fichas
       <ion-ripple-effect></ion-ripple-effect>
     </div>
   </div>
