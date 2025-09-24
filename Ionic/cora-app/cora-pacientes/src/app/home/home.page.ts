@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonText, IonItemDivider } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonRow, IonCard, IonCol, IonGrid, IonCardTitle, IonImg, IonAvatar, IonCardSubtitle, IonCardHeader } from '@ionic/angular/standalone';
 import { LucideAngularModule, Heart } from 'lucide-angular';
 
 @Component({
@@ -10,14 +10,22 @@ import { LucideAngularModule, Heart } from 'lucide-angular';
   styleUrls: ['./home.page.scss'],
   standalone: true,
   imports: [
+    IonCardTitle,
+    IonGrid,
+    IonCol,
+    IonCard,
+    IonRow,
     IonContent,
     IonHeader,
     IonTitle,
     IonToolbar,
     CommonModule,
     FormsModule,
+    IonImg,
+    IonAvatar,
     [LucideAngularModule],
-    IonItemDivider
+    IonCardSubtitle,
+    IonCardHeader
 ],
 })
 export class HomePage implements OnInit {

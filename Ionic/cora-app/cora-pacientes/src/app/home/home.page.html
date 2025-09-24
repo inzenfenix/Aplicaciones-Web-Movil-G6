@@ -12,9 +12,33 @@
       <ion-title size="large">Inicio</ion-title>
     </ion-toolbar>
   </ion-header>
-  <ion-item-divider id="profile-container-home">
-      <div id="profile-picture-home">
-        
-      </div>
-    </ion-item-divider>
+  <ion-grid>
+    <ion-row>
+      <ion-col style="display: flex; justify-content: center">
+        <ion-card id="profile-card-home">
+          <ion-card-header>
+            <ion-card-title class="profile-card-title">
+              <ion-avatar
+                class="profile-picture-container"
+                style="flex-basis: 1 1 10%"
+              >
+                <ion-img
+                  id="profile-picture"
+                  src="../../assets/images/fish-profile-picture.png"
+                  atl="profile-picture"
+                >
+                </ion-img>
+              </ion-avatar>
+              <div class="profile-card-title-content">
+                <span> Ramona Mercedes Florinda </span>
+                <ion-card-subtitle class="main-info-display-text">
+                  Información
+                </ion-card-subtitle>
+              </div>
+            </ion-card-title>
+          </ion-card-header>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </ion-content>

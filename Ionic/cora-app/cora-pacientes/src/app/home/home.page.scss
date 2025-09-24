@@ -1,11 +1,34 @@
-ion-item-divider #profile-picture-home
+#profile-card-home {
+  display: flex;
+  max-width: 720px;
+}
+
+.profile-card-title {
+  display: flex;
+  flex-direction: row;
+}
+
+.profile-card-title-content {
+  margin-left: 30px;
+}
+
+.main-info-display-text
 {
-    height:75px;
-    width:75px;
-    background-color: currentColor;
-    border-color: currentColor;
-    border-width: 2px;
-    border-radius: 50%;
-    z-index:2;
-    margin-top:0px;
+    text-align: right;
+}
+
+@media (max-width: 720px) {
+  .profile-card-title {
+    flex-direction: column;
+  }
+
+  .profile-card-title-content {
+    margin-left: 0px;
+    margin-top: 10px;
+  }
+
+  .main-info-display-text
+{
+    text-align: left;
+}
 }
