@@ -1,34 +1,20 @@
 #profile-card-home {
   display: flex;
-  max-width: 720px;
+  flex: 1 1 50%;
+  max-width: 900px;
+  justify-content: center;
 }
 
 .profile-card-title {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
 }
 
 .profile-card-title-content {
-  margin-left: 30px;
+  margin-left: 0px;
+  margin-top: 10px;
 }
 
-.main-info-display-text
-{
-    text-align: right;
-}
-
-@media (max-width: 720px) {
-  .profile-card-title {
-    flex-direction: column;
-  }
-
-  .profile-card-title-content {
-    margin-left: 0px;
-    margin-top: 10px;
-  }
-
-  .main-info-display-text
-{
-    text-align: left;
-}
+.main-info-display-text {
+  text-align: left;
 }

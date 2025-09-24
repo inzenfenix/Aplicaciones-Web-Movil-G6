@@ -1,8 +1,28 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonRow, IonCard, IonCol, IonGrid, IonCardTitle, IonImg, IonAvatar, IonCardSubtitle, IonCardHeader } from '@ionic/angular/standalone';
-import { LucideAngularModule, Heart } from 'lucide-angular';
+import {
+  IonContent,
+  IonHeader,
+  IonTitle,
+  IonToolbar,
+  IonRow,
+  IonCard,
+  IonCol,
+  IonGrid,
+  IonCardTitle,
+  IonImg,
+  IonAvatar,
+  IonCardSubtitle,
+  IonCardHeader,
+} from '@ionic/angular/standalone';
+import { 
+  LucideAngularModule,
+  ClipboardList,
+  ChartPie,
+  CircleGauge
+} from 'lucide-angular';
+import { RoutableButtonComponent } from "../routable-button/routable-button.component";
 
 @Component({
   selector: 'app-home',
@@ -25,11 +45,14 @@ import { LucideAngularModule, Heart } from 'lucide-angular';
     IonAvatar,
     [LucideAngularModule],
     IonCardSubtitle,
-    IonCardHeader
+    IonCardHeader,
+    RoutableButtonComponent
 ],
 })
 export class HomePage implements OnInit {
-  readonly heart = Heart;
+  readonly clipboardList = ClipboardList;
+  readonly chartPie = ChartPie;
+  readonly circleGauge = CircleGauge;
 
   constructor() {}
 

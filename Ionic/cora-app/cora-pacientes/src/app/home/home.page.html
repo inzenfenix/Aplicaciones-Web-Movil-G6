@@ -12,11 +12,11 @@
       <ion-title size="large">Inicio</ion-title>
     </ion-toolbar>
   </ion-header>
-  <ion-grid>
-    <ion-row>
-      <ion-col style="display: flex; justify-content: center">
-        <ion-card id="profile-card-home">
-          <ion-card-header>
+  <ion-grid style="display: flex; justify-content: center">
+    <ion-row style="flex: 1 1 100%; display: flex">
+      <ion-col style="flex: 1 1 100%; display: flex; justify-content: center">
+        <ion-card id="profile-card-home" style="padding: 10px 20px">
+          <ion-card-header style="flex: 1 1 100%">
             <ion-card-title class="profile-card-title">
               <ion-avatar
                 class="profile-picture-container"
@@ -32,7 +32,28 @@
               <div class="profile-card-title-content">
                 <span> Ramona Mercedes Florinda </span>
                 <ion-card-subtitle class="main-info-display-text">
-                  Información
+                  <ion-grid style="margin-top: 10px">
+                    <ion-row>
+                      <ion-col sizeMd="4" sizeSm="6" sizeXs="12">
+                        <app-routable-button
+                          text="Historial atención"
+                          [icon]="clipboardList"
+                        ></app-routable-button>
+                      </ion-col>
+                      <ion-col sizeMd="4" sizeSm="6" sizeXs="12">
+                        <app-routable-button
+                          text="Información"
+                          [icon]="chartPie"
+                        ></app-routable-button>
+                      </ion-col>
+                      <ion-col sizeMd="4" sizeSm="12" sizeXs="12">
+                        <app-routable-button
+                          text="Hábitos"
+                          [icon]="circleGauge"
+                        ></app-routable-button>
+                      </ion-col>
+                    </ion-row>
+                  </ion-grid>
                 </ion-card-subtitle>
               </div>
             </ion-card-title>
