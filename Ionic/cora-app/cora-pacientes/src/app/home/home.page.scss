@@ -1,16 +1,16 @@
-#profile-card-home {
+#card-home {
   display: flex;
   flex: 1 1 50%;
   max-width: 900px;
   justify-content: center;
 }
 
-.profile-card-title {
+.card-home-title {
   display: flex;
   flex-direction: column;
 }
 
-.profile-card-title-content {
+.home-card-title-content {
   margin-left: 0px;
   margin-top: 10px;
 }

@@ -15,11 +15,11 @@
   <ion-grid style="display: flex; justify-content: center">
     <ion-row style="flex: 1 1 100%; display: flex">
       <ion-col style="flex: 1 1 100%; display: flex; justify-content: center">
-        <ion-card id="profile-card-home" style="padding: 10px 20px">
+        <ion-card id="card-home" style="padding: 10px 20px">
           <ion-card-header style="flex: 1 1 100%">
-            <ion-card-title class="profile-card-title">
+            <ion-card-title class="card-home-title">
               <ion-avatar
-                class="profile-picture-container"
+                class="home-picture-container"
                 style="flex-basis: 1 1 10%"
               >
                 <ion-img
@@ -29,20 +29,20 @@
                 >
                 </ion-img>
               </ion-avatar>
-              <div class="profile-card-title-content">
+              <div class="home-card-title-content">
                 <span> Ramona Mercedes Florinda </span>
                 <ion-card-subtitle class="main-info-display-text">
                   <ion-grid style="margin-top: 10px">
                     <ion-row>
                       <ion-col sizeMd="4" sizeSm="6" sizeXs="12">
                         <app-routable-button
-                          text="Historial atención"
+                          text="General"
                           [icon]="clipboardList"
                         ></app-routable-button>
                       </ion-col>
                       <ion-col sizeMd="4" sizeSm="6" sizeXs="12">
                         <app-routable-button
-                          text="Información"
+                          text="Alergias"
                           [icon]="chartPie"
                         ></app-routable-button>
                       </ion-col>
@@ -51,6 +51,9 @@
                           text="Hábitos"
                           [icon]="circleGauge"
                         ></app-routable-button>
+                      </ion-col>
+                      <ion-col size = "12">
+
                       </ion-col>
                     </ion-row>
                   </ion-grid>
