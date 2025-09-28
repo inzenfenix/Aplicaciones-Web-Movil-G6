@@ -15,21 +15,31 @@ import {
   IonAvatar,
   IonCardSubtitle,
   IonCardHeader,
-} from '@ionic/angular/standalone';
-import { 
+  IonCardContent,
+  IonChip,
+  IonText,
+  IonList,
+  IonItem,
+  IonLabel,
+  IonThumbnail, IonAccordion, IonAccordionGroup } from '@ionic/angular/standalone';
+import {
   LucideAngularModule,
   ClipboardList,
   ChartPie,
-  CircleGauge
+  CircleGauge,
 } from 'lucide-angular';
-import { RoutableButtonComponent } from "../routable-button/routable-button.component";
+import { RoutableButtonComponent } from '../routable-button/routable-button.component';
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.page.html',
   styleUrls: ['./home.page.scss'],
   standalone: true,
-  imports: [
+  imports: [IonAccordionGroup, IonAccordion, 
+    IonLabel,
+    IonItem,
+    IonList,
+    IonChip,
     IonCardTitle,
     IonGrid,
     IonCol,
@@ -46,8 +56,11 @@ import { RoutableButtonComponent } from "../routable-button/routable-button.comp
     [LucideAngularModule],
     IonCardSubtitle,
     IonCardHeader,
-    RoutableButtonComponent
-],
+    RoutableButtonComponent,
+    IonCardContent,
+    IonThumbnail,
+    IonText,
+  ],
 })
 export class HomePage implements OnInit {
   readonly clipboardList = ClipboardList;

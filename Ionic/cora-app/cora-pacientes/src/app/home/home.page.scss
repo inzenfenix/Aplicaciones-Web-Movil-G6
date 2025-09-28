@@ -18,3 +18,41 @@
 .main-info-display-text {
   text-align: left;
 }
+
+.general-info-col
+{
+  display: flex;
+  flex-direction: column;
+  text-align:center;
+  justify-content:center;
+}
+
+.general-info-text
+{
+  width: 100%;
+}
+
+.accordion-container
+ {
+    display:none;
+    width:100%;
+ }
+
+ .desktop-cols-container
+ {
+    display:block;
+    width:100%;
+ }
+
+@media(max-width:575.9px)
+{
+ .accordion-container
+ {
+    display:block;
+ }
+
+ .desktop-cols-container
+ {
+    display:none;
+ }
+}
