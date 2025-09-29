@@ -29,7 +29,7 @@
                     fill="solid"
                   ></ion-input>
                 </ion-col>
-                <ion-col size="12" style = "margin-top: 50px;">
+                <ion-col size="12" style="margin-top: 50px">
                   <ion-input
                     label="Doctor"
                     placeholder="Escribe aquí..."
@@ -50,14 +50,14 @@
                 <ion-col size="12" style="margin-top: 50px">
                   <ion-item style="margin-bottom: 10px">
                     <ion-text style="margin-right: 5px">Receta</ion-text>
-                    <ion-button fill="outline" shape="round" (click)="addMeds()"
-                      >+</ion-button
-                    >
                     <ion-button
                       fill="outline"
                       shape="round"
                       (click)="substractMeds()"
                       >-</ion-button
+                    >
+                    <ion-button fill="outline" shape="round" (click)="addMeds()"
+                      >+</ion-button
                     >
                   </ion-item>
                   @for (medicamento of receta; track medicamento; let index =
@@ -91,9 +91,7 @@
                 <ion-col size="12" style="margin-top: 50px">
                   <h2 style="text-align: left; margin-left: 5px">Fecha</h2>
                   <ion-item>
-                    <ion-datetime-button
-                      datetime="date"
-                    ></ion-datetime-button>
+                    <ion-datetime-button datetime="date"></ion-datetime-button>
 
                     <ion-modal [keepContentsMounted]="true">
                       <ng-template>
@@ -116,9 +114,7 @@
                 <ion-col size="12" style="margin-top: 50px">
                   <h2 style="text-align: left; margin-left: 5px">Hora</h2>
                   <ion-item>
-                    <ion-datetime-button
-                      datetime="time"
-                    ></ion-datetime-button>
+                    <ion-datetime-button datetime="time"></ion-datetime-button>
                     <ion-modal [keepContentsMounted]="true">
                       <ng-template>
                         <ion-datetime
