@@ -17,14 +17,14 @@ export const routes: Routes = [
           import('../search/search.page').then((m) => m.SearchPage),
       },
       {
-        path: 'camera',
+        path: 'dashboard',
         loadComponent: () =>
-          import('../camera/camera.page').then((m) => m.CameraPage),
+          import('../dashboard/dashboard.page').then((m) => m.DashboardPage),
       },
       {
-        path: 'records',
+        path: 'add',
         loadComponent: () =>
-          import('../records/records.page').then((m) => m.RecordsPage),
+          import('../add/add.page').then((m) => m.AddPage),
       },
       {
         path: 'profile',

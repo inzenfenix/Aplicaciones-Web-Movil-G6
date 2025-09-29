@@ -1,0 +1,62 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>Buscar examénes médicos</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content class="ion-padding">
+  <ion-grid style="justify-content: center; max-width: 900px">
+    <ion-row>
+      <ion-col size="12">
+        <ion-card id="card-home" style="padding: 10px 20px">
+          <ion-card-header>
+            <ion-card-title class="card-home-title">
+              <ion-searchbar
+                animated="true"
+                placeholder="Buscar..."
+                [debounce]="1000"
+                (ionInput)="handleInput($event)"
+              ></ion-searchbar>
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-list>
+              @for (curData of results; track curData.item; let index = $index) {
+              <ion-item>
+                <ion-avatar slot="start">
+                  <img
+                    [src]="'https://picsum.photos/80/80?random=' + index"
+                    alt="avatar"
+                  />
+                </ion-avatar>
+                <ion-grid style = "text-align:center">
+                  <ion-row>
+                    <ion-col sizeXs = "12" sizeSm = "6" sizeMd = "4">
+                      <ion-label>{{ curData.item }}</ion-label>
+                    </ion-col>
+                    
+                    <ion-col sizeXs = "12" sizeSm = "6" sizeMd = "4">
+                      <ion-label>{{ curData.date }}</ion-label>
+                    </ion-col>
+
+                    <ion-col sizeXs = "12" sizeSm = "6" sizeMd = "4">
+                      <ion-label>{{ curData.doctor }}</ion-label>
+                    </ion-col>
+                    
+                  </ion-row>
+                </ion-grid>
+
+              </ion-item>
+              }
+            </ion-list>
+            <ion-infinite-scroll (ionInfinite)="onIonInfinite($event)">
+              <ion-infinite-scroll-content></ion-infinite-scroll-content>
+            </ion-infinite-scroll>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

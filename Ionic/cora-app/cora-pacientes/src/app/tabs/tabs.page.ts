@@ -4,7 +4,7 @@ import {
   IonTabBar,
   IonTabButton,
 } from '@ionic/angular/standalone';
-import { LucideAngularModule, House, Search, Focus, Archive, User } from 'lucide-angular';
+import { LucideAngularModule, House, Search, User, ChartArea, CirclePlus } from 'lucide-angular';
 
 @Component({
   selector: 'app-tabs',
@@ -22,8 +22,8 @@ export class TabsPage {
 
   readonly house = House;
   readonly search = Search;
-  readonly focus = Focus;
-  readonly archive = Archive;
+  readonly plus = CirclePlus;
+  readonly graph = ChartArea;
   readonly user = User;
 
   constructor() {}
