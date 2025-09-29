@@ -42,9 +42,7 @@
                                 <ion-label>Resumen</ion-label>
                               </ion-item>
                               <div class="ion-padding" slot="content">
-                                <ion-card
-                                  color="transparent"
-                                >
+                                <ion-card color="transparent">
                                   <ion-card-content>
                                     <ion-grid
                                       style="
@@ -153,9 +151,7 @@
                                 <ion-label>Signos vitales</ion-label>
                               </ion-item>
                               <div class="ion-padding" slot="content">
-                                <ion-card
-                                  color="transparent"
-                                >
+                                <ion-card color="transparent">
                                   <ion-card-content>
                                     <ion-grid>
                                       <ion-row style="text-align: center">
@@ -289,23 +285,79 @@
                         </ion-col>
                       </div>
                       <ion-col sizeMd="4" sizeSm="6" sizeXs="12">
-                        <app-routable-button
-                          text="Recetas"
-                          [icon]="clipboardList"
-                        ></app-routable-button>
+                        <ion-button style="width: 100%">
+                          <div
+                            style="
+                              display: flex;
+                              justify-content: center;
+                              flex-direction: column;
+                              align-items: center;
+                              text-align: center;
+                              height: 85px;
+                              width: 100%;
+                            "
+                            (click)="openRecetasModal()"
+                          >
+                            <lucide-angular
+                              aria-hidden="true"
+                              [img]="clipboardList"
+                              size="32"
+                              strokeWidth="2"
+                              id="open-modal-alergias" expand="block"
+                            ></lucide-angular>
+                            <span>Recetas</span>
+                          </div>
+                        </ion-button>
                       </ion-col>
                       <ion-col sizeMd="4" sizeSm="6" sizeXs="12">
-                        <app-routable-button
-                          text="Alergias"
-                          [icon]="chartPie"
-                          routerLink="/alergia"
-                        ></app-routable-button>
+                        <ion-button style="width: 100%">
+                          <div
+                            style="
+                              display: flex;
+                              justify-content: center;
+                              flex-direction: column;
+                              align-items: center;
+                              text-align: center;
+                              height: 85px;
+                              width: 100%;
+                            "
+                            (click)="openAlergiasModal()"
+                          >
+                            <lucide-angular
+                              aria-hidden="true"
+                              [img]="chartPie"
+                              size="32"
+                              strokeWidth="2"
+                              id="open-modal-alergias" expand="block"
+                            ></lucide-angular>
+                            <span>Alergías</span>
+                          </div>
+                        </ion-button>
                       </ion-col>
                       <ion-col sizeMd="4" sizeSm="12" sizeXs="12">
-                        <app-routable-button
-                          text="Hábitos"
-                          [icon]="circleGauge"
-                        ></app-routable-button>
+                        <ion-button style="width: 100%">
+                          <div
+                            style="
+                              display: flex;
+                              justify-content: center;
+                              flex-direction: column;
+                              align-items: center;
+                              text-align: center;
+                              height: 85px;
+                              width: 100%;
+                            "
+                            (click)="openHabitosModal()"
+                          >
+                            <lucide-angular
+                              aria-hidden="true"
+                              [img]="circleGauge"
+                              size="32"
+                              strokeWidth="2"
+                              id="open-modal-alergias" expand="block"
+                            ></lucide-angular>
+                            <span>Hábitos</span>
+                          </div>
+                        </ion-button>
                       </ion-col>
                       <div class="desktop-cols-container">
                         <ion-col size="12">
@@ -542,103 +594,101 @@
                         </ion-col>
                       </div>
                       <ion-col size="12">
-                          <ion-card color="light">
-                            <ion-card-header>
-                              <ion-card-title>Atención reciente</ion-card-title>
-                              <ion-card-subtitle
-                                ><a>Ver todo</a></ion-card-subtitle
-                              >
-                            </ion-card-header>
-                            <ion-card-content>
-                              <ion-list>
-                                <ion-item>
-                                  <ion-thumbnail slot="start">
-                                    <img
-                                      alt="Logo hospital padre hurtado"
-                                      src="https://ionicframework.com/docs/img/demos/thumbnail.svg"
-                                    />
-                                  </ion-thumbnail>
-                                  <ion-label>
-                                    <ion-text color="tertiary">
-                                      <h2>Hospital Padre Hurtado</h2>
-                                    </ion-text>
-                                    <ion-text>
-                                      <h4>
-                                        Razón Ingreso: Traumatismo
-                                      </h4></ion-text
-                                    >
-                                    <ion-text>
-                                      <h6>Hoy, 9:45 AM</h6>
-                                    </ion-text>
-                                  </ion-label>
-                                </ion-item>
-                                <ion-item>
-                                  <ion-thumbnail slot="start">
-                                    <img
-                                      alt="Silhouette of mountains"
-                                      src="https://ionicframework.com/docs/img/demos/thumbnail.svg"
-                                    />
-                                  </ion-thumbnail>
-                                  <ion-label>
-                                    <ion-text color="tertiary">
-                                      <h2>Clínica Alemana</h2>
-                                    </ion-text>
-                                    <ion-text>
-                                      <h4>
-                                        Razón Ingreso: Lesión leve
-                                      </h4></ion-text
-                                    >
-                                    <ion-text>
-                                      <h6>Hoy, 8:30 AM</h6>
-                                    </ion-text>
-                                  </ion-label>
-                                </ion-item>
+                        <ion-card color="light">
+                          <ion-card-header>
+                            <ion-card-title>Atención reciente</ion-card-title>
+                            <ion-card-subtitle
+                              ><a>Ver todo</a></ion-card-subtitle
+                            >
+                          </ion-card-header>
+                          <ion-card-content>
+                            <ion-list>
+                              <ion-item>
+                                <ion-thumbnail slot="start">
+                                  <img
+                                    alt="Logo hospital padre hurtado"
+                                    src="https://ionicframework.com/docs/img/demos/thumbnail.svg"
+                                  />
+                                </ion-thumbnail>
+                                <ion-label>
+                                  <ion-text color="tertiary">
+                                    <h2>Hospital Padre Hurtado</h2>
+                                  </ion-text>
+                                  <ion-text>
+                                    <h4>
+                                      Razón Ingreso: Traumatismo
+                                    </h4></ion-text
+                                  >
+                                  <ion-text>
+                                    <h6>Hoy, 9:45 AM</h6>
+                                  </ion-text>
+                                </ion-label>
+                              </ion-item>
+                              <ion-item>
+                                <ion-thumbnail slot="start">
+                                  <img
+                                    alt="Silhouette of mountains"
+                                    src="https://ionicframework.com/docs/img/demos/thumbnail.svg"
+                                  />
+                                </ion-thumbnail>
+                                <ion-label>
+                                  <ion-text color="tertiary">
+                                    <h2>Clínica Alemana</h2>
+                                  </ion-text>
+                                  <ion-text>
+                                    <h4>
+                                      Razón Ingreso: Lesión leve
+                                    </h4></ion-text
+                                  >
+                                  <ion-text>
+                                    <h6>Hoy, 8:30 AM</h6>
+                                  </ion-text>
+                                </ion-label>
+                              </ion-item>
 
-                                <ion-item>
-                                  <ion-thumbnail slot="start">
-                                    <img
-                                      alt="Silhouette of mountains"
-                                      src="https://ionicframework.com/docs/img/demos/thumbnail.svg"
-                                    />
-                                  </ion-thumbnail>
-                                  <ion-label>
-                                    <ion-text color="tertiary">
-                                      <h2>Hospital Barros Luco</h2>
-                                    </ion-text>
-                                    <ion-text>
-                                      <h4>
-                                        Razón ingreso: Resfriado
-                                      </h4></ion-text
-                                    >
-                                    <ion-text>
-                                      <h6>Ayer, 9:30 PM</h6>
-                                    </ion-text>
-                                  </ion-label>
-                                </ion-item>
+                              <ion-item>
+                                <ion-thumbnail slot="start">
+                                  <img
+                                    alt="Silhouette of mountains"
+                                    src="https://ionicframework.com/docs/img/demos/thumbnail.svg"
+                                  />
+                                </ion-thumbnail>
+                                <ion-label>
+                                  <ion-text color="tertiary">
+                                    <h2>Hospital Barros Luco</h2>
+                                  </ion-text>
+                                  <ion-text>
+                                    <h4>Razón ingreso: Resfriado</h4></ion-text
+                                  >
+                                  <ion-text>
+                                    <h6>Ayer, 9:30 PM</h6>
+                                  </ion-text>
+                                </ion-label>
+                              </ion-item>
 
-                                <ion-item lines="none">
-                                  <ion-thumbnail slot="start">
-                                    <img
-                                      alt="Silhouette of mountains"
-                                      src="https://ionicframework.com/docs/img/demos/thumbnail.svg"
-                                    />
-                                  </ion-thumbnail>
-                                  <ion-label>
-                                    <ion-text color="tertiary">
-                                      <h2>Clínica Indisa</h2>
-                                    </ion-text>
-                                    <ion-text>
-                                      <h4>Razón ingreso: Gripe</h4></ion-text
-                                    >
-                                    <ion-text>
-                                      <h6>Ayer, 4:30 PM</h6>
-                                    </ion-text>
-                                  </ion-label>
-                                </ion-item>
-                              </ion-list>
-                            </ion-card-content>
-                          </ion-card>
-                        </ion-col>
+                              <ion-item lines="none">
+                                <ion-thumbnail slot="start">
+                                  <img
+                                    alt="Silhouette of mountains"
+                                    src="https://ionicframework.com/docs/img/demos/thumbnail.svg"
+                                  />
+                                </ion-thumbnail>
+                                <ion-label>
+                                  <ion-text color="tertiary">
+                                    <h2>Clínica Indisa</h2>
+                                  </ion-text>
+                                  <ion-text>
+                                    <h4>Razón ingreso: Gripe</h4></ion-text
+                                  >
+                                  <ion-text>
+                                    <h6>Ayer, 4:30 PM</h6>
+                                  </ion-text>
+                                </ion-label>
+                              </ion-item>
+                            </ion-list>
+                          </ion-card-content>
+                        </ion-card>
+                      </ion-col>
                     </ion-row>
                   </ion-grid>
                 </ion-card-subtitle>

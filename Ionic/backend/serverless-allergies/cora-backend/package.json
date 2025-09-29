@@ -1,0 +1,20 @@
+{
+  "name": "cora-backend",
+  "version": "1.0.0",
+  "description": "Serverless CRUD API for allergies with DynamoDB",
+  "main": "handler.js",
+  "scripts": {
+    "deploy": "serverless deploy",
+    "remove": "serverless remove"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.400.0",
+    "@aws-sdk/lib-dynamodb": "^3.400.0",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "serverless": "^3.40.0"
+  },
+  "author": "Your Name",
+  "license": "MIT"
+}

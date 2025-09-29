@@ -21,7 +21,12 @@ import {
   IonList,
   IonItem,
   IonLabel,
-  IonThumbnail, IonAccordion, IonAccordionGroup } from '@ionic/angular/standalone';
+  IonThumbnail,
+  IonAccordion,
+  IonAccordionGroup,
+  IonButton,
+  ModalController,
+} from '@ionic/angular/standalone';
 import {
   LucideAngularModule,
   ClipboardList,
@@ -29,13 +34,19 @@ import {
   CircleGauge,
 } from 'lucide-angular';
 import { RoutableButtonComponent } from '../routable-button/routable-button.component';
+import { AlergiasModalComponent } from './alergias-modal/alergias-modal.component';
+import { HabitosModalComponent } from './habitos-modal/habitos-modal.component';
+import { RecetasModalComponent } from './recetas-modal/recetas-modal.component';
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.page.html',
   styleUrls: ['./home.page.scss'],
   standalone: true,
-  imports: [IonAccordionGroup, IonAccordion, 
+  imports: [
+    IonButton,
+    IonAccordionGroup,
+    IonAccordion,
     IonLabel,
     IonItem,
     IonList,
@@ -67,7 +78,34 @@ export class HomePage implements OnInit {
   readonly chartPie = ChartPie;
   readonly circleGauge = CircleGauge;
 
-  constructor() {}
+  constructor(private modalCtrl: ModalController) {}
 
   ngOnInit() {}
+
+  async openAlergiasModal() {
+    const modal = await this.modalCtrl.create({
+      component: AlergiasModalComponent,
+    });
+    modal.present();
+
+    await modal.onWillDismiss();
+  }
+
+  async openHabitosModal() {
+    const modal = await this.modalCtrl.create({
+      component: HabitosModalComponent,
+    });
+    modal.present();
+
+    await modal.onWillDismiss();
+  }
+
+  async openRecetasModal() {
+    const modal = await this.modalCtrl.create({
+      component: RecetasModalComponent,
+    });
+    modal.present();
+
+    await modal.onWillDismiss();
+  }
 }

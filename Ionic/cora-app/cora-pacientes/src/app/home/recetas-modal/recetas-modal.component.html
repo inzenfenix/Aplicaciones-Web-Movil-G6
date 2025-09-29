@@ -1,0 +1,57 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Recetas</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="cancel()">Cerrar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-searchbar [debounce]="500" placeholder="Buscar..." animated="true" />
+</ion-header>
+<ion-content class="ion-padding" style="overflow-y: auto">
+  <ion-button shape="round" (click)="toggleInputAccordion()">
+    <span> Añadir recetas </span>
+    <lucide-angular [img]="add"/>
+  </ion-button>
+  <ion-accordion-group #accordionAlergiasGroup>
+    <ion-accordion value="anadir-data">
+      <div class="ion-padding" slot="content">
+        <ion-input
+          label-placement="floating"
+          fill="solid"
+          placeholder="Ingresar receta"
+          style="margin-bottom: 5px; padding: 10px 10px"
+          (ionInput)="handleInputNewAllergy($event)"
+        />
+        <div>
+          <ion-button shape="round" (click)="toggleInputAccordion()">
+            <span> Confirmar </span>
+          </ion-button>
+          <ion-button
+            shape="round"
+            fill="outline"
+            (click)="toggleInputAccordion()"
+          >
+            <span> Cancelar </span>
+          </ion-button>
+        </div>
+      </div>
+    </ion-accordion>
+  </ion-accordion-group>
+  <ion-item-divider />
+  <ion-list>
+    @if(items.length != 0) { @for (item of items; track item; let index =
+    $index) {
+    <ion-item>
+      <ion-label>{{ item }}</ion-label>
+      <ion-button fill="outline">Eliminar</ion-button>
+    </ion-item>
+    } } @else {
+    <p>No se encontraron resultados.</p>
+    }
+  </ion-list>
+  <ion-infinite-scroll (ionInfinite)="onIonInfinite($event)">
+    <ion-infinite-scroll-content></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+</ion-content>
+<ion-item-divider />
+<ion-footer style="padding: 5px 10px"> </ion-footer>

@@ -1,0 +1,43 @@
+# "org" ensures this Service is used with the correct Serverless Framework Access Key.
+org: unfittedgames
+# "app" enables Serverless Framework Dashboard features and sharing them with other Services.
+app: cora
+# "service" is the name of this project. This will also be added to your AWS resource names.
+service: cora-backend
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: us-east-2
+  role: arn:aws:iam::626218016489:role/LabRole
+  environment:
+    ALLERGIES_TABLE: Allergies
+
+functions:
+  getAllergies:
+    handler: handler.getAllergies
+    events:
+      - httpApi:
+          path: /allergies
+          method: GET
+
+  createAllergy:
+    handler: handler.createAllergy
+    events:
+      - httpApi:
+          path: /allergies
+          method: POST
+
+  updateAllergy:
+    handler: handler.updateAllergy
+    events:
+      - httpApi:
+          path: /allergies/{id}
+          method: PUT
+
+  deleteAllergy:
+    handler: handler.deleteAllergy
+    events:
+      - httpApi:
+          path: /allergies/{id}
+          method: DELETE
