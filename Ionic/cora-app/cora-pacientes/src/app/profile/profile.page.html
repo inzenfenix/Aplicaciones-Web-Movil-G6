@@ -11,3 +11,104 @@
     </ion-toolbar>
   </ion-header>
 </ion-content>
+
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Dashboard</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+
+  <div class="profile-container">
+    <ion-grid>
+
+      <!-- Fila 1 y 2: Historial (izquierda, ocupa 2 filas) + Peso (derecha) -->
+      <ion-row>
+        <ion-col size="12" size-md="6" rowspan="2">
+          <ion-card class="historial-card">
+            <ion-card-header>
+              <ion-card-title>Juan Alberto Costa</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-list>
+                <ion-item>
+                  <ion-label>
+                    <h2>Consulta general</h2>
+                    <p>12/09/2025 — Dr. Pérez</p>
+                  </ion-label>
+                </ion-item>
+                <ion-item>
+                  <ion-label>
+                    <h2>Control de tiroides</h2>
+                    <p>02/08/2025 — Dra. Muñoz</p>
+                  </ion-label>
+                </ion-item>
+                <ion-item>
+                  <ion-label>
+                    <h2>Ecografía abdominal</h2>
+                    <p>18/07/2025 — Dr. Salinas</p>
+                  </ion-label>
+                </ion-item>
+                <ion-item>
+                  <ion-label>
+                    <h2>Vacunación anual</h2>
+                    <p>05/05/2025 — Enfermera Rojas</p>
+                  </ion-label>
+                </ion-item>
+              </ion-list>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <ion-col size="12" size-md="6">
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Peso</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <canvas baseChart
+                      [data]="pesoData"
+                      [options]="chartOptions"
+                      chartType="line">
+              </canvas>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+
+      <!-- Fila 2: Presión Arterial + Glucosa -->
+      <ion-row>
+        <ion-col size="12" size-md="6">
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Presión Arterial</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <canvas baseChart
+                      [data]="presionData"
+                      [options]="chartOptions"
+                      chartType="line">
+              </canvas>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <ion-col size="12" size-md="6">
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Glucosa</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <canvas baseChart
+                      [data]="glucosaData"
+                      [options]="chartOptions"
+                      chartType="line">
+              </canvas>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+
+    </ion-grid>
+  </div>
+</ion-content>
