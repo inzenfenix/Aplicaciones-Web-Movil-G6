@@ -21,6 +21,10 @@ export const routes: Routes = [
         loadComponent: () =>
           import('../dashboard/dashboard.page').then((m) => m.DashboardPage),
       },
+      { path: 'alergia',
+         loadComponent: () =>
+           import('../alergia/alergia.page').then((m) => m.AlergiaPage)
+      },
       {
         path: 'add',
         loadComponent: () =>
