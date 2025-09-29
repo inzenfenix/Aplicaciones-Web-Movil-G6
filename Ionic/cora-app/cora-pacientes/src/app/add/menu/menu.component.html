@@ -1,0 +1,78 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Añadir información</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" ckass="ion-padding">
+  <ion-grid style="display: flex; justify-content: center; text-align: center">
+    <ion-row>
+      <ion-col size="12">
+        <ion-card>
+          <ion-card-content>
+            <ion-grid>
+              <ion-row>
+                <ion-col size="12">
+                  <ion-card-title
+                    >Añadir información a la ficha médica</ion-card-title
+                  >
+                </ion-col>
+                <ion-col size="12">
+                  <p></p>
+                </ion-col>
+                <ion-col
+                  size="12"
+                  sizeSm="6"
+                  sizeMd="6"
+                  sizeLg="6"
+                  style="display: flex; justify-content: center"
+                >
+                  <ion-nav-link
+                    router-direction="forward"
+                    [component]="examenes"
+                  >
+                    <ion-button>
+                      <div style="display: flex; flex-direction: column">
+                        <lucide-angular
+                          aria-hidden="true"
+                          [img]="examIcon"
+                          size="32"
+                          strokeWidth="2"
+                        />
+                        <p>Añadir examen médico</p>
+                      </div>
+                    </ion-button>
+                  </ion-nav-link>
+                </ion-col>
+                <ion-col
+                  size="12"
+                  sizeSm="6"
+                  sizeMd="6"
+                  sizeLg="6"
+                  style="display: flex; justify-content: center"
+                >
+                  <ion-nav-link
+                    router-direction="forward"
+                    [component]="atenciones"
+                  >
+                    <ion-button>
+                      <div style="display: flex; flex-direction: column">
+                        <lucide-angular
+                          aria-hidden="true"
+                          [img]="atentionIcon"
+                          size="32"
+                          strokeWidth="2"
+                        />
+                        <p>Añadir atención médica</p>
+                      </div>
+                    </ion-button>
+                  </ion-nav-link>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

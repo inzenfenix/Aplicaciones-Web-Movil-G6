@@ -1,0 +1,100 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>Añadir examen médico</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content class="ion-padding">
+  <ion-grid style="justify-content: center; max-width: 900px">
+    <ion-row>
+      <ion-col size="12">
+        <ion-card id="card-home" style="padding: 10px 20px">
+          <ion-card-header>
+            <ion-card-title class="card-home-title">
+              Nueva atención
+            </ion-card-title>
+            <ion-card-subtitle> </ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-grid>
+              <ion-row>
+                <ion-col size="12">
+                  <ion-input
+                    label="Hospital"
+                    placeholder="Escribe aquí..."
+                    [clearInput]="true"
+                    label-placement="floating"
+                    fill="solid"
+                  ></ion-input>
+                </ion-col>
+                <ion-col size="12" style="margin-top: 50px">
+                  <ion-textarea
+                    label="Razón"
+                    labelPlacement="floating"
+                    fill="solid"
+                    placeholder="Escribe aquí..."
+                    [autoGrow]="true"
+                  ></ion-textarea>
+                </ion-col>
+                <ion-col size="12" style="margin-top: 50px">
+                  <h2 style="text-align: left; margin-left: 5px">Fecha</h2>
+                  <ion-item>
+                    <ion-datetime-button
+                      datetime="date"
+                    ></ion-datetime-button>
+
+                    <ion-modal [keepContentsMounted]="true">
+                      <ng-template>
+                        <ion-datetime
+                          id="date"
+                          presentation="date"
+                          [formatOptions]="{
+                            date: {
+                              weekday: 'short',
+                              month: 'long',
+                              day: '2-digit',
+                            },
+                          }"
+                          locale="es-cl"
+                        ></ion-datetime>
+                      </ng-template>
+                    </ion-modal>
+                  </ion-item>
+                </ion-col>
+                <ion-col size="12" style="margin-top: 50px">
+                  <h2 style="text-align: left; margin-left: 5px">Hora</h2>
+                  <ion-item>
+                    <ion-datetime-button
+                      datetime="time"
+                    ></ion-datetime-button>
+                    <ion-modal [keepContentsMounted]="true">
+                      <ng-template>
+                        <ion-datetime
+                          id="time"
+                          presentation="time"
+                          [value]="todayTime"
+                          [formatOptions]="{
+                            time: {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            },
+                          }"
+                          locale="es-cl"
+                        ></ion-datetime>
+                      </ng-template>
+                    </ion-modal>
+                  </ion-item>
+                </ion-col>
+                <ion-col size="12">
+                  <ion-button expand="full">Confirmar</ion-button>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>
