@@ -14,7 +14,8 @@ import {
 
 export interface Allergy {
   id: string;
-  name: string;
+  allergen: string;
+  typeAllergen: string;
 }
 
 @Injectable({

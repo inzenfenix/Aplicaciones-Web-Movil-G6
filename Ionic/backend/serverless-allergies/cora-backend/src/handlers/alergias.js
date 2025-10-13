@@ -14,6 +14,8 @@ const headers = {
 // GET /allergies
 module.exports.getAllergies = async () => {
   const result = await docClient.send(new ScanCommand({ TableName: tableName }));
+
+  console.log(result.Items);
   return { statusCode: 200, headers: headers, body: JSON.stringify(result.Items) };
 };
 
@@ -43,5 +45,5 @@ module.exports.updateAllergy = async (event) => {
 module.exports.deleteAllergy = async (event) => {
   const id = event.pathParameters.id;
   await docClient.send(new DeleteCommand({ TableName: tableName, Key: { id } }));
-  return { statusCode: 200, headers:headers body: JSON.stringify({ deleted: id }) };
+  return { statusCode: 200, headers:headers, body: JSON.stringify({ deleted: id }) };
 };

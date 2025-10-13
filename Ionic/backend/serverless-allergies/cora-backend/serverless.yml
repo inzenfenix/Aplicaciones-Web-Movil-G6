@@ -25,7 +25,7 @@ custom:
 
 functions:
   getAllergies:
-    handler: handler.getAllergies
+    handler: src/handlers/alergias.getAllergies
     events:
       - http:
           path: /allergies
@@ -33,7 +33,7 @@ functions:
           cors: true
 
   createAllergy:
-    handler: handler.createAllergy
+    handler: src/handlers/alergias.createAllergy
     events:
       - http:
           path: /allergies
@@ -41,7 +41,7 @@ functions:
           cors: true
 
   updateAllergy:
-    handler: handler.updateAllergy
+    handler: src/handlers/alergias.updateAllergy
     events:
       - http:
           path: /allergies/{id}
@@ -49,9 +49,20 @@ functions:
           cors: true
 
   deleteAllergy:
-    handler: handler.deleteAllergy
+    handler: src/handlers/alergias.deleteAllergy
     events:
       - http:
           path: /allergies/{id}
           method: DELETE
           cors: true
+  
+  randomizeData:
+    handler: src/handlers/randomizer.randomize
+    events:
+      - http:
+          path: /randomize
+          method: GET
+
+package:
+  include:
+    - src/json_data/alergenos.json

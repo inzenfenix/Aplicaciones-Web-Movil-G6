@@ -46,8 +46,8 @@
     @if (allergies.length > 0) {
       @for (allergy of allergies; track allergy.id) {
         <ion-item>
-          <ion-label>{{ allergy.name }}</ion-label>
-          <ion-button fill="outline" color="danger" (click)="delete(allergy)">
+          <ion-label>{{ allergy.allergen }}</ion-label>
+          <ion-button fill="outline" color="danger" >
             Eliminar
           </ion-button>
         </ion-item>

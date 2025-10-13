@@ -1,0 +1,15 @@
+{
+    "tipoAlergia":[
+        "Medicamento",
+        "Espora",
+        "Alimentaria",
+        "Respiratoria",
+        "Cutanea",
+        "Ocupacional",
+        "Picadura"
+    ],
+
+    "alergeno":[
+
+    ]
+}

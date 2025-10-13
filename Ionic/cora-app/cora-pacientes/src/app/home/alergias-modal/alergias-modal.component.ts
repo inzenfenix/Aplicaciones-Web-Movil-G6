@@ -119,7 +119,7 @@ export class AlergiasModalComponent {
 
   startEdit(allergy: Allergy) {
     this.isEditing = allergy.id;
-    this.editedName = allergy.name;
+    //this.editedName = allergy.name;
   }
 
   cancelEdit() {
@@ -127,7 +127,7 @@ export class AlergiasModalComponent {
     this.editedName = '';
   }
 
-  saveEdit(allergy: Allergy) {
+  /*saveEdit(allergy: Allergy) {
     const newName = this.editedName.trim();
     if (newName === '') {
       this.showToastMessage('Allergy name cannot be empty');
@@ -149,8 +149,8 @@ export class AlergiasModalComponent {
         console.error('Error updating allergy:', error);
       },
     });
-  }
-
+  }*/
+/*
   delete(allergy: Allergy) {
     this.allergiesService.deleteAllergy(allergy.id).subscribe({
       next: () => {
@@ -162,7 +162,7 @@ export class AlergiasModalComponent {
       },
     });
   }
-
+*/
   refreshAllergies() {
     this.allergiesService.refreshAllergies();
     this.showToastMessage('Refreshing allergies...');
