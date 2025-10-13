@@ -12,32 +12,46 @@ provider:
   role: arn:aws:iam::626218016489:role/LabRole
   environment:
     ALLERGIES_TABLE: Allergies
+  logs:
+    restApi: false 
+
+plugins:
+  - serverless-prune-plugin
+
+custom:
+  prune:
+    automatic: true
+    number: 5
 
 functions:
   getAllergies:
     handler: handler.getAllergies
     events:
-      - httpApi:
+      - http:
           path: /allergies
           method: GET
+          cors: true
 
   createAllergy:
     handler: handler.createAllergy
     events:
-      - httpApi:
+      - http:
           path: /allergies
           method: POST
+          cors: true
 
   updateAllergy:
     handler: handler.updateAllergy
     events:
-      - httpApi:
+      - http:
           path: /allergies/{id}
           method: PUT
+          cors: true
 
   deleteAllergy:
     handler: handler.deleteAllergy
     events:
-      - httpApi:
+      - http:
           path: /allergies/{id}
           method: DELETE
+          cors: true

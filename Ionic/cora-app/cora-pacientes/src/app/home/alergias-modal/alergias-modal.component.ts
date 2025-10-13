@@ -1,6 +1,6 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
+import { CommonModule } from '@angular/common';
 import {
   InfiniteScrollCustomEvent,
   IonButton,
@@ -22,14 +22,17 @@ import {
   IonInput,
   ModalController,
 } from '@ionic/angular/standalone';
-import { ChartPie, LucideAngularModule, Plus } from 'lucide-angular';
+import { ChartPie, LucideAngularModule, Plus, Trash2, Edit } from 'lucide-angular';
 import { AllergiesApi, Allergy } from '../../services/allergies/allergies-api';
+
 @Component({
   selector: 'app-alergias-modal',
   templateUrl: './alergias-modal.component.html',
   styleUrls: ['./alergias-modal.component.scss'],
+  standalone: true,
   imports: [
-    HttpClientModule,
+    CommonModule, // 👈 gives async pipe, *ngIf, *ngFor
+    FormsModule,
     IonInput,
     IonAccordion,
     IonAccordionGroup,
@@ -41,38 +44,42 @@ import { AllergiesApi, Allergy } from '../../services/allergies/allergies-api';
     IonItemDivider,
     IonFooter,
     IonSearchbar,
-    FormsModule,
     IonToolbar,
     IonHeader,
     IonTitle,
     IonButtons,
     IonButton,
     IonContent,
-    [LucideAngularModule],
+    LucideAngularModule,
   ],
 })
-export class AlergiasModalComponent implements OnInit {
+export class AlergiasModalComponent {
   @ViewChild('accordionAlergiasGroup', { static: true })
   accordionGroup!: IonAccordionGroup;
 
-  allergies: Allergy[] = [];
+  readonly chartPie = ChartPie;
+  readonly add = Plus;
+  readonly trash = Trash2;
+  readonly edit = Edit;
+
+  items: string[] = [];
+
+  // Expose observables for async pipe
+  allergies$ = this.allergiesService.allergies$;
+  loading$ = this.allergiesService.loading$;
+  error$ = this.allergiesService.error$;
+
+  // UI state
+  showToast = false;
+  toastMessage = '';
+  isAdding = false;
+  isEditing: string | null = null;
+  editedName = '';
 
   constructor(
     private modalCtrl: ModalController,
     private allergiesService: AllergiesApi
   ) {}
-
-  ngOnInit(): void {
-    this.generateItems();
-    this.allergiesService.allergies$.subscribe(data => {
-    this.allergies = data;
-  });
-  }
-
-  readonly chartPie = ChartPie;
-  readonly add = Plus;
-
-  items: string[] = [];
 
   private generateItems() {
     const count = this.items.length + 1;
@@ -99,25 +106,90 @@ export class AlergiasModalComponent implements OnInit {
 
   handleInputNewAllergy(event: Event) {
     const target = event.target as HTMLIonSearchbarElement;
-    const value = target.value ? target.value : '';
-    if (value == '') return;
+    const value = target.value ? target.value.trim() : '';
+
+    if (value === '') {
+      this.showToastMessage('Please enter an allergy name');
+      return;
+    }
 
     this.addAlergy(value);
+    target.value = ''; // clear input
   }
 
-  addAlergy(name: string) {
-    this.allergiesService.addAllergy(name).subscribe();
+  startEdit(allergy: Allergy) {
+    this.isEditing = allergy.id;
+    this.editedName = allergy.name;
   }
 
-  update(allergy: Allergy, newName: string) {
-    this.allergiesService.updateAllergy(allergy.id, newName).subscribe();
+  cancelEdit() {
+    this.isEditing = null;
+    this.editedName = '';
+  }
+
+  saveEdit(allergy: Allergy) {
+    const newName = this.editedName.trim();
+    if (newName === '') {
+      this.showToastMessage('Allergy name cannot be empty');
+      return;
+    }
+
+    if (newName === allergy.name) {
+      this.cancelEdit();
+      return;
+    }
+
+    this.allergiesService.updateAllergy(allergy.id, newName).subscribe({
+      next: () => {
+        this.showToastMessage(`Updated: ${newName}`);
+        this.cancelEdit();
+      },
+      error: (error) => {
+        this.showToastMessage(`Failed to update: ${newName}`);
+        console.error('Error updating allergy:', error);
+      },
+    });
   }
 
   delete(allergy: Allergy) {
-    this.allergiesService.deleteAllergy(allergy.id).subscribe();
+    this.allergiesService.deleteAllergy(allergy.id).subscribe({
+      next: () => {
+        this.showToastMessage(`Deleted: ${allergy.name}`);
+      },
+      error: (error) => {
+        this.showToastMessage(`Failed to delete: ${allergy.name}`);
+        console.error('Error deleting allergy:', error);
+      },
+    });
+  }
+
+  refreshAllergies() {
+    this.allergiesService.refreshAllergies();
+    this.showToastMessage('Refreshing allergies...');
+  }
+
+  private showToastMessage(message: string) {
+    this.toastMessage = message;
+    this.showToast = true;
   }
 
   cancel() {
     return this.modalCtrl.dismiss(null, 'cancel');
   }
+
+  newAllergy = '';
+
+addAlergy(name: string) {
+  const trimmed = name.trim();
+  if (!trimmed) return;
+
+  this.allergiesService.addAllergy(trimmed).subscribe({
+    next: () => {
+      this.newAllergy = ''; // clear input
+      this.toggleInputAccordion();
+    },
+    error: (err) => console.error('Error adding allergy:', err),
+  });
+}
+
 }

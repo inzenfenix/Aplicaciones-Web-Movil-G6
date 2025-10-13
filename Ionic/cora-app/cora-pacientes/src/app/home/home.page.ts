@@ -33,7 +33,6 @@ import {
   ChartPie,
   CircleGauge,
 } from 'lucide-angular';
-import { RoutableButtonComponent } from '../routable-button/routable-button.component';
 import { AlergiasModalComponent } from './alergias-modal/alergias-modal.component';
 import { HabitosModalComponent } from './habitos-modal/habitos-modal.component';
 import { RecetasModalComponent } from './recetas-modal/recetas-modal.component';
@@ -67,7 +66,6 @@ import { RecetasModalComponent } from './recetas-modal/recetas-modal.component';
     [LucideAngularModule],
     IonCardSubtitle,
     IonCardHeader,
-    RoutableButtonComponent,
     IonCardContent,
     IonThumbnail,
     IonText,
@@ -86,9 +84,7 @@ export class HomePage implements OnInit {
     const modal = await this.modalCtrl.create({
       component: AlergiasModalComponent,
     });
-    modal.present();
-
-    await modal.onWillDismiss();
+    await modal.present();
   }
 
   async openHabitosModal() {

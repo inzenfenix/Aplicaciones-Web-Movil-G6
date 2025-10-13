@@ -10,45 +10,61 @@
 <ion-content class="ion-padding" style="overflow-y: auto">
   <ion-button shape="round" (click)="toggleInputAccordion()">
     <span> Añadir alergía </span>
-    <lucide-angular [img]="add"/>
+    <lucide-angular [img]="add" />
   </ion-button>
   <ion-accordion-group #accordionAlergiasGroup>
-    <ion-accordion value="anadir-data">
-      <div class="ion-padding" slot="content">
-        <ion-input
-          label-placement="floating"
-          fill="solid"
-          placeholder="Ingresar alergía"
-          style="margin-bottom: 5px; padding: 10px 10px"
-          (ionInput)="handleInputNewAllergy($event)"
-        />
-        <div>
-          <ion-button shape="round" (click)="toggleInputAccordion()">
-            <span> Confirmar </span>
-          </ion-button>
-          <ion-button
-            shape="round"
-            fill="outline"
-            (click)="toggleInputAccordion()"
-          >
-            <span> Cancelar </span>
-          </ion-button>
-        </div>
+  <ion-accordion value="anadir-data">
+    <div class="ion-padding" slot="content">
+      <ion-input
+        [(ngModel)]="newAllergy"
+        label-placement="floating"
+        fill="solid"
+        placeholder="Ingresar alergía"
+        style="margin-bottom: 5px; padding: 10px 10px"
+      ></ion-input>
+
+      <div>
+        <ion-button shape="round" (click)="addAlergy(newAllergy)">
+          <span> Confirmar </span>
+        </ion-button>
+
+        <ion-button
+          shape="round"
+          fill="outline"
+          (click)="toggleInputAccordion()"
+        >
+          <span> Cancelar </span>
+        </ion-button>
       </div>
-    </ion-accordion>
-  </ion-accordion-group>
+    </div>
+  </ion-accordion>
+</ion-accordion-group>
+
   <ion-item-divider />
   <ion-list>
-    @if(allergies.length != 0) { @for (allergy of allergies; track allergy.id; let index =
-    $index) {
-    <ion-item>
-      <ion-label>{{ allergy.name }}</ion-label>
-      <ion-button fill="outline" (click) = "addAlergy(allergy.id)">Eliminar</ion-button>
-    </ion-item>
-    } } @else {
-    <p>No se encontraron resultados.</p>
+  @if (allergies$ | async; as allergies) {
+    @if (allergies.length > 0) {
+      @for (allergy of allergies; track allergy.id) {
+        <ion-item>
+          <ion-label>{{ allergy.name }}</ion-label>
+          <ion-button fill="outline" color="danger" (click)="delete(allergy)">
+            Eliminar
+          </ion-button>
+        </ion-item>
+      }
+    } @else {
+      <ion-item>
+        <ion-label>No se encontraron resultados.</ion-label>
+      </ion-item>
     }
-  </ion-list>
+  } @else {
+    <ion-item>
+      <ion-label>Cargando...</ion-label>
+    </ion-item>
+  }
+</ion-list>
+
+
   <ion-infinite-scroll (ionInfinite)="onIonInfinite($event)">
     <ion-infinite-scroll-content></ion-infinite-scroll-content>
   </ion-infinite-scroll>
