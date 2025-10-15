@@ -1,7 +1,0 @@
-{
-  "name": "fichas-app",
-  "integrations": {
-    "capacitor": {}
-  },
-  "type": "angular-standalone"
-}
