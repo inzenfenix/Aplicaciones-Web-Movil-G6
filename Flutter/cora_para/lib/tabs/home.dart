@@ -54,7 +54,7 @@ class _HomePageState extends State<HomePage> {
                           title: Center(
                             child: Text(
                               "General",
-                              style: TextStyle(fontWeight: FontWeight.w400),
+                              style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ),
                         ),

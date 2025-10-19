@@ -1,12 +1,8 @@
-const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
-const {
-  DynamoDBDocumentClient,
-  PutCommand,
-  ScanCommand,
-  UpdateCommand,
-  DeleteCommand,
-} = require("@aws-sdk/lib-dynamodb");
-const { v4: uuidv4 } = require("uuid");
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import {
+  DynamoDBDocumentClient, PutCommand
+} from "@aws-sdk/lib-dynamodb";
+import { v4 as uuidv4 } from "uuid";
 const allergens = require("../json_data/alergenos.json");
 
 const client = new DynamoDBClient({});

@@ -1,0 +1,150 @@
+service: cora-backend
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  region: us-east-2
+  role: arn:aws:iam::626218016489:role/LabRole
+  stage: dev
+  timeout: 60
+  environment:
+    ALLERGIES_TABLE: Allergies
+    TYPE_ALLERGIES_TABLE: TypeAllergies
+
+plugins:
+  - serverless-offline
+  - serverless-prune-plugin
+
+custom:
+  prune:
+    automatic: true
+    number: 5
+
+functions:
+#Allergies
+  initializeAllergies:
+      handler: src/handlers/alergias.initializeTable
+      events:
+        - http:
+            path: /allergies/initializeAllergies
+            method: GET
+            cors: true
+
+  getAllergies:
+    handler: src/handlers/alergias.getAllergies
+    events:
+      - http:
+          path: /allergies/{userId}
+          method: GET
+          cors: true
+
+  filterAllergies:
+    handler: src/handlers/alergias.filterAllergies
+    events:
+      - http:
+          path: /allergies/{filter}/{userId}
+          method: GET
+          cors: true
+
+  createAllergy:
+    handler: src/handlers/alergias.createAllergy
+    events:
+      - http:
+          path: /allergies
+          method: POST
+          cors: true
+
+  updateAllergy:
+    handler: src/handlers/alergias.updateAllergy
+    events:
+      - http:
+          path: /allergies/{id}/{userId}
+          method: PUT
+          cors: true
+
+  deleteAllergy:
+    handler: src/handlers/alergias.deleteAllergy
+    events:
+      - http:
+          path: /allergies/{id}/{userId}
+          method: DELETE
+          cors: true
+
+# Type Allergy
+
+  createTypeAllergyTable:
+    handler: src/handlers/tipoAlergia.initializeTable
+    events:
+      - http:
+          path: /typeAllergies/createTable
+          method: GET
+          cors: true
+
+  getAllTypesAllergies:
+    handler: src/handlers/tipoAlergia.GetAllTypes
+    events:
+      - http:
+          path: /typeAllergies/getAll
+          method: GET
+          cors: true
+
+  getTypesAllergiesFiltered:
+    handler: src/handlers/tipoAlergia.filterAllergies
+    events:
+      - http:
+          path: /typeAllergies/filterAllergies/{filter}
+          method: GET
+          cors: true
+
+#Randomizer
+  randomizeData:
+    handler: src/handlers/randomizer.randomize
+    events:
+      - http:
+          path: /randomize
+          method: GET
+
+resources:
+  Resources:
+    CognitoUserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: cora-user-pool
+        AutoVerifiedAttributes:
+          - email
+        Schema:
+          - Name: email
+            Required: true
+            Mutable: false
+          - Name: custom:nationalId
+            AttributeDataType: String
+            Mutable: true
+
+    CognitoUserPoolClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        ClientName: cora-app-client
+        UserPoolId: !Ref CognitoUserPool
+        GenerateSecret: false
+        AllowedOAuthFlowsUserPoolClient: true
+        AllowedOAuthFlows:
+          - implicit
+        AllowedOAuthScopes:
+          - email
+          - openid
+        CallbackURLs:
+          - http://localhost:3000
+
+    CognitoUserGroupMedic:
+      Type: AWS::Cognito::UserPoolGroup
+      Properties:
+        GroupName: medic
+        UserPoolId: !Ref CognitoUserPool
+        Description: Medical professionals
+
+    CognitoUserGroupPatient:
+      Type: AWS::Cognito::UserPoolGroup
+      Properties:
+        GroupName: patient
+        UserPoolId: !Ref CognitoUserPool
+        Description: Patients using the system
