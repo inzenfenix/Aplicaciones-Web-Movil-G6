@@ -1,0 +1,9 @@
+Requisitos:
+
+Flutter / Paramédico:
+	- Tener acceso rápido a la información médica de un paciente
+		- Conocer datos históricos.
+		- Conocer información general.
+		- Conocer alergenos e información relevante.
+	- Conocer la proximidad a facilidades hospitalarias.
+	- Buscar facilidades hospitalarias y su disponibilidad.

@@ -39,6 +39,14 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: Text(
+          widget.title,
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+      ),
+      body: <Widget>[homePageTab, homePageTab, homePageTab][curPageIndex],
       bottomNavigationBar: NavigationBar(
         onDestinationSelected: (int index) {
           setState(() {
@@ -59,21 +67,12 @@ class _MainPageState extends State<MainPage> {
             label: "Escanear QR",
           ),
           NavigationDestination(
-            selectedIcon: Icon(Icons.dashboard),
-            icon: Icon(Icons.dashboard_outlined),
-            label: "Dashboard",
+            selectedIcon: Icon(Icons.search_rounded),
+            icon: Icon(Icons.search_rounded),
+            label: "Búsqueda",
           ),
         ],
       ),
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-      ),
-      body:<Widget>[
-        homePageTab,
-        homePageTab,
-        homePageTab
-     ][curPageIndex] 
     );
   }
 }

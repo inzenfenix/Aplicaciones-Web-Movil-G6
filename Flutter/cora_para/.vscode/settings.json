@@ -1,3 +1,4 @@
 {
-    "cmake.sourceDirectory": "/home/inzenfenix/Documents/GitHub/Aplicaciones-Web-Movil-G6/Flutter/cora_para/linux/flutter"
+    "cmake.sourceDirectory": "/home/inzenfenix/Documents/GitHub/Aplicaciones-Web-Movil-G6/Flutter/cora_para/linux/flutter",
+    "cmake.ignoreCMakeListsMissing": true
 }
