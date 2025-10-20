@@ -24,9 +24,12 @@ dev_dependencies:
 
 
 flutter:
-
-
   uses-material-design: true
+
+  fonts:
+    - family: Fjalla One
+      fonts:
+        - asset: assets/fonts/Fjalla_One/FjallaOne-Regular.ttf
 
   assets:
     - assets/images/

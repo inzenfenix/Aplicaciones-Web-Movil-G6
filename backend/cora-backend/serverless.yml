@@ -6,7 +6,7 @@ provider:
   region: us-east-2
   role: arn:aws:iam::626218016489:role/LabRole
   stage: dev
-  timeout: 60
+  timeout: 29
   environment:
     ALLERGIES_TABLE: Allergies
     TYPE_ALLERGIES_TABLE: TypeAllergies
@@ -42,7 +42,7 @@ functions:
     handler: src/handlers/alergias.filterAllergies
     events:
       - http:
-          path: /allergies/{filter}/{userId}
+          path: /allergies/{userId}/filter/{filter}
           method: GET
           cors: true
 
@@ -58,7 +58,7 @@ functions:
     handler: src/handlers/alergias.updateAllergy
     events:
       - http:
-          path: /allergies/{id}/{userId}
+          path: /allergies/{userId}/allergyId/{id}
           method: PUT
           cors: true
 
@@ -66,7 +66,7 @@ functions:
     handler: src/handlers/alergias.deleteAllergy
     events:
       - http:
-          path: /allergies/{id}/{userId}
+          path: /allergies/{userId}/allergyId/{id}
           method: DELETE
           cors: true
 
@@ -103,48 +103,3 @@ functions:
       - http:
           path: /randomize
           method: GET
-
-resources:
-  Resources:
-    CognitoUserPool:
-      Type: AWS::Cognito::UserPool
-      Properties:
-        UserPoolName: cora-user-pool
-        AutoVerifiedAttributes:
-          - email
-        Schema:
-          - Name: email
-            Required: true
-            Mutable: false
-          - Name: custom:nationalId
-            AttributeDataType: String
-            Mutable: true
-
-    CognitoUserPoolClient:
-      Type: AWS::Cognito::UserPoolClient
-      Properties:
-        ClientName: cora-app-client
-        UserPoolId: !Ref CognitoUserPool
-        GenerateSecret: false
-        AllowedOAuthFlowsUserPoolClient: true
-        AllowedOAuthFlows:
-          - implicit
-        AllowedOAuthScopes:
-          - email
-          - openid
-        CallbackURLs:
-          - http://localhost:3000
-
-    CognitoUserGroupMedic:
-      Type: AWS::Cognito::UserPoolGroup
-      Properties:
-        GroupName: medic
-        UserPoolId: !Ref CognitoUserPool
-        Description: Medical professionals
-
-    CognitoUserGroupPatient:
-      Type: AWS::Cognito::UserPoolGroup
-      Properties:
-        GroupName: patient
-        UserPoolId: !Ref CognitoUserPool
-        Description: Patients using the system

@@ -36,7 +36,7 @@ export const getAllergies = async () => {
 // Get /filterAllergies
 export const filterAllergies = async (event) => {
   const filter = event.pathParameters.filter;
-  const userId = event.pathParameters.filter;
+  const userId = event.pathParameters.userId;
 
   const params = {
     TableName: tableName,

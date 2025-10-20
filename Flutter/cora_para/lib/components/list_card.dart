@@ -6,6 +6,7 @@ Widget listCard({
   required List<String> values,
   required IconData icon,
   required Color iconColor,
+  double? height,
 }) {
   List<Widget> widgetsToShow = List.empty(growable: true);
 
@@ -34,7 +35,7 @@ Widget listCard({
           debugPrint(values[i]);
         },
         child: ListTile(
-          leading: Text('${i + 1}.', style: TextStyle(fontSize: 16.0),),
+          leading: Text('${i + 1}.', style: TextStyle(fontSize: 16.0)),
           title: Text('${values[i]}\nDistancia: ${getRandomKM(i * 5)} km'),
         ),
       ),
@@ -43,11 +44,11 @@ Widget listCard({
     widgetsToShow.add(showCard);
   }
 
-  return SizedBox(
-    height: 350.0,
-    child: Card(
-      elevation: 7.5,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+  return Card(
+    elevation: 7.5,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    child: SizedBox(
+      height: 400, // or MediaQuery.of(context).size.height * 0.5
       child: SingleChildScrollView(
         child: Column(
           children: [

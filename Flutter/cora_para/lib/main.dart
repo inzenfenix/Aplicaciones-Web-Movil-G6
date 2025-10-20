@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'tabs/home.dart';
+import 'tabs/search.dart';
+import 'tabs/scan_qr.dart';
 
 void main() {
   runApp(const CoraApp());
@@ -35,43 +37,47 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   int curPageIndex = 0;
   HomePage homePageTab = HomePage();
+  SearchPage searchPageTab = SearchPage();
+  QrScannerPage qrScannerPage = QrScannerPage();
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(
-          widget.title,
-          style: TextStyle(fontWeight: FontWeight.bold),
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+          title: Text(
+            widget.title,
+            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 24.0),
+          ),
         ),
-      ),
-      body: <Widget>[homePageTab, homePageTab, homePageTab][curPageIndex],
-      bottomNavigationBar: NavigationBar(
-        onDestinationSelected: (int index) {
-          setState(() {
-            curPageIndex = index;
-          });
-        },
-        indicatorColor: Theme.of(context).colorScheme.inversePrimary,
-        selectedIndex: curPageIndex,
-        destinations: const <Widget>[
-          NavigationDestination(
-            selectedIcon: Icon(Icons.home),
-            icon: Icon(Icons.home_outlined),
-            label: "Inicio",
-          ),
-          NavigationDestination(
-            selectedIcon: Icon(Icons.camera_alt),
-            icon: Icon(Icons.camera_alt_outlined),
-            label: "Escanear QR",
-          ),
-          NavigationDestination(
-            selectedIcon: Icon(Icons.search_rounded),
-            icon: Icon(Icons.search_rounded),
-            label: "Búsqueda",
-          ),
-        ],
+        body: <Widget>[homePageTab, qrScannerPage, searchPageTab][curPageIndex],
+        bottomNavigationBar: NavigationBar(
+          onDestinationSelected: (int index) {
+            setState(() {
+              curPageIndex = index;
+            });
+          },
+          indicatorColor: Theme.of(context).colorScheme.inversePrimary,
+          selectedIndex: curPageIndex,
+          destinations: const <Widget>[
+            NavigationDestination(
+              selectedIcon: Icon(Icons.home),
+              icon: Icon(Icons.home_outlined),
+              label: "Inicio",
+            ),
+            NavigationDestination(
+              selectedIcon: Icon(Icons.camera_alt),
+              icon: Icon(Icons.camera_alt_outlined),
+              label: "Escanear QR",
+            ),
+            NavigationDestination(
+              selectedIcon: Icon(Icons.search_rounded),
+              icon: Icon(Icons.search_rounded),
+              label: "Búsqueda",
+            ),
+          ],
+        ),
       ),
     );
   }

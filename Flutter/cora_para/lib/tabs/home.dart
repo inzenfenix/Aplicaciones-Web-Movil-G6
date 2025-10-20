@@ -72,7 +72,7 @@ class _HomePageState extends State<HomePage> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           mainAxisSize: MainAxisSize.max,
                           children: [
-                            homeGeneralButton(title: "Buscar", icon: Icons.search),
+                            homeGeneralButton(title: "Mapa", icon: Icons.map),
                             const SizedBox(width: 64),
                             homeGeneralButton(title: "QR", icon: Icons.qr_code),
                           ],
@@ -139,6 +139,7 @@ Widget homeGeneralButton({required String title, IconData? icon}) {
 
   return Card(
     elevation: 5.0,
+    shape: CircleBorder(),
     child: SizedBox.square(
       dimension: 100.0,
       child: TextButton(
