@@ -9,6 +9,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+
   @override
   Widget build(BuildContext context) {
     Color primaryTextColor = Theme.of(context).colorScheme.onSecondaryFixed;
@@ -62,9 +63,15 @@ class _HomePageState extends State<HomePage> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           mainAxisSize: MainAxisSize.max,
                           children: [
-                            homeGeneralButton(title: "Perfil", icon: Icons.person),
+                            homeGeneralButton(
+                              title: "Perfil",
+                              icon: Icons.person,
+                            ),
                             const SizedBox(width: 64),
-                            homeGeneralButton(title: "Opciones", icon: Icons.settings),
+                            homeGeneralButton(
+                              title: "Opciones",
+                              icon: Icons.settings,
+                            ),
                           ],
                         ),
                         const SizedBox(height: 12, width: double.infinity),
@@ -83,7 +90,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const SizedBox(height: 24, width: double.infinity),
                 listCard(
-                  title: "Centros más cercanos",
+                  title: "Centros más cfercanos",
                   values: closestMedicalCenters,
                   icon: Icons.local_hospital,
                   iconColor: Colors.red.shade400,

@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'tabs/home.dart';
 import 'tabs/search.dart';
 import 'tabs/scan_qr.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../apis/public/get_weather_data.dart';
 
-void main() {
+Future<void> main() async {
+  await dotenv.load(fileName: ".env");
   runApp(const CoraApp());
 }
 
@@ -40,15 +43,50 @@ class _MainPageState extends State<MainPage> {
   SearchPage searchPageTab = SearchPage();
   QrScannerPage qrScannerPage = QrScannerPage();
 
+  String temp = "";
+
+  @override
+  void initState() {
+    super.initState();
+    fetchWeatherData();
+  }
+
+  Future<void> fetchWeatherData() async {
+    try {
+      final data = await WeatherAPIConnector.getWeather();
+      DateTime now = DateTime.now();
+      List<WeatherEntry> weatherEntries = data
+          .map((e) => WeatherEntry.fromMap(e))
+          .toList();
+
+      WeatherEntry? closest = WeatherAPIConnector.getClosestTemperature(
+        weatherEntries,
+        now,
+      );
+
+      setState(() {
+        if(closest != null)
+        {
+        temp = '${closest.temperatura.toString()} °C';
+        }
+      });
+    } catch (e) {
+      debugPrint('$e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          title: Text(
-            widget.title,
-            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 24.0),
+          title: ListTile(
+            trailing: Text(temp, style: TextStyle(fontSize: 16.0)),
+            title: Text(
+              widget.title,
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 24.0),
+            ),
           ),
         ),
         body: <Widget>[homePageTab, qrScannerPage, searchPageTab][curPageIndex],

@@ -10,6 +10,7 @@ provider:
   environment:
     ALLERGIES_TABLE: Allergies
     TYPE_ALLERGIES_TABLE: TypeAllergies
+    TYPE_MEDS_TABLE: TypeMeds
 
 plugins:
   - serverless-offline
@@ -95,6 +96,47 @@ functions:
           path: /typeAllergies/filterAllergies/{filter}
           method: GET
           cors: true
+
+  createAllergyType:
+    handler: src/handlers/tipoAlergia.createAllergy
+    events:
+      - http:
+          path: /typeAllergies/create/{filter}
+          method: POST
+          cors: true
+
+#MedsType
+  createTypesMedsTable:
+    handler: src/handlers/tipoMedicamento.initializeTable
+    events:
+      - http:
+          path: /typeMeds/createTable
+          method: GET
+          cors: true
+
+  getAllMedsTypes:
+    handler: src/handlers/tipoMedicamento.GetAllTypes
+    events:
+      - http:
+          path: /typeMeds/getAll
+          method: GET
+          cors: true
+
+  getMedsTypesFiltered:
+    handler: src/handlers/tipoMedicamento.filterMedTypes
+    events:
+      - http:
+          path: /typeMeds/filterMeds/{filter}
+          method: GET
+          cors: true
+
+  createMedType:
+    handler: src/handlers/tipoAlergia.createMedType
+    events:
+      - http:
+          path: /typeMeds/create/{filter}
+          method: POST
+          cors: true  
 
 #Randomizer
   randomizeData:

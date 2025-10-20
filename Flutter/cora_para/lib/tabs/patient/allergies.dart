@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'apis/allergies_api.dart';
 
 class AllergiesPage extends StatefulWidget {
-
   final String rut;
 
   const AllergiesPage({super.key, required this.rut});
@@ -14,42 +14,49 @@ class AllergiesPage extends StatefulWidget {
 class _AllergiesPageState extends State<AllergiesPage> {
   final GlobalKey<FormState> _searchKey = GlobalKey<FormState>();
   String searchInput = "";
-  List<String>? filteredData;
 
-  List<String> allergies = [
-    "Alergia 1",
-    "Alergia 2",
-    "Alergia 3",
-    "Alergia 4",
-    "Alergia 5",
-    "Alergia 6",
-    "Alergia 7",
-    "Alergia 8",
-    "Alergia 9",
-    "Alergia 10",
-    "Alergia 1",
-    "Alergia 1",
-    "Alergia 1",
-    "Alergia 1",
-    "Alergia 1",
-  ];
+  List<dynamic>? filteredData;
+  List<dynamic> userAllergies = List.empty(growable: true);
 
   void onChangeSearchInput(String value) {
     searchInput = value;
   }
 
   void onPressSearchButton() {
-    List<String> selectedFilteredData = List.empty(growable: true);
+    List<dynamic> selectedFilteredData = List.empty(growable: true);
 
-    for (var center in allergies) {
-      if (center.toLowerCase().contains(searchInput.toLowerCase())) {
-        selectedFilteredData.add(center);
+    for (var allergy in userAllergies) {
+      String allergen = allergy["allergen"] as String;
+      String typeAllergen = allergy["typeAllergen"] as String;
+
+      if (allergen.toLowerCase().contains(searchInput.toLowerCase()) ||
+          typeAllergen.toLowerCase().contains(searchInput.toLowerCase())) {
+        selectedFilteredData.add(allergy);
       }
     }
 
     setState(() {
       filteredData = selectedFilteredData;
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    String id = widget.rut.split("-")[0];
+    fetchData(id: id);
+  }
+
+  Future<void> fetchData({required String id}) async {
+    try {
+      final data = await AllergiesAPI.fetchData(id: id);
+      setState(() {
+        userAllergies = data;
+      });
+    } catch (e) {
+      debugPrint('$e');
+    }
   }
 
   @override
@@ -125,13 +132,16 @@ class _AllergiesPageState extends State<AllergiesPage> {
           ),
         ),
         SizedBox(height: 12),
-        Expanded(child: listCard(values: filteredData ?? allergies))
+        Expanded(child: listCard(values: filteredData ?? userAllergies)),
       ],
     );
   }
 }
 
-Widget listCard({required List<String> values}) {
+Widget listCard({required List<dynamic>? values}) {
+  if (values == null) return Text("No se encontraron alergías");
+  if (values.isEmpty) return Text("No se encontraron alergías");
+
   List<Widget> widgetsToShow = List.empty(growable: true);
 
   for (int i = 0; i < values.length; i++) {
@@ -140,11 +150,13 @@ Widget listCard({required List<String> values}) {
       child: InkWell(
         splashColor: Colors.red.withAlpha(30),
         onTap: () {
-          debugPrint(values[i]);
+          debugPrint('${values[i]}');
         },
         child: ListTile(
           leading: Text('${i + 1}.', style: TextStyle(fontSize: 16.0)),
-          title: Text('${values[i]}\nTipo: ${getRandomKM(i * 5)}'),
+          title: Text(
+            '${values[i]["allergen"]}\nTipo: ${values[i]["typeAllergen"]}',
+          ),
         ),
       ),
     );
@@ -172,10 +184,4 @@ Widget listCard({required List<String> values}) {
       ),
     ),
   );
-}
-
-int getRandomKM(int startingValue) {
-  Random rand = Random.secure();
-
-  return rand.nextInt(5) + startingValue + 1;
 }

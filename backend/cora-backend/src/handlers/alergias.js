@@ -22,10 +22,17 @@ const headers = {
 };
 
 // GET /allergies
-export const getAllergies = async () => {
-  const result = await docClient.send(
-    new ScanCommand({ TableName: tableName })
-  );
+export const getAllergies = async (event) => {
+  const userId = event.pathParameters.userId;
+  const params = {
+    TableName: tableName,
+    FilterExpression: "#userId = :userId",
+    ExpressionAttributeNames: { "#userId": "userId" },
+    ExpressionAttributeValues: { ":userId": userId },
+    Key: { userId },
+  };
+
+  const result = await docClient.send(new ScanCommand(params));
   return {
     statusCode: 200,
     headers,
