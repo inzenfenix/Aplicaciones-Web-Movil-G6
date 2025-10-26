@@ -11,6 +11,8 @@ provider:
     ALLERGIES_TABLE: Allergies
     TYPE_ALLERGIES_TABLE: TypeAllergies
     TYPE_MEDS_TABLE: TypeMeds
+    MEDS_TABLE: Meds
+    BLOOD_TYPE: BloodType
 
 plugins:
   - serverless-offline
@@ -26,7 +28,7 @@ functions:
   initializeAllergies:
       handler: src/handlers/alergias.initializeTable
       events:
-        - http:
+        - httpApi:
             path: /allergies/initializeAllergies
             method: GET
             cors: true
@@ -34,7 +36,7 @@ functions:
   getAllergies:
     handler: src/handlers/alergias.getAllergies
     events:
-      - http:
+      - httpApi:
           path: /allergies/{userId}
           method: GET
           cors: true
@@ -42,7 +44,7 @@ functions:
   filterAllergies:
     handler: src/handlers/alergias.filterAllergies
     events:
-      - http:
+      - httpApi:
           path: /allergies/{userId}/filter/{filter}
           method: GET
           cors: true
@@ -50,7 +52,7 @@ functions:
   createAllergy:
     handler: src/handlers/alergias.createAllergy
     events:
-      - http:
+      - httpApi:
           path: /allergies
           method: POST
           cors: true
@@ -58,7 +60,7 @@ functions:
   updateAllergy:
     handler: src/handlers/alergias.updateAllergy
     events:
-      - http:
+      - httpApi:
           path: /allergies/{userId}/allergyId/{id}
           method: PUT
           cors: true
@@ -66,7 +68,7 @@ functions:
   deleteAllergy:
     handler: src/handlers/alergias.deleteAllergy
     events:
-      - http:
+      - httpApi:
           path: /allergies/{userId}/allergyId/{id}
           method: DELETE
           cors: true
@@ -76,7 +78,7 @@ functions:
   createTypeAllergyTable:
     handler: src/handlers/tipoAlergia.initializeTable
     events:
-      - http:
+      - httpApi:
           path: /typeAllergies/createTable
           method: GET
           cors: true
@@ -84,7 +86,7 @@ functions:
   getAllTypesAllergies:
     handler: src/handlers/tipoAlergia.GetAllTypes
     events:
-      - http:
+      - httpApi:
           path: /typeAllergies/getAll
           method: GET
           cors: true
@@ -92,7 +94,7 @@ functions:
   getTypesAllergiesFiltered:
     handler: src/handlers/tipoAlergia.filterAllergies
     events:
-      - http:
+      - httpApi:
           path: /typeAllergies/filterAllergies/{filter}
           method: GET
           cors: true
@@ -100,7 +102,7 @@ functions:
   createAllergyType:
     handler: src/handlers/tipoAlergia.createAllergy
     events:
-      - http:
+      - httpApi:
           path: /typeAllergies/create/{filter}
           method: POST
           cors: true
@@ -109,7 +111,7 @@ functions:
   createTypesMedsTable:
     handler: src/handlers/tipoMedicamento.initializeTable
     events:
-      - http:
+      - httpApi:
           path: /typeMeds/createTable
           method: GET
           cors: true
@@ -117,7 +119,7 @@ functions:
   getAllMedsTypes:
     handler: src/handlers/tipoMedicamento.GetAllTypes
     events:
-      - http:
+      - httpApi:
           path: /typeMeds/getAll
           method: GET
           cors: true
@@ -125,7 +127,7 @@ functions:
   getMedsTypesFiltered:
     handler: src/handlers/tipoMedicamento.filterMedTypes
     events:
-      - http:
+      - httpApi:
           path: /typeMeds/filterMeds/{filter}
           method: GET
           cors: true
@@ -133,15 +135,105 @@ functions:
   createMedType:
     handler: src/handlers/tipoAlergia.createMedType
     events:
-      - http:
+      - httpApi:
           path: /typeMeds/create/{filter}
           method: POST
           cors: true  
+
+#Meds
+  initializeMeds:
+      handler: src/handlers/medicamento.initializeTable
+      events:
+        - httpApi:
+            path: /meds/initializeMeds
+            method: GET
+            cors: true
+
+  getMeds:
+    handler: src/handlers/medicamento.getMed
+    events:
+      - httpApi:
+          path: /meds/{idMedicamento}
+          method: GET
+          cors: true
+
+  createMed:
+    handler: src/handlers/medicamento.createMed
+    events:
+      - httpApi:
+          path: /meds
+          method: POST
+          cors: true
+
+  updateMed:
+    handler: src/handlers/medicamento.updateMed
+    events:
+      - httpApi:
+          path: /meds/{idMedicamento}
+          method: PUT
+          cors: true
+
+  deleteMed:
+    handler: src/handlers/medicamento.deleteMed
+    events:
+      - httpApi:
+          path: /meds/{idMedicamento}
+          method: DELETE
+          cors: true
+
+#BloodType
+  initializeBloodTypes:
+      handler: src/handlers/tipoSangre.initializeTable
+      events:
+        - httpApi:
+            path: /bloodTypes/initializeBloodTypes
+            method: GET
+            cors: true
+
+  getBloodTypes:
+    handler: src/handlers/tipoSangre.getBloodTypes
+    events:
+      - httpApi:
+          path: /bloodTypes
+          method: GET
+          cors: true
+
+  filterBloodTypes:
+    handler: src/handlers/tipoSangre.filterBloodTypes
+    events:
+      - httpApi:
+          path: /bloodTypes/{filter}
+          method: GET
+          cors: true
+
+  createBloodTypes:
+    handler: src/handlers/tipoSangre.createBloodType
+    events:
+      - httpApi:
+          path: /bloodTypes
+          method: POST
+          cors: true
+
+  updateBloodTypes:
+    handler: src/handlers/tipoSangre.updateBloodTypes
+    events:
+      - httpApi:
+          path: /bloodTypes/{idBloodType}
+          method: PUT
+          cors: true
+
+  deleteBloodTypes:
+    handler: src/handlers/tipoSangre.deleteBloodType
+    events:
+      - httpApi:
+          path: /bloodTypes/{idBloodType}
+          method: DELETE
+          cors: true
 
 #Randomizer
   randomizeData:
     handler: src/handlers/randomizer.randomize
     events:
-      - http:
+      - httpApi:
           path: /randomize
           method: GET
