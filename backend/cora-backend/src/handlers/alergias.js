@@ -21,7 +21,7 @@ const headers = {
   "Access-Control-Allow-Credentials": true,
 };
 
-// GET /allergies
+// GET /allergies/{userId}
 export const getAllergies = async (event) => {
   const userId = event.pathParameters.userId;
   const params = {

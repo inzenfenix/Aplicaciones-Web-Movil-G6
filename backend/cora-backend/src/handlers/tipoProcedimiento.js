@@ -14,50 +14,15 @@ import { v4 as uuidv4 } from "uuid";
 
 const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client);
-const tableName = process.env.BLOOD_TYPE_TABLE;
+const tableName = process.env.PROCEDURE_TYPE_TABLE;
 
 const headers = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Credentials": true,
 };
 
-const data = {
-  "A+": {
-    Da: ["A+", "AB+"],
-    Recibe: ["A+", "A-", "O+", "O-"],
-  },
-  "O+": {
-    Da: ["O+", "A+", "B+", "AB+"],
-    Recibe: ["O+", "O-"],
-  },
-  "B+": {
-    Da: ["B+", "AB+"],
-    Recibe: ["B+", "B-", "O+", "O-"],
-  },
-  "AB+": {
-    Da: ["AB+"],
-    Recibe: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
-  },
-  "A-": {
-    Da: ["A+", "A-", "AB+", "AB-"],
-    Recibe: ["A-", "O-"],
-  },
-  "O-": {
-    Da: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
-    Recibe: ["O-"],
-  },
-  "B-": {
-    Da: ["B+", "B-", "AB+", "AB-"],
-    Recibe: ["B-", "O-"],
-  },
-  "AB-": {
-    Da: ["AB+", "AB-"],
-    Recibe: ["AB-", "A-", "B-", "O-"],
-  },
-};
-
-// GET /bloodTypes
-export const getBloodTypes = async (_) => {
+// GET /procedureTypes
+export const getProcedureTypes = async (_) => {
   const params = {
     TableName: tableName,
   };
@@ -70,8 +35,8 @@ export const getBloodTypes = async (_) => {
   };
 };
 
-// POST /bloodTypes
-export const createBloodType = async (event) => {
+// POST /procedureTypes
+export const createProcedureType = async (event) => {
   const body = JSON.parse(event.body);
 
   const id = uuidv4();
@@ -79,10 +44,8 @@ export const createBloodType = async (event) => {
     new PutCommand({
       TableName: tableName,
       Item: {
-        idTipoSangre: body.idTipoSangre,
-        bloodType: body.bloodType,
-        give: body.give,
-        receive: body.receive,
+        idTipoProcedimiento: id,
+        tipoProcedimiento: body.tipoProcedimiento,
       },
     })
   );
@@ -93,15 +56,15 @@ export const createBloodType = async (event) => {
   };
 };
 
-// Get /filterBloodTypes/{filter}
-export const filterBloodTypes = async (event) => {
+// Get /procedureTypes/filter/{filter}
+export const filterProcedureTypes = async (event) => {
   const filter = event.pathParameters.filter;
 
   const params = {
     TableName: tableName,
-    FilterExpression: "#bloodType = :filter",
+    FilterExpression: "contains(#tipoProcedimiento, :filter)",
     ExpressionAttributeNames: {
-      "#bloodType": "bloodType",
+      "#tipoProcedimiento": "tipoProcedimiento",
     },
     ExpressionAttributeValues: {
       ":filter": filter,
@@ -126,24 +89,20 @@ export const filterBloodTypes = async (event) => {
   }
 };
 
-// PUT /bloodType/{idBloodType}
-export const updateBloodTypes = async (event) => {
-  const id = event.pathParameters.idBloodType;
+// PUT /procedureTypes/{idProcedureType}
+export const updateProcedureType = async (event) => {
+  const id = event.pathParameters.idProcedureType;
   const body = JSON.parse(event.body);
   await docClient.send(
     new UpdateCommand({
       TableName: tableName,
-      Key: { id },
-      UpdateExpression: "SET #bloodType = :bloodType, #give = :give, #receive = :receive",
+      Key: { idProcedureType: id },
+      UpdateExpression: "SET #tipoProcedmiento = :tipoProcedmiento",
       ExpressionAttributeNames: {
-        "#bloodType": "bloodType",
-        "#give": "give",
-        "#receive": "receive",
+        "#tipoProcedmiento": "tipoProcedmiento",
       },
       ExpressionAttributeValues: {
-        ":bloodType": body.bloodType,
-        ":give": body.give,
-        ":gireceiveve": body.receive,
+        ":tipoProcedmiento": body.tipoProcedmiento,
       },
     })
   );
@@ -154,12 +113,12 @@ export const updateBloodTypes = async (event) => {
   };
 };
 
-// DELETE /bloodType/{idBloodType}
-export const deleteBloodType = async (event) => {
-  const id = event.pathParameters.idBloodType;
+// DELETE /procedureTypes/{idProcedureType}
+export const deleteProcedureType = async (event) => {
+  const id = event.pathParameters.idProcedureType;
 
   await docClient.send(
-    new DeleteCommand({ TableName: tableName, Key: { id } })
+    new DeleteCommand({ TableName: tableName, Key: { idTipoProcedimiento: id } })
   );
   return {
     statusCode: 200,
@@ -187,20 +146,24 @@ export const initializeTable = async () => {
 
     if (items.length === 0) {
       console.log("No data on table, adding data");
-      for (const [key, value] of Object.entries(data)) {
+      for (const procedure of initial_data) {
         const id = uuidv4();
 
         const item = {
-          idTipoSangre: id,
-          bloodType: key,
-          give: value["Da"],
-          receive: value["Recibe"],
+          idTipoProcedimiento: id,
+          tipoProcedimiento: procedure,
         };
 
         await docClient.send(
           new PutCommand({ TableName: tableName, Item: item })
         );
       }
+
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify("ok"),
+      };
     }
   } catch (err) {
     if (err.name === "ResourceNotFoundException") {
@@ -210,9 +173,9 @@ export const initializeTable = async () => {
         new CreateTableCommand({
           TableName: tableName,
           AttributeDefinitions: [
-            { AttributeName: "idTipoSangre", AttributeType: "S" },
+            { AttributeName: "idTipoProcedimiento", AttributeType: "S" },
           ],
-          KeySchema: [{ AttributeName: "idTipoSangre", KeyType: "HASH" }],
+          KeySchema: [{ AttributeName: "idTipoProcedimiento", KeyType: "HASH" }],
           BillingMode: "PAY_PER_REQUEST",
         })
       );
@@ -229,22 +192,79 @@ export const initializeTable = async () => {
       }
       console.log("Table is Active, adding data");
 
-      for (const [key, value] of Object.entries(data)) {
+      for (const procedure of initial_data) {
         const id = uuidv4();
 
         const item = {
-          idTipoSangre: id,
-          bloodType: key,
-          give: value.Da,
-          receive: value.Recibe,
+          idTipoProcedimiento: id,
+          tipoProcedimiento: procedure,
         };
 
         await docClient.send(
           new PutCommand({ TableName: tableName, Item: item })
         );
+
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify("ok"),
+        };
       }
     } else {
       throw err;
     }
   }
 };
+
+const initial_data = [
+  "Electrocardiograma",
+  "Tomografía computarizada",
+  "Resonancia magnética",
+  "Ecocardiograma",
+  "Endoscopia digestiva alta",
+  "Colonoscopia",
+  "Biopsia",
+  "Angiografía",
+  "Hemodiálisis",
+  "Cateterismo cardíaco",
+  "Cesárea",
+  "Laparoscopia",
+  "Cirugía de apendicitis",
+  "Bypass gástrico",
+  "Trasplante renal",
+  "Trasplante hepático",
+  "Cirugía de cataratas",
+  "Mamografía",
+  "Radiografía de tórax",
+  "Artroscopia de rodilla",
+  "Quimioterapia",
+  "Radioterapia",
+  "Vacunación",
+  "Sutura de herida",
+  "Intubación endotraqueal",
+  "Reanimación cardiopulmonar (RCP)",
+  "Prueba de esfuerzo",
+  "Punción lumbar",
+  "Electroencefalograma",
+  "Ultrasonido obstétrico",
+  "Cirugía de vesícula (colecistectomía)",
+  "Colocación de marcapasos",
+  "Ablación cardíaca",
+  "Tratamiento con láser oftalmológico",
+  "Infiltración articular",
+  "Amputación",
+  "Fisioterapia respiratoria",
+  "Reemplazo de cadera",
+  "Reemplazo de rodilla",
+  "Cirugía bariátrica",
+  "Terapia intravenosa",
+  "Curación de úlceras",
+  "Extracción dental",
+  "Cirugía maxilofacial",
+  "Terapia de oxígeno",
+  "Plasmaféresis",
+  "Toracocentesis",
+  "Paracentesis",
+  "Test de alergias",
+  "Ligadura de trompas"
+]

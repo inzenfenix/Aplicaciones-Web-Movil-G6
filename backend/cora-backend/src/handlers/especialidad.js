@@ -14,50 +14,15 @@ import { v4 as uuidv4 } from "uuid";
 
 const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client);
-const tableName = process.env.BLOOD_TYPE_TABLE;
+const tableName = process.env.SPECIALTY_TABLE;
 
 const headers = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Credentials": true,
 };
 
-const data = {
-  "A+": {
-    Da: ["A+", "AB+"],
-    Recibe: ["A+", "A-", "O+", "O-"],
-  },
-  "O+": {
-    Da: ["O+", "A+", "B+", "AB+"],
-    Recibe: ["O+", "O-"],
-  },
-  "B+": {
-    Da: ["B+", "AB+"],
-    Recibe: ["B+", "B-", "O+", "O-"],
-  },
-  "AB+": {
-    Da: ["AB+"],
-    Recibe: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
-  },
-  "A-": {
-    Da: ["A+", "A-", "AB+", "AB-"],
-    Recibe: ["A-", "O-"],
-  },
-  "O-": {
-    Da: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
-    Recibe: ["O-"],
-  },
-  "B-": {
-    Da: ["B+", "B-", "AB+", "AB-"],
-    Recibe: ["B-", "O-"],
-  },
-  "AB-": {
-    Da: ["AB+", "AB-"],
-    Recibe: ["AB-", "A-", "B-", "O-"],
-  },
-};
-
-// GET /bloodTypes
-export const getBloodTypes = async (_) => {
+// GET /specialties
+export const getSpecialties = async (_) => {
   const params = {
     TableName: tableName,
   };
@@ -70,8 +35,8 @@ export const getBloodTypes = async (_) => {
   };
 };
 
-// POST /bloodTypes
-export const createBloodType = async (event) => {
+// POST /specialties
+export const createSpecialty = async (event) => {
   const body = JSON.parse(event.body);
 
   const id = uuidv4();
@@ -79,10 +44,8 @@ export const createBloodType = async (event) => {
     new PutCommand({
       TableName: tableName,
       Item: {
-        idTipoSangre: body.idTipoSangre,
-        bloodType: body.bloodType,
-        give: body.give,
-        receive: body.receive,
+        idEspecialidad: body.idEspecialidad,
+        especialidad: body.especialidad,
       },
     })
   );
@@ -93,15 +56,15 @@ export const createBloodType = async (event) => {
   };
 };
 
-// Get /filterBloodTypes/{filter}
-export const filterBloodTypes = async (event) => {
+// Get /specialties/filter/{filter}
+export const filterSpecialties = async (event) => {
   const filter = event.pathParameters.filter;
 
   const params = {
     TableName: tableName,
-    FilterExpression: "#bloodType = :filter",
+    FilterExpression: "contains(#especialidad, :filter)",
     ExpressionAttributeNames: {
-      "#bloodType": "bloodType",
+      "#especialidad": "especialidad",
     },
     ExpressionAttributeValues: {
       ":filter": filter,
@@ -126,24 +89,20 @@ export const filterBloodTypes = async (event) => {
   }
 };
 
-// PUT /bloodType/{idBloodType}
-export const updateBloodTypes = async (event) => {
-  const id = event.pathParameters.idBloodType;
+// PUT /specialties/{idSpecialty}
+export const updateSpecialty = async (event) => {
+  const id = event.pathParameters.idSpecialty;
   const body = JSON.parse(event.body);
   await docClient.send(
     new UpdateCommand({
       TableName: tableName,
-      Key: { id },
-      UpdateExpression: "SET #bloodType = :bloodType, #give = :give, #receive = :receive",
+      Key: { idEspecialidad: id },
+      UpdateExpression: "SET #especialidad = :especialidad",
       ExpressionAttributeNames: {
-        "#bloodType": "bloodType",
-        "#give": "give",
-        "#receive": "receive",
+        "#especialidad": "especialidad",
       },
       ExpressionAttributeValues: {
-        ":bloodType": body.bloodType,
-        ":give": body.give,
-        ":gireceiveve": body.receive,
+        ":especialidad": body.especialidad,
       },
     })
   );
@@ -154,12 +113,12 @@ export const updateBloodTypes = async (event) => {
   };
 };
 
-// DELETE /bloodType/{idBloodType}
-export const deleteBloodType = async (event) => {
-  const id = event.pathParameters.idBloodType;
+// DELETE /specialties/{idSpecialty}
+export const deleteSpecialty = async (event) => {
+  const id = event.pathParameters.idSpecialty;
 
   await docClient.send(
-    new DeleteCommand({ TableName: tableName, Key: { id } })
+    new DeleteCommand({ TableName: tableName, Key: { idEspecialidad: id } })
   );
   return {
     statusCode: 200,
@@ -187,20 +146,24 @@ export const initializeTable = async () => {
 
     if (items.length === 0) {
       console.log("No data on table, adding data");
-      for (const [key, value] of Object.entries(data)) {
+      for (const specialty of initial_data) {
         const id = uuidv4();
 
         const item = {
-          idTipoSangre: id,
-          bloodType: key,
-          give: value["Da"],
-          receive: value["Recibe"],
+          idEspecialidad: id,
+          especialidad: specialty,
         };
 
         await docClient.send(
           new PutCommand({ TableName: tableName, Item: item })
         );
       }
+
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify("ok"),
+      };
     }
   } catch (err) {
     if (err.name === "ResourceNotFoundException") {
@@ -210,9 +173,9 @@ export const initializeTable = async () => {
         new CreateTableCommand({
           TableName: tableName,
           AttributeDefinitions: [
-            { AttributeName: "idTipoSangre", AttributeType: "S" },
+            { AttributeName: "idEspecialidad", AttributeType: "S" },
           ],
-          KeySchema: [{ AttributeName: "idTipoSangre", KeyType: "HASH" }],
+          KeySchema: [{ AttributeName: "idEspecialidad", KeyType: "HASH" }],
           BillingMode: "PAY_PER_REQUEST",
         })
       );
@@ -229,22 +192,78 @@ export const initializeTable = async () => {
       }
       console.log("Table is Active, adding data");
 
-      for (const [key, value] of Object.entries(data)) {
+      for (const specialty of initial_data) {
         const id = uuidv4();
 
         const item = {
-          idTipoSangre: id,
-          bloodType: key,
-          give: value.Da,
-          receive: value.Recibe,
+          idEspecialidad: id,
+          especialidad: specialty,
         };
 
         await docClient.send(
           new PutCommand({ TableName: tableName, Item: item })
         );
       }
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify("ok"),
+      };
     } else {
       throw err;
     }
   }
 };
+
+const initial_data = [
+  "Cardiología",
+  "Dermatología",
+  "Neurología",
+  "Gastroenterología",
+  "Endocrinología",
+  "Nefrología",
+  "Neumología",
+  "Reumatología",
+  "Hematología",
+  "Oncología",
+  "Inmunología",
+  "Alergología e Inmunología",
+  "Enfermedades Infecciosas",
+  "Psiquiatría",
+  "Pediatría",
+  "Geriatría",
+  "Ginecología y Obstetricia",
+  "Urología",
+  "Ortopedia",
+  "Oftalmología",
+  "Otorrinolaringología",
+  "Anestesiología",
+  "Radiología",
+  "Patología",
+  "Medicina de Emergencias",
+  "Medicina Familiar",
+  "Medicina del Deporte",
+  "Cirugía Plástica",
+  "Cirugía Cardiotorácica",
+  "Cirugía Vascular",
+  "Neurocirugía",
+  "Cirugía General",
+  "Medicina del Dolor",
+  "Medicina del Sueño",
+  "Medicina Nuclear",
+  "Medicina Física y Rehabilitación",
+  "Cuidados Paliativos",
+  "Medicina de Adicciones",
+  "Genética Médica",
+  "Farmacología Clínica",
+  "Medicina Ocupacional",
+  "Medicina Aeroespacial",
+  "Cuidados Intensivos",
+  "Diabetología",
+  "Hepatología",
+  "Endocrinología Reproductiva",
+  "Cirugía Colorrectal",
+  "Cirugía de Mano",
+  "Radiología Intervencionista",
+  "Cirugía de Trasplantes",
+];

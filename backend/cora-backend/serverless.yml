@@ -12,7 +12,11 @@ provider:
     TYPE_ALLERGIES_TABLE: TypeAllergies
     TYPE_MEDS_TABLE: TypeMeds
     MEDS_TABLE: Meds
-    BLOOD_TYPE: BloodType
+    BLOOD_TYPE_TABLE: BloodType
+    RECIPE_TABLE: Recipe
+    SPECIALTY_TABLE: Specialty
+    PROCEDURE_TYPE_TABLE: TypeProcedure
+    EXAM_TYPE_TABLE: TypeExam
 
 plugins:
   - serverless-offline
@@ -227,6 +231,202 @@ functions:
     events:
       - httpApi:
           path: /bloodTypes/{idBloodType}
+          method: DELETE
+          cors: true
+
+#Recipe
+  initializeRecipe:
+      handler: src/handlers/receta.initializeTable
+      events:
+        - httpApi:
+            path: /recipes/initializeRecipes
+            method: GET
+            cors: true
+
+  getRecipes:
+    handler: src/handlers/receta.getRecipes
+    events:
+      - httpApi:
+          path: /recipes/{userId}
+          method: GET
+          cors: true
+
+  getRecipe:
+    handler: src/handlers/receta.getRecipe
+    events:
+      - httpApi:
+          path: /recipes/{userId}/recipe/{idRecipe}
+          method: GET
+          cors: true
+
+  createRecipe:
+    handler: src/handlers/receta.createRecipe
+    events:
+      - httpApi:
+          path: /recipes
+          method: POST
+          cors: true
+
+  updateRecipe:
+    handler: src/handlers/receta.updateRecipe
+    events:
+      - httpApi:
+          path: /recipes/{userId}/recipe/{idRecipe}
+          method: PUT
+          cors: true
+
+  deleteRecipe:
+    handler: src/handlers/receta.deleteRecipe
+    events:
+      - httpApi:
+          path: /recipes/{userId}/recipe/{idRecipe}
+          method: DELETE
+          cors: true
+
+#Specialties
+  initializeSpecialties:
+      handler: src/handlers/especialidad.initializeTable
+      events:
+        - httpApi:
+            path: /specialties/initializeSpecialties
+            method: GET
+            cors: true
+
+  getSpecialties:
+    handler: src/handlers/especialidad.getSpecialties
+    events:
+      - httpApi:
+          path: /specialties
+          method: GET
+          cors: true
+
+  filterSpecialties:
+    handler: src/handlers/especialidad.filterSpecialties
+    events:
+      - httpApi:
+          path: /specialties/filter/{filter}
+          method: GET
+          cors: true
+
+  createSpecialties:
+    handler: src/handlers/especialidad.createSpecialty
+    events:
+      - httpApi:
+          path: /specialties
+          method: POST
+          cors: true
+
+  updateSpecialties:
+    handler: src/handlers/especialidad.updateSpecialty
+    events:
+      - httpApi:
+          path:  /specialties/{idSpecialty}
+          method: PUT
+          cors: true
+
+  deleteSpecialties:
+    handler: src/handlers/especialidad.deleteSpecialty
+    events:
+      - httpApi:
+          path: /specialties/{idSpecialty}
+          method: DELETE
+          cors: true
+
+#TipoProcedimiento
+  initializeProcedureTypes:
+      handler: src/handlers/tipoProcedimiento.initializeTable
+      events:
+        - httpApi:
+            path: /procedureTypes/initializeSpecialties
+            method: GET
+            cors: true
+
+  getProcedureType:
+    handler: src/handlers/tipoProcedimiento.getProcedureTypes
+    events:
+      - httpApi:
+          path: /procedureTypes
+          method: GET
+          cors: true
+
+  filterProcedureType:
+    handler: src/handlers/tipoProcedimiento.filterProcedureTypes
+    events:
+      - httpApi:
+          path: /procedureTypes/filter/{filter}
+          method: GET
+          cors: true
+
+  createProcedureType:
+    handler: src/handlers/tipoProcedimiento.createProcedureType
+    events:
+      - httpApi:
+          path: /procedureTypes
+          method: POST
+          cors: true
+
+  updateProcedureType:
+    handler: src/handlers/tipoProcedimiento.updateProcedureType
+    events:
+      - httpApi:
+          path:  /procedureTypes/{idProcedureType}
+          method: PUT
+          cors: true
+
+  deleteProcedureType:
+    handler: src/handlers/tipoProcedimiento.deleteProcedureType
+    events:
+      - httpApi:
+          path: /procedureTypes/{idProcedureType}
+          method: DELETE
+          cors: true
+
+#TipoExamen
+  initializeExamTypes:
+      handler: src/handlers/tipoExamen.initializeTable
+      events:
+        - httpApi:
+            path: /examType/initializeExamTypes
+            method: GET
+            cors: true
+
+  getExamTypes:
+    handler: src/handlers/tipoExamen.getExamTypes
+    events:
+      - httpApi:
+          path: /examType
+          method: GET
+          cors: true
+
+  filterExamTypes:
+    handler: src/handlers/tipoExamen.filterExamTypes
+    events:
+      - httpApi:
+          path: /examType/filter/{filter}
+          method: GET
+          cors: true
+
+  createExamTypes:
+    handler: src/handlers/tipoExamen.createExamType
+    events:
+      - httpApi:
+          path: /examType
+          method: POST
+          cors: true
+
+  updateExamTypes:
+    handler: src/handlers/tipoExamen.updateExamTypes
+    events:
+      - httpApi:
+          path:  /examType/{idExamType}
+          method: PUT
+          cors: true
+
+  deleteExamTypes:
+    handler: src/handlers/tipoExamen.deleteProcedureType
+    events:
+      - httpApi:
+          path: /examType/{idExamType}
           method: DELETE
           cors: true
 
