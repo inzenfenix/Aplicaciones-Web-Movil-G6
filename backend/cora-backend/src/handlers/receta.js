@@ -149,7 +149,7 @@ export const updateRecipe = async (event) => {
       },
       ExpressionAttributeValues: {
         ":idMedicamentos": body.idMedicamentos,
-        ":instruccion": body.idMedicamentos,
+        ":instruccion": body.instruccion,
       },
     })
   );

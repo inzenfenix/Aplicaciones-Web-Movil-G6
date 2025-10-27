@@ -17,6 +17,12 @@ provider:
     SPECIALTY_TABLE: Specialty
     PROCEDURE_TYPE_TABLE: TypeProcedure
     EXAM_TYPE_TABLE: TypeExam
+    PROCEDURE_TABLE: Procedure
+    PROFESSIONAL_TABLE: Professional
+    EXAM_TABLE: CORA_Exam
+    DIAGNOSIS_TABLE: CORA_Diagnosis
+    CONSULTATION_TABLE: CORA_Consultation
+    PATIENT_TABLE: CORA_Patient
 
 plugins:
   - serverless-offline
@@ -25,7 +31,7 @@ plugins:
 custom:
   prune:
     automatic: true
-    number: 5
+    number: 2
 
 functions:
 #Allergies
@@ -103,14 +109,6 @@ functions:
           method: GET
           cors: true
 
-  createAllergyType:
-    handler: src/handlers/tipoAlergia.createAllergy
-    events:
-      - httpApi:
-          path: /typeAllergies/create/{filter}
-          method: POST
-          cors: true
-
 #MedsType
   createTypesMedsTable:
     handler: src/handlers/tipoMedicamento.initializeTable
@@ -136,13 +134,6 @@ functions:
           method: GET
           cors: true
 
-  createMedType:
-    handler: src/handlers/tipoAlergia.createMedType
-    events:
-      - httpApi:
-          path: /typeMeds/create/{filter}
-          method: POST
-          cors: true  
 
 #Meds
   initializeMeds:
@@ -208,30 +199,6 @@ functions:
       - httpApi:
           path: /bloodTypes/{filter}
           method: GET
-          cors: true
-
-  createBloodTypes:
-    handler: src/handlers/tipoSangre.createBloodType
-    events:
-      - httpApi:
-          path: /bloodTypes
-          method: POST
-          cors: true
-
-  updateBloodTypes:
-    handler: src/handlers/tipoSangre.updateBloodTypes
-    events:
-      - httpApi:
-          path: /bloodTypes/{idBloodType}
-          method: PUT
-          cors: true
-
-  deleteBloodTypes:
-    handler: src/handlers/tipoSangre.deleteBloodType
-    events:
-      - httpApi:
-          path: /bloodTypes/{idBloodType}
-          method: DELETE
           cors: true
 
 #Recipe
@@ -357,30 +324,6 @@ functions:
           method: GET
           cors: true
 
-  createProcedureType:
-    handler: src/handlers/tipoProcedimiento.createProcedureType
-    events:
-      - httpApi:
-          path: /procedureTypes
-          method: POST
-          cors: true
-
-  updateProcedureType:
-    handler: src/handlers/tipoProcedimiento.updateProcedureType
-    events:
-      - httpApi:
-          path:  /procedureTypes/{idProcedureType}
-          method: PUT
-          cors: true
-
-  deleteProcedureType:
-    handler: src/handlers/tipoProcedimiento.deleteProcedureType
-    events:
-      - httpApi:
-          path: /procedureTypes/{idProcedureType}
-          method: DELETE
-          cors: true
-
 #TipoExamen
   initializeExamTypes:
       handler: src/handlers/tipoExamen.initializeTable
@@ -406,27 +349,298 @@ functions:
           method: GET
           cors: true
 
-  createExamTypes:
-    handler: src/handlers/tipoExamen.createExamType
+
+#Procedure
+  initializeProcedure:
+      handler: src/handlers/procedimiento.initializeTable
+      events:
+        - httpApi:
+            path: /procedures/initializeProcedures
+            method: GET
+            cors: true
+
+  getProcedures:
+    handler: src/handlers/procedimiento.getProcedures
     events:
       - httpApi:
-          path: /examType
+          path: /procedures/{userId}
+          method: GET
+          cors: true
+
+  getProcedure:
+    handler: src/handlers/procedimiento.getProcedure
+    events:
+      - httpApi:
+          path: /procedures/{userId}/procedure/{idProcedure}
+          method: GET
+          cors: true
+
+  createProcedure:
+    handler: src/handlers/procedimiento.createProcedure
+    events:
+      - httpApi:
+          path: /procedures
           method: POST
           cors: true
 
-  updateExamTypes:
-    handler: src/handlers/tipoExamen.updateExamTypes
+  updateProcedure:
+    handler: src/handlers/procedimiento.updateProcedure
     events:
       - httpApi:
-          path:  /examType/{idExamType}
+          path: /procedures/{userId}/procedure/{idProcedure}
           method: PUT
           cors: true
 
-  deleteExamTypes:
-    handler: src/handlers/tipoExamen.deleteProcedureType
+  deleteProcedure:
+    handler: src/handlers/procedimiento.deleteProcedure
     events:
       - httpApi:
-          path: /examType/{idExamType}
+          path: /procedures/{userId}/procedure/{idProcedure}
+          method: DELETE
+          cors: true
+
+#Professional
+  initializeProfessional:
+      handler: src/handlers/profesional.initializeTable
+      events:
+        - httpApi:
+            path: /examType/initializeProfessionals
+            method: GET
+            cors: true
+
+  getProfessional:
+    handler: src/handlers/profesional.GetAllProfessionals
+    events:
+      - httpApi:
+          path: /professionals/all
+          method: GET
+          cors: true
+
+  filterProfessional:
+    handler: src/handlers/profesional.filterProfessionals
+    events:
+      - httpApi:
+          path: /professionals/filter/{filter}
+          method: GET
+          cors: true
+
+  createProfessional:
+    handler: src/handlers/profesional.createProfessional
+    events:
+      - httpApi:
+          path: /professionals
+          method: POST
+          cors: true
+
+  updateProfessional:
+    handler: src/handlers/profesional.updateProfessional
+    events:
+      - httpApi:
+          path:  /professionals/{idProfessional}
+          method: PUT
+          cors: true
+
+  deleteProfessional:
+    handler: src/handlers/profesional.deleteProfessional
+    events:
+      - httpApi:
+          path: /professionals/{idProfessional}
+          method: DELETE
+          cors: true
+
+#Exam
+  initializeExams:
+      handler: src/handlers/examen.initializeTable
+      events:
+        - httpApi:
+            path: /examType/initializeExams
+            method: GET
+            cors: true
+
+  getExams:
+    handler: src/handlers/examen.getExams
+    events:
+      - httpApi:
+          path: /exams/{userId}
+          method: GET
+          cors: true
+
+  getExam:
+    handler: src/handlers/examen.getExam
+    events:
+      - httpApi:
+          path: /exams/{userId}/exam/{idExam}
+          method: GET
+          cors: true
+
+  createExam:
+    handler: src/handlers/examen.createExam
+    events:
+      - httpApi:
+          path: /exams
+          method: POST
+          cors: true
+
+  updateExam:
+    handler: src/handlers/examen.updateExam
+    events:
+      - httpApi:
+          path:  /exams/{userId}/exam/{idExam}
+          method: PUT
+          cors: true
+
+  deleteExam:
+    handler: src/handlers/examen.deleteExam
+    events:
+      - httpApi:
+          path: /exams/{userId}/exam/{idExam}
+          method: DELETE
+          cors: true
+
+#Diagnosis
+  initializeDiagnosis:
+      handler: src/handlers/diagnostico.initializeTable
+      events:
+        - httpApi:
+            path: /diagnosises/initializeDiagnosis
+            method: GET
+            cors: true
+
+  getDiagnosises:
+    handler: src/handlers/diagnostico.getDiagnosises
+    events:
+      - httpApi:
+          path: /diagnosises/{userId}
+          method: GET
+          cors: true
+
+  getDiagnosis:
+    handler: src/handlers/diagnostico.getDiagnosis
+    events:
+      - httpApi:
+          path: /diagnosises/{userId}/diagnosis/{idDiagnosis}
+          method: GET
+          cors: true
+
+  createDiagnosis:
+    handler: src/handlers/diagnostico.createDiagnosis
+    events:
+      - httpApi:
+          path: /diagnosises
+          method: POST
+          cors: true
+
+  updateDiagnosis:
+    handler: src/handlers/diagnostico.updateDiagnosis
+    events:
+      - httpApi:
+          path: /diagnosises/{userId}/diagnosis/{idDiagnosis}
+          method: PUT
+          cors: true
+
+  deleteDiagnosis:
+    handler: src/handlers/diagnostico.deleteDiagnosis
+    events:
+      - httpApi:
+          path: /diagnosises/{userId}/diagnosis/{idDiagnosis}
+          method: DELETE
+          cors: true
+
+#Consultation
+  initializeConsultation:
+      handler: src/handlers/consulta.initializeTable
+      events:
+        - httpApi:
+            path: /consultations/initializeConsultation
+            method: GET
+            cors: true
+
+  getConsultations:
+    handler: src/handlers/consulta.getConsultations
+    events:
+      - httpApi:
+          path: /consultations/{userId}
+          method: GET
+          cors: true
+
+  getConsultation:
+    handler: src/handlers/consulta.getConsultation
+    events:
+      - httpApi:
+          path: /consultations/{userId}/consultation/{idConsultation}
+          method: GET
+          cors: true
+
+  createConsultation:
+    handler: src/handlers/consulta.createConsultation
+    events:
+      - httpApi:
+          path: /consultations
+          method: POST
+          cors: true
+
+  updateConsultation:
+    handler: src/handlers/consulta.updateConsultation
+    events:
+      - httpApi:
+          path: /consultations/{userId}/consultation/{idConsultation}
+          method: PUT
+          cors: true
+
+  deleteConsultation:
+    handler: src/handlers/consulta.deleteConsultation
+    events:
+      - httpApi:
+          path: /consultations/{userId}/consultation/{idConsultation}
+          method: DELETE
+          cors: true
+
+#Patient
+  initializePatients:
+      handler: src/handlers/paciente.initializeTable
+      events:
+        - httpApi:
+            path: /patients/initializePatient
+            method: GET
+            cors: true
+
+  getPatients:
+    handler: src/handlers/paciente.getPatients
+    events:
+      - httpApi:
+          path: /patients
+          method: GET
+          cors: true
+
+  getPatient:
+    handler: src/handlers/paciente.getPatient
+    events:
+      - httpApi:
+          path: /patients/{userId}
+          method: GET
+          cors: true
+
+  createPatient:
+    handler: src/handlers/paciente.createPatient
+    events:
+      - httpApi:
+          path: /patients
+          method: POST
+          cors: true
+
+  updatePatient:
+    handler: src/handlers/paciente.updatePatient
+    events:
+      - httpApi:
+          path: /patients/{userId}
+          method: PUT
+          cors: true
+
+  deletePatient:
+    handler: src/handlers/paciente.deletePatient
+    events:
+      - httpApi:
+          path: /patients/{userId}
           method: DELETE
           cors: true
 
