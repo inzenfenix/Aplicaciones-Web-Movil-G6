@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 
 class WeatherAPIConnector {
   static Future<List<dynamic>> getWeather() async {
@@ -11,7 +12,7 @@ class WeatherAPIConnector {
       final response = await dio.get(url);
       return response.data["datosEstaciones"]["datos"];
     } catch (e) {
-      print('Error: $e');
+      debugPrint('Error: $e');
       return List.empty();
     }
   }

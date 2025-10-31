@@ -26,6 +26,18 @@ provider:
     HISTORIC_CONSULTATION_TABLE: CORA_HistoricConsultation
     CONNECTIONS_TABLE: ws-connections-${sls:stage}
 
+  httpApi:
+    cors:
+      allowedOrigins:
+        - '*'
+      allowedHeaders:
+        - Content-Type
+        - Authorization
+      allowedMethods:
+        - OPTIONS
+        - GET
+        - POST
+
 resources:
   Resources:
     HistoricConsultationTable:

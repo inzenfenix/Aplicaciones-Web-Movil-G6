@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:math';
 import 'apis/allergies_api.dart';
 
 class AllergiesPage extends StatefulWidget {

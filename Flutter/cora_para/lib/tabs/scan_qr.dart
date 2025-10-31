@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'patient/home_patient.dart';
+import '../apis/private/post_data_consultation.dart';
 
 class QrScannerPage extends StatefulWidget {
   const QrScannerPage({super.key});
@@ -38,9 +39,8 @@ class _QrScannerPageState extends State<QrScannerPage> {
                 onPressed: () {
                   showDialog<String>(
                     context: context,
-                    builder: (BuildContext context) => Dialog(
-                      child: ManualEntryPage(),
-                    ),
+                    builder: (BuildContext context) =>
+                        Dialog(child: ManualEntryPage()),
                   );
                 },
                 child: const Text("Ingresar manualmente"),
@@ -51,8 +51,6 @@ class _QrScannerPageState extends State<QrScannerPage> {
       ),
     );
   }
-
-  
 }
 
 class ManualEntryPage extends StatefulWidget {
@@ -78,10 +76,8 @@ class _ManualEntryPageState extends State<ManualEntryPage> {
     );
   }
 
-  
-
   @override
-    Widget build(BuildContext context) {
+  Widget build(BuildContext context) {
     return SizedBox(
       height: 256.0,
       child: Column(
@@ -116,6 +112,12 @@ class _ManualEntryPageState extends State<ManualEntryPage> {
                           onChanged: onChangeRutInput,
                           onFieldSubmitted: (String value) {
                             if (_rutKey.currentState!.validate()) {
+                              DataConsultationAPI.request(
+                                consultorId: "1234567-8",
+                                place:
+                                    "Padre hurtado norte 123, Santiago - Ambulancia",
+                                userId: (rutInput),
+                              );
                               navigateToPatientInfoPage();
                             }
                           },

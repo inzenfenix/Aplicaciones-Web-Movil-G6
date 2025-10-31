@@ -25,6 +25,8 @@ const tableName = process.env.HISTORIC_CONSULTATION_TABLE;
 const headers = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Credentials": true,
+  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Methods": "OPTIONS,POST,GET",
 };
 
 // GET /HistoricConsultations
@@ -124,7 +126,6 @@ export const connectionsHistoricConsultation = async (event) => {
 };
 
 export const streamHistoricConsultation = async (event) => {
-  
   const data = await apiGWClient.send(new GetApisCommand({}));
   const wsApi = data.Items?.find((api) => {
     const name = String(api.Name);

@@ -90,7 +90,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const SizedBox(height: 24, width: double.infinity),
                 listCard(
-                  title: "Centros más cfercanos",
+                  title: "Centros más cercanos",
                   values: closestMedicalCenters,
                   icon: Icons.local_hospital,
                   iconColor: Colors.red.shade400,
