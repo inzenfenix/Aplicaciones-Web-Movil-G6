@@ -83,7 +83,6 @@ functions:
         - httpApi:
             path: /allergies/initializeAllergies
             method: GET
-            cors: true
 
   getAllergies:
     handler: src/handlers/alergias.getAllergies
@@ -91,7 +90,6 @@ functions:
       - httpApi:
           path: /allergies/{userId}
           method: GET
-          cors: true
 
   filterAllergies:
     handler: src/handlers/alergias.filterAllergies
@@ -99,7 +97,6 @@ functions:
       - httpApi:
           path: /allergies/{userId}/filter/{filter}
           method: GET
-          cors: true
 
   createAllergy:
     handler: src/handlers/alergias.createAllergy
@@ -107,7 +104,6 @@ functions:
       - httpApi:
           path: /allergies
           method: POST
-          cors: true
 
   updateAllergy:
     handler: src/handlers/alergias.updateAllergy
@@ -115,7 +111,6 @@ functions:
       - httpApi:
           path: /allergies/{userId}/allergyId/{id}
           method: PUT
-          cors: true
 
   deleteAllergy:
     handler: src/handlers/alergias.deleteAllergy
@@ -123,17 +118,14 @@ functions:
       - httpApi:
           path: /allergies/{userId}/allergyId/{id}
           method: DELETE
-          cors: true
 
 # Type Allergy
-
   createTypeAllergyTable:
     handler: src/handlers/tipoAlergia.initializeTable
     events:
       - httpApi:
           path: /typeAllergies/createTable
           method: GET
-          cors: true
 
   getAllTypesAllergies:
     handler: src/handlers/tipoAlergia.GetAllTypes
@@ -141,7 +133,6 @@ functions:
       - httpApi:
           path: /typeAllergies/getAll
           method: GET
-          cors: true
 
   getTypesAllergiesFiltered:
     handler: src/handlers/tipoAlergia.filterAllergies
@@ -149,7 +140,6 @@ functions:
       - httpApi:
           path: /typeAllergies/filterAllergies/{filter}
           method: GET
-          cors: true
 
 #MedsType
   createTypesMedsTable:
@@ -158,7 +148,6 @@ functions:
       - httpApi:
           path: /typeMeds/createTable
           method: GET
-          cors: true
 
   getAllMedsTypes:
     handler: src/handlers/tipoMedicamento.GetAllTypes
@@ -166,7 +155,6 @@ functions:
       - httpApi:
           path: /typeMeds/getAll
           method: GET
-          cors: true
 
   getMedsTypesFiltered:
     handler: src/handlers/tipoMedicamento.filterMedTypes
@@ -174,8 +162,6 @@ functions:
       - httpApi:
           path: /typeMeds/filterMeds/{filter}
           method: GET
-          cors: true
-
 
 #Meds
   initializeMeds:
@@ -184,7 +170,6 @@ functions:
         - httpApi:
             path: /meds/initializeMeds
             method: GET
-            cors: true
 
   getMeds:
     handler: src/handlers/medicamento.getMed
@@ -192,7 +177,6 @@ functions:
       - httpApi:
           path: /meds/{idMedicamento}
           method: GET
-          cors: true
 
   createMed:
     handler: src/handlers/medicamento.createMed
@@ -200,7 +184,6 @@ functions:
       - httpApi:
           path: /meds
           method: POST
-          cors: true
 
   updateMed:
     handler: src/handlers/medicamento.updateMed
@@ -208,7 +191,6 @@ functions:
       - httpApi:
           path: /meds/{idMedicamento}
           method: PUT
-          cors: true
 
   deleteMed:
     handler: src/handlers/medicamento.deleteMed
@@ -216,7 +198,6 @@ functions:
       - httpApi:
           path: /meds/{idMedicamento}
           method: DELETE
-          cors: true
 
 #BloodType
   initializeBloodTypes:
@@ -225,7 +206,6 @@ functions:
         - httpApi:
             path: /bloodTypes/initializeBloodTypes
             method: GET
-            cors: true
 
   getBloodTypes:
     handler: src/handlers/tipoSangre.getBloodTypes
@@ -233,7 +213,6 @@ functions:
       - httpApi:
           path: /bloodTypes
           method: GET
-          cors: true
 
   filterBloodTypes:
     handler: src/handlers/tipoSangre.filterBloodTypes
@@ -241,7 +220,6 @@ functions:
       - httpApi:
           path: /bloodTypes/{filter}
           method: GET
-          cors: true
 
 #Recipe
   initializeRecipe:
@@ -250,7 +228,6 @@ functions:
         - httpApi:
             path: /recipes/initializeRecipes
             method: GET
-            cors: true
 
   getRecipes:
     handler: src/handlers/receta.getRecipes
@@ -258,7 +235,6 @@ functions:
       - httpApi:
           path: /recipes/{userId}
           method: GET
-          cors: true
 
   getRecipe:
     handler: src/handlers/receta.getRecipe
@@ -266,7 +242,6 @@ functions:
       - httpApi:
           path: /recipes/{userId}/recipe/{idRecipe}
           method: GET
-          cors: true
 
   createRecipe:
     handler: src/handlers/receta.createRecipe
@@ -274,7 +249,6 @@ functions:
       - httpApi:
           path: /recipes
           method: POST
-          cors: true
 
   updateRecipe:
     handler: src/handlers/receta.updateRecipe
@@ -282,7 +256,6 @@ functions:
       - httpApi:
           path: /recipes/{userId}/recipe/{idRecipe}
           method: PUT
-          cors: true
 
   deleteRecipe:
     handler: src/handlers/receta.deleteRecipe
@@ -290,7 +263,6 @@ functions:
       - httpApi:
           path: /recipes/{userId}/recipe/{idRecipe}
           method: DELETE
-          cors: true
 
 #Specialties
   initializeSpecialties:
@@ -299,7 +271,6 @@ functions:
         - httpApi:
             path: /specialties/initializeSpecialties
             method: GET
-            cors: true
 
   getSpecialties:
     handler: src/handlers/especialidad.getSpecialties
@@ -307,7 +278,6 @@ functions:
       - httpApi:
           path: /specialties
           method: GET
-          cors: true
 
   filterSpecialties:
     handler: src/handlers/especialidad.filterSpecialties
@@ -315,7 +285,6 @@ functions:
       - httpApi:
           path: /specialties/filter/{filter}
           method: GET
-          cors: true
 
   createSpecialties:
     handler: src/handlers/especialidad.createSpecialty
@@ -323,7 +292,6 @@ functions:
       - httpApi:
           path: /specialties
           method: POST
-          cors: true
 
   updateSpecialties:
     handler: src/handlers/especialidad.updateSpecialty
@@ -331,7 +299,6 @@ functions:
       - httpApi:
           path:  /specialties/{idSpecialty}
           method: PUT
-          cors: true
 
   deleteSpecialties:
     handler: src/handlers/especialidad.deleteSpecialty
@@ -339,7 +306,6 @@ functions:
       - httpApi:
           path: /specialties/{idSpecialty}
           method: DELETE
-          cors: true
 
 #TipoProcedimiento
   initializeProcedureTypes:
@@ -348,7 +314,6 @@ functions:
         - httpApi:
             path: /procedureTypes/initializeSpecialties
             method: GET
-            cors: true
 
   getProcedureType:
     handler: src/handlers/tipoProcedimiento.getProcedureTypes
@@ -356,7 +321,6 @@ functions:
       - httpApi:
           path: /procedureTypes
           method: GET
-          cors: true
 
   filterProcedureType:
     handler: src/handlers/tipoProcedimiento.filterProcedureTypes
@@ -364,7 +328,6 @@ functions:
       - httpApi:
           path: /procedureTypes/filter/{filter}
           method: GET
-          cors: true
 
 #TipoExamen
   initializeExamTypes:
@@ -373,7 +336,6 @@ functions:
         - httpApi:
             path: /examType/initializeExamTypes
             method: GET
-            cors: true
 
   getExamTypes:
     handler: src/handlers/tipoExamen.getExamTypes
@@ -381,7 +343,6 @@ functions:
       - httpApi:
           path: /examType
           method: GET
-          cors: true
 
   filterExamTypes:
     handler: src/handlers/tipoExamen.filterExamTypes
@@ -389,8 +350,6 @@ functions:
       - httpApi:
           path: /examType/filter/{filter}
           method: GET
-          cors: true
-
 
 #Procedure
   initializeProcedure:
@@ -399,7 +358,6 @@ functions:
         - httpApi:
             path: /procedures/initializeProcedures
             method: GET
-            cors: true
 
   getProcedures:
     handler: src/handlers/procedimiento.getProcedures
@@ -407,7 +365,6 @@ functions:
       - httpApi:
           path: /procedures/{userId}
           method: GET
-          cors: true
 
   getProcedure:
     handler: src/handlers/procedimiento.getProcedure
@@ -415,7 +372,6 @@ functions:
       - httpApi:
           path: /procedures/{userId}/procedure/{idProcedure}
           method: GET
-          cors: true
 
   createProcedure:
     handler: src/handlers/procedimiento.createProcedure
@@ -423,7 +379,6 @@ functions:
       - httpApi:
           path: /procedures
           method: POST
-          cors: true
 
   updateProcedure:
     handler: src/handlers/procedimiento.updateProcedure
@@ -431,7 +386,6 @@ functions:
       - httpApi:
           path: /procedures/{userId}/procedure/{idProcedure}
           method: PUT
-          cors: true
 
   deleteProcedure:
     handler: src/handlers/procedimiento.deleteProcedure
@@ -439,7 +393,6 @@ functions:
       - httpApi:
           path: /procedures/{userId}/procedure/{idProcedure}
           method: DELETE
-          cors: true
 
 #Professional
   initializeProfessional:
@@ -448,7 +401,6 @@ functions:
         - httpApi:
             path: /examType/initializeProfessionals
             method: GET
-            cors: true
 
   getProfessional:
     handler: src/handlers/profesional.GetAllProfessionals
@@ -456,7 +408,6 @@ functions:
       - httpApi:
           path: /professionals/all
           method: GET
-          cors: true
 
   filterProfessional:
     handler: src/handlers/profesional.filterProfessionals
@@ -464,7 +415,6 @@ functions:
       - httpApi:
           path: /professionals/filter/{filter}
           method: GET
-          cors: true
 
   createProfessional:
     handler: src/handlers/profesional.createProfessional
@@ -472,7 +422,6 @@ functions:
       - httpApi:
           path: /professionals
           method: POST
-          cors: true
 
   updateProfessional:
     handler: src/handlers/profesional.updateProfessional
@@ -480,7 +429,6 @@ functions:
       - httpApi:
           path:  /professionals/{idProfessional}
           method: PUT
-          cors: true
 
   deleteProfessional:
     handler: src/handlers/profesional.deleteProfessional
@@ -488,7 +436,6 @@ functions:
       - httpApi:
           path: /professionals/{idProfessional}
           method: DELETE
-          cors: true
 
 #Exam
   initializeExams:
@@ -497,7 +444,6 @@ functions:
         - httpApi:
             path: /examType/initializeExams
             method: GET
-            cors: true
 
   getExams:
     handler: src/handlers/examen.getExams
@@ -505,7 +451,6 @@ functions:
       - httpApi:
           path: /exams/{userId}
           method: GET
-          cors: true
 
   getExam:
     handler: src/handlers/examen.getExam
@@ -513,7 +458,6 @@ functions:
       - httpApi:
           path: /exams/{userId}/exam/{idExam}
           method: GET
-          cors: true
 
   createExam:
     handler: src/handlers/examen.createExam
@@ -521,7 +465,6 @@ functions:
       - httpApi:
           path: /exams
           method: POST
-          cors: true
 
   updateExam:
     handler: src/handlers/examen.updateExam
@@ -529,7 +472,6 @@ functions:
       - httpApi:
           path:  /exams/{userId}/exam/{idExam}
           method: PUT
-          cors: true
 
   deleteExam:
     handler: src/handlers/examen.deleteExam
@@ -537,7 +479,6 @@ functions:
       - httpApi:
           path: /exams/{userId}/exam/{idExam}
           method: DELETE
-          cors: true
 
 #Diagnosis
   initializeDiagnosis:
@@ -546,7 +487,6 @@ functions:
         - httpApi:
             path: /diagnosises/initializeDiagnosis
             method: GET
-            cors: true
 
   getDiagnosises:
     handler: src/handlers/diagnostico.getDiagnosises
@@ -554,7 +494,6 @@ functions:
       - httpApi:
           path: /diagnosises/{userId}
           method: GET
-          cors: true
 
   getDiagnosis:
     handler: src/handlers/diagnostico.getDiagnosis
@@ -562,7 +501,6 @@ functions:
       - httpApi:
           path: /diagnosises/{userId}/diagnosis/{idDiagnosis}
           method: GET
-          cors: true
 
   createDiagnosis:
     handler: src/handlers/diagnostico.createDiagnosis
@@ -570,7 +508,6 @@ functions:
       - httpApi:
           path: /diagnosises
           method: POST
-          cors: true
 
   updateDiagnosis:
     handler: src/handlers/diagnostico.updateDiagnosis
@@ -578,7 +515,6 @@ functions:
       - httpApi:
           path: /diagnosises/{userId}/diagnosis/{idDiagnosis}
           method: PUT
-          cors: true
 
   deleteDiagnosis:
     handler: src/handlers/diagnostico.deleteDiagnosis
@@ -586,7 +522,6 @@ functions:
       - httpApi:
           path: /diagnosises/{userId}/diagnosis/{idDiagnosis}
           method: DELETE
-          cors: true
 
 #Consultation
   initializeConsultation:
@@ -595,7 +530,6 @@ functions:
         - httpApi:
             path: /consultations/initializeConsultation
             method: GET
-            cors: true
 
   getConsultations:
     handler: src/handlers/consulta.getConsultations
@@ -603,7 +537,6 @@ functions:
       - httpApi:
           path: /consultations/{userId}
           method: GET
-          cors: true
 
   getConsultation:
     handler: src/handlers/consulta.getConsultation
@@ -611,7 +544,6 @@ functions:
       - httpApi:
           path: /consultations/{userId}/consultation/{idConsultation}
           method: GET
-          cors: true
 
   createConsultation:
     handler: src/handlers/consulta.createConsultation
@@ -619,7 +551,6 @@ functions:
       - httpApi:
           path: /consultations
           method: POST
-          cors: true
 
   updateConsultation:
     handler: src/handlers/consulta.updateConsultation
@@ -627,7 +558,6 @@ functions:
       - httpApi:
           path: /consultations/{userId}/consultation/{idConsultation}
           method: PUT
-          cors: true
 
   deleteConsultation:
     handler: src/handlers/consulta.deleteConsultation
@@ -635,7 +565,6 @@ functions:
       - httpApi:
           path: /consultations/{userId}/consultation/{idConsultation}
           method: DELETE
-          cors: true
 
 #Patient
   initializePatients:
@@ -644,7 +573,6 @@ functions:
         - httpApi:
             path: /patients/initializePatient
             method: GET
-            cors: true
 
   getPatients:
     handler: src/handlers/paciente.getPatients
@@ -652,7 +580,6 @@ functions:
       - httpApi:
           path: /patients
           method: GET
-          cors: true
 
   getPatient:
     handler: src/handlers/paciente.getPatient
@@ -660,7 +587,6 @@ functions:
       - httpApi:
           path: /patients/{userId}
           method: GET
-          cors: true
 
   createPatient:
     handler: src/handlers/paciente.createPatient
@@ -668,7 +594,6 @@ functions:
       - httpApi:
           path: /patients
           method: POST
-          cors: true
 
   updatePatient:
     handler: src/handlers/paciente.updatePatient
@@ -676,7 +601,6 @@ functions:
       - httpApi:
           path: /patients/{userId}
           method: PUT
-          cors: true
 
   deletePatient:
     handler: src/handlers/paciente.deletePatient
@@ -684,7 +608,6 @@ functions:
       - httpApi:
           path: /patients/{userId}
           method: DELETE
-          cors: true
 
 #Historical Consultations
 
@@ -694,7 +617,6 @@ functions:
       - httpApi:
           path: /HistoricConsultations
           method: GET
-          cors: true
 
   getHistoricConsultation:
     handler: src/handlers/historial_consulta.getHistoricConsultation
@@ -702,7 +624,6 @@ functions:
       - httpApi:
           path: /HistoricConsultations/{id}
           method: GET
-          cors: true
 
   createHistoricConsultation:
     handler: src/handlers/historial_consulta.createHistoricConsultation
@@ -710,7 +631,6 @@ functions:
       - httpApi:
           path: /HistoricConsultations
           method: POST
-          cors: true
 
   deleteHistoricConsultation:
     handler: src/handlers/historial_consulta.deleteHistoricConsultation
@@ -718,7 +638,6 @@ functions:
       - httpApi:
           path: /HistoricConsultations/delete/{id}
           method: DELETE
-          cors: true
 
   streamHistoricConsultation:
     handler: src/handlers/historial_consulta.streamHistoricConsultation
