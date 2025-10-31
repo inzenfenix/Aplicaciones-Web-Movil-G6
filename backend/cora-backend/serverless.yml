@@ -23,6 +23,36 @@ provider:
     DIAGNOSIS_TABLE: CORA_Diagnosis
     CONSULTATION_TABLE: CORA_Consultation
     PATIENT_TABLE: CORA_Patient
+    HISTORIC_CONSULTATION_TABLE: CORA_HistoricConsultation
+    CONNECTIONS_TABLE: ws-connections-${sls:stage}
+
+resources:
+  Resources:
+    HistoricConsultationTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.HISTORIC_CONSULTATION_TABLE}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: idHistorialConsulta
+            AttributeType: S
+        KeySchema:
+          - AttributeName: idHistorialConsulta
+            KeyType: HASH
+        StreamSpecification:
+          StreamViewType: NEW_AND_OLD_IMAGES
+    
+    ConnectionsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ws-connections-${sls:stage}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: connectionId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: connectionId
+            KeyType: HASH
 
 plugins:
   - serverless-offline
@@ -643,6 +673,61 @@ functions:
           path: /patients/{userId}
           method: DELETE
           cors: true
+
+#Historical Consultations
+
+  getHistoricConsultations:
+    handler: src/handlers/historial_consulta.getHistoricConsultations
+    events:
+      - httpApi:
+          path: /HistoricConsultations
+          method: GET
+          cors: true
+
+  getHistoricConsultation:
+    handler: src/handlers/historial_consulta.getHistoricConsultation
+    events:
+      - httpApi:
+          path: /HistoricConsultations/{id}
+          method: GET
+          cors: true
+
+  createHistoricConsultation:
+    handler: src/handlers/historial_consulta.createHistoricConsultation
+    events:
+      - httpApi:
+          path: /HistoricConsultations
+          method: POST
+          cors: true
+
+  deleteHistoricConsultation:
+    handler: src/handlers/historial_consulta.deleteHistoricConsultation
+    events:
+      - httpApi:
+          path: /HistoricConsultations/delete/{id}
+          method: DELETE
+          cors: true
+
+  streamHistoricConsultation:
+    handler: src/handlers/historial_consulta.streamHistoricConsultation
+    environment:
+      SERVICE_NAME: ${self:service}
+      REGION: ${self:provider.region}
+    events:
+      - stream:
+          type: dynamodb
+          arn:
+            Fn::GetAtt:
+              - HistoricConsultationTable
+              - StreamArn
+
+  connectionsHistoricConsultation:
+    handler: src/handlers/historial_consulta.connectionsHistoricConsultation
+    events:
+      - websocket:
+          route: $connect
+      - websocket:
+          route: $disconnect
 
 #Randomizer
   randomizeData:
