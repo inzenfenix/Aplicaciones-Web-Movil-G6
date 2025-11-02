@@ -112,7 +112,7 @@ class _ManualEntryPageState extends State<ManualEntryPage> {
                           onChanged: onChangeRutInput,
                           onFieldSubmitted: (String value) {
                             if (_rutKey.currentState!.validate()) {
-                              DataConsultationAPI.request(
+                              DataConsultationAPI.execute(
                                 consultorId: "1234567-8",
                                 place:
                                     "Padre hurtado norte 123, Santiago - Ambulancia",
@@ -132,6 +132,12 @@ class _ManualEntryPageState extends State<ManualEntryPage> {
                       ElevatedButton(
                         onPressed: () {
                           if (_rutKey.currentState!.validate()) {
+                            DataConsultationAPI.execute(
+                                consultorId: "1234567-8",
+                                place:
+                                    "Padre hurtado norte 123, Santiago - Ambulancia",
+                                userId: (rutInput),
+                              );
                             navigateToPatientInfoPage();
                           }
                         },

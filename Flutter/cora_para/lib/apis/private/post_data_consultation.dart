@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
 class DataConsultationAPI {
-  static Future<int?> request({
+  static Future<int?> execute({
     required String userId,
     required String place,
     required String consultorId,

@@ -118,7 +118,10 @@ export const deleteProcedureType = async (event) => {
   const id = event.pathParameters.idProcedureType;
 
   await docClient.send(
-    new DeleteCommand({ TableName: tableName, Key: { idTipoProcedimiento: id } })
+    new DeleteCommand({
+      TableName: tableName,
+      Key: { idTipoProcedimiento: id },
+    })
   );
   return {
     statusCode: 200,
@@ -130,44 +133,46 @@ export const deleteProcedureType = async (event) => {
 // GET /initializeTable
 export const initializeTable = async () => {
   try {
+    // Check if table exists
     await client.send(
       new DescribeTableCommand({
         TableName: tableName,
       })
     );
+
     console.log("Table exists:", tableName);
 
-    console.log("Checking if there's data on the table");
-
-    const result = await docClient.send(
-      new ScanCommand({ TableName: tableName })
-    );
-    const items = result.Items;
+    const result = await docClient.send(new ScanCommand({ TableName: tableName }));
+    const items = result.Items ?? [];
 
     if (items.length === 0) {
-      console.log("No data on table, adding data");
+      console.log("No data found — inserting initial data...");
+
       for (const procedure of initial_data) {
         const id = uuidv4();
-
         const item = {
           idTipoProcedimiento: id,
           tipoProcedimiento: procedure,
         };
-
-        await docClient.send(
-          new PutCommand({ TableName: tableName, Item: item })
-        );
+        await docClient.send(new PutCommand({ TableName: tableName, Item: item }));
       }
 
       return {
         statusCode: 200,
         headers,
-        body: JSON.stringify("ok"),
+        body: JSON.stringify({ message: "Table seeded successfully" }),
       };
     }
+
+    console.log("Table already contains data");
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({ message: "Table already initialized" }),
+    };
   } catch (err) {
     if (err.name === "ResourceNotFoundException") {
-      console.log("Table does not exist... Creating table: ", tableName);
+      console.log("Table does not exist, creating:", tableName);
 
       await client.send(
         new CreateTableCommand({
@@ -180,9 +185,9 @@ export const initializeTable = async () => {
         })
       );
 
-      console.log("Checking if table is active...");
-
+      console.log("Waiting for table to become ACTIVE...");
       let active = false;
+
       while (!active) {
         const desc = await client.send(
           new DescribeTableCommand({ TableName: tableName })
@@ -190,29 +195,31 @@ export const initializeTable = async () => {
         if (desc.Table.TableStatus === "ACTIVE") active = true;
         else await new Promise((res) => setTimeout(res, 1000));
       }
-      console.log("Table is Active, adding data");
+
+      console.log("Table ACTIVE, inserting data...");
 
       for (const procedure of initial_data) {
         const id = uuidv4();
-
         const item = {
           idTipoProcedimiento: id,
           tipoProcedimiento: procedure,
         };
-
-        await docClient.send(
-          new PutCommand({ TableName: tableName, Item: item })
-        );
-
-        return {
-          statusCode: 200,
-          headers,
-          body: JSON.stringify("ok"),
-        };
+        await docClient.send(new PutCommand({ TableName: tableName, Item: item }));
       }
-    } else {
-      throw err;
+
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({ message: "Table created and initialized" }),
+      };
     }
+
+    console.error("Unexpected error:", err);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: err.message }),
+    };
   }
 };
 
@@ -266,5 +273,5 @@ const initial_data = [
   "Toracocentesis",
   "Paracentesis",
   "Test de alergias",
-  "Ligadura de trompas"
-]
+  "Ligadura de trompas",
+];
