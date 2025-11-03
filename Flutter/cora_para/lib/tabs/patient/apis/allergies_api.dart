@@ -8,10 +8,12 @@ class AllergiesAPI {
 
     final apiUrl = dotenv.env['API_URL'];
     final url = Uri.parse(
-      '$apiUrl/dev/allergies/$id',
+      '$apiUrl/allergies/$id',
     );
 
     final response = await http.get(url);
+
+    print(jsonDecode(response.body));
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
