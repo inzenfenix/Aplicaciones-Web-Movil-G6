@@ -6,7 +6,7 @@ provider:
   region: us-east-2
   role: arn:aws:iam::626218016489:role/LabRole
   stage: dev
-  timeout: 60
+  timeout: 30
   environment:
     ALLERGIES_TABLE: Allergies
     TYPE_ALLERGIES_TABLE: TypeAllergies
