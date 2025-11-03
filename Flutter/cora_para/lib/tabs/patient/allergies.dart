@@ -43,7 +43,7 @@ class _AllergiesPageState extends State<AllergiesPage> {
   void initState() {
     super.initState();
 
-    String id = widget.rut.split("-")[0];
+    String id = widget.rut;
     fetchData(id: id);
   }
 
