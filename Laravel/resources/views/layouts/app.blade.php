@@ -16,16 +16,23 @@
 </head>
 <body class="font-sans antialiased">
     <div class="min-h-screen bg-gray-100">
+        @auth
         <!-- Topbar con background celeste y rutas al medio -->
         <nav class="dashboard-topbar">
             <div class="topbar-routes">
                 <a href="{{ url('/inicio') }}" class="route-link {{ request()->is('inicio') ? 'active' : '' }}">Inicio</a>
-                <a href="{{ url('/') }}" class="route-link {{ request()->is('reports') ? 'active' : '' }}">Buscador</a>
-                <a href="{{ url('/alergias') }}" class="route-link {{ request()->is('alergias') ? 'active' : '' }}">Alergias</a>
+                <!-- <a href="{{ url('/') }}" class="route-link {{ request()->is('reports') ? 'active' : '' }}">Buscador</a> -->
+                <!-- <a href="{{ url('/alergias') }}" class="route-link {{ request()->is('alergias') ? 'active' : '' }}">Alergias</a> -->
                 <a href="{{ url('/dashboard') }}" class="route-link {{ request()->is('dashboard') ? 'active' : '' }}">Dashboard</a>
             </div>
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit" class="btn btn-outline-danger btn-sm">
+                    Cerrar sesión
+                </button>
+            </form>
         </nav>
-
+        @endauth
         <!-- Page Content -->
         <main>
             @yield('content')
