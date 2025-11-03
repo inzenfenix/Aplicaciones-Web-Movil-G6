@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Hábitos</ion-title>
+    <ion-title>Consultas</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="cancel()">Cerrar</ion-button>
     </ion-buttons>
@@ -9,7 +9,7 @@
 </ion-header>
 <ion-content class="ion-padding" style="overflow-y: auto">
   <ion-button shape="round" (click)="toggleInputAccordion()">
-    <span> Añadir hábitos </span>
+    <span> Añadir consulta </span>
     <lucide-angular [img]="add"/>
   </ion-button>
   <ion-accordion-group #accordionAlergiasGroup>
@@ -18,7 +18,7 @@
         <ion-input
           label-placement="floating"
           fill="solid"
-          placeholder="Ingresar hábito"
+          placeholder="Ingresar consulta"
           style="margin-bottom: 5px; padding: 10px 10px"
           (ionInput)="handleInputNewAllergy($event)"
         />

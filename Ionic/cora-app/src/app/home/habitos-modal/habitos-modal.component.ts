@@ -65,7 +65,7 @@ export class HabitosModalComponent  implements OnInit {
   private generateItems() {
     const count = this.items.length + 1;
     for (let i = 0; i < 5; i++) {
-      this.items.push(`Habito: ${count + i}`);
+      this.items.push(`Consulta: ${count + i}`);
     }
   }
 
