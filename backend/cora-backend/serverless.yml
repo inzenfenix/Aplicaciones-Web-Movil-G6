@@ -262,26 +262,15 @@ functions:
           method: ANY
 
   #BloodType
-  initializeBloodTypes:
-    handler: src/handlers/tipoSangre.initializeTable
-    events:
-      - httpApi:
-          path: /bloodTypes/initializeBloodTypes
-          method: GET
-
-  getBloodTypes:
-    handler: src/handlers/tipoSangre.getBloodTypes
+  bloodTypesHandler:
+    handler: src/handlers/tipoSangre.bloodTypesHandler
     events:
       - httpApi:
           path: /bloodTypes
-          method: GET
-
-  filterBloodTypes:
-    handler: src/handlers/tipoSangre.filterBloodTypes
-    events:
+          method: ANY
       - httpApi:
-          path: /bloodTypes/{filter}
-          method: GET
+          path: /bloodTypes/{proxy+}
+          method: ANY
 
   #Recipe
   recipesHandler:
@@ -306,26 +295,15 @@ functions:
           method: ANY
 
   #TipoProcedimiento
-  initializeProcedureTypes:
-    handler: src/handlers/tipoProcedimiento.initializeTable
-    events:
-      - httpApi:
-          path: /procedureTypes/initializeSpecialties
-          method: GET
-
-  getProcedureType:
-    handler: src/handlers/tipoProcedimiento.getProcedureTypes
+  procedureTypesHandler:
+    handler: src/handlers/tipoProcedimiento.procedureTypesHandler
     events:
       - httpApi:
           path: /procedureTypes
-          method: GET
-
-  filterProcedureType:
-    handler: src/handlers/tipoProcedimiento.filterProcedureTypes
-    events:
+          method: ANY
       - httpApi:
-          path: /procedureTypes/filter/{filter}
-          method: GET
+          path: /procedureTypes/{proxy+}
+          method: ANY
 
   #TipoExamen
   examTypeHandler:

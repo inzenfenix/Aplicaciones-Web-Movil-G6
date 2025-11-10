@@ -11,54 +11,111 @@ import {
   DeleteCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { v4 as uuidv4 } from "uuid";
+import { AutoRouter } from "itty-router";
 
+// === AWS Setup ===
 const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client);
 const tableName = process.env.PROCEDURE_TYPE_TABLE;
 
+// === Common Headers ===
 const headers = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Credentials": true,
+  "Content-Type": "application/json",
 };
+
+// === Router ===
+const router = AutoRouter();
+
+router
+  .get("/procedureTypes", getProcedureTypes)
+  .get("/procedureTypes/filter/:filter", filterProcedureTypes)
+  .post("/procedureTypes", createProcedureType)
+  .put("/procedureTypes/:idProcedureType", updateProcedureType)
+  .delete("/procedureTypes/:idProcedureType", deleteProcedureType)
+  .get("/procedureTypes/initializeTable", initializeTable)
+  .all("*", () => new Response("Not Found", { status: 404 }));
+
+// === Lambda Handler ===
+export const procedureTypesHandler = async (event) => {
+  try {
+    const url = `https://${event.headers.host}${event.rawPath}`;
+    const method = event.requestContext?.http.method;
+
+    const init = {
+      method,
+      headers: event.headers,
+      body: event.body
+        ? Buffer.from(event.body, event.isBase64Encoded ? "base64" : "utf8")
+        : undefined,
+    };
+
+    const request = new Request(url, init);
+    request.event = event;
+
+    const response = await router.fetch(request);
+
+    return {
+      statusCode: response.status,
+      headers: Object.fromEntries(response.headers.entries()),
+      body: await response.text(),
+    };
+  } catch (err) {
+    console.error("Error in procedureTypesHandler:", err);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: err.message }),
+    };
+  }
+};
+
+// === ROUTE HANDLERS ===
 
 // GET /procedureTypes
-export async function getProcedureTypes(_) {
-  const params = {
-    TableName: tableName,
-  };
-
-  const result = await docClient.send(new ScanCommand(params));
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify(result.Items),
-  };
-};
+async function getProcedureTypes() {
+  try {
+    const result = await docClient.send(new ScanCommand({ TableName: tableName }));
+    return new Response(JSON.stringify(result.Items ?? []), {
+      status: 200,
+      headers,
+    });
+  } catch (err) {
+    console.error("Error fetching procedure types:", err);
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
+      headers,
+    });
+  }
+}
 
 // POST /procedureTypes
-export async function createProcedureType(event) {
-  const body = JSON.parse(event.body);
+async function createProcedureType(req) {
+  try {
+    const body = await req.json();
+    const id = uuidv4();
 
-  const id = uuidv4();
-  await docClient.send(
-    new PutCommand({
-      TableName: tableName,
-      Item: {
-        idTipoProcedimiento: id,
-        tipoProcedimiento: body.tipoProcedimiento,
-      },
-    })
-  );
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify({ id, ...body }),
-  };
-};
+    const item = {
+      idTipoProcedimiento: id,
+      tipoProcedimiento: body.tipoProcedimiento,
+    };
 
-// Get /procedureTypes/filter/{filter}
-export async function filterProcedureTypes(event) {
-  const filter = event.pathParameters.filter;
+    await docClient.send(new PutCommand({ TableName: tableName, Item: item }));
+
+    return new Response(JSON.stringify(item), { status: 200, headers });
+  } catch (err) {
+    console.error("Error creating procedure type:", err);
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
+      headers,
+    });
+  }
+}
+
+// GET /procedureTypes/filter/:filter
+async function filterProcedureTypes(req) {
+  const { filter } = req.params;
 
   const params = {
     TableName: tableName,
@@ -71,108 +128,101 @@ export async function filterProcedureTypes(event) {
     },
   };
 
-  const result = await docClient.send(new ScanCommand(params));
-  const items = result.Items;
-
-  if (items) {
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify(items),
-    };
-  } else {
-    return {
-      statusCode: 400,
-      headers,
-      body: JSON.stringify({ error: "Error getting data" }),
-    };
-  }
-};
-
-// PUT /procedureTypes/{idProcedureType}
-export async function updateProcedureType(event) {
-  const id = event.pathParameters.idProcedureType;
-  const body = JSON.parse(event.body);
-  await docClient.send(
-    new UpdateCommand({
-      TableName: tableName,
-      Key: { idProcedureType: id },
-      UpdateExpression: "SET #tipoProcedmiento = :tipoProcedmiento",
-      ExpressionAttributeNames: {
-        "#tipoProcedmiento": "tipoProcedmiento",
-      },
-      ExpressionAttributeValues: {
-        ":tipoProcedmiento": body.tipoProcedmiento,
-      },
-    })
-  );
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify({ id, ...body }),
-  };
-};
-
-// DELETE /procedureTypes/{idProcedureType}
-export async function deleteProcedureType(event) {
-  const id = event.pathParameters.idProcedureType;
-
-  await docClient.send(
-    new DeleteCommand({
-      TableName: tableName,
-      Key: { idTipoProcedimiento: id },
-    })
-  );
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify({ deleted: id }),
-  };
-};
-
-// GET /initializeTable
-export async function initializeTable() {
   try {
-    // Check if table exists
-    await client.send(
-      new DescribeTableCommand({
+    const result = await docClient.send(new ScanCommand(params));
+    return new Response(JSON.stringify(result.Items ?? []), {
+      status: 200,
+      headers,
+    });
+  } catch (err) {
+    console.error("Error filtering procedure types:", err);
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
+      headers,
+    });
+  }
+}
+
+// PUT /procedureTypes/:idProcedureType
+async function updateProcedureType(req) {
+  try {
+    const { idProcedureType } = req.params;
+    const body = await req.json();
+
+    await docClient.send(
+      new UpdateCommand({
         TableName: tableName,
+        Key: { idTipoProcedimiento: idProcedureType },
+        UpdateExpression: "SET #tipoProcedimiento = :tipoProcedimiento",
+        ExpressionAttributeNames: { "#tipoProcedimiento": "tipoProcedimiento" },
+        ExpressionAttributeValues: { ":tipoProcedimiento": body.tipoProcedimiento },
       })
     );
 
+    return new Response(
+      JSON.stringify({ idTipoProcedimiento: idProcedureType, ...body }),
+      { status: 200, headers }
+    );
+  } catch (err) {
+    console.error("Error updating procedure type:", err);
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
+      headers,
+    });
+  }
+}
+
+// DELETE /procedureTypes/:idProcedureType
+async function deleteProcedureType(req) {
+  try {
+    const { idProcedureType } = req.params;
+
+    await docClient.send(
+      new DeleteCommand({
+        TableName: tableName,
+        Key: { idTipoProcedimiento: idProcedureType },
+      })
+    );
+
+    return new Response(JSON.stringify({ deleted: idProcedureType }), {
+      status: 200,
+      headers,
+    });
+  } catch (err) {
+    console.error("Error deleting procedure type:", err);
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
+      headers,
+    });
+  }
+}
+
+// GET /procedureTypes/initializeTable
+async function initializeTable() {
+  try {
+    await client.send(new DescribeTableCommand({ TableName: tableName }));
     console.log("Table exists:", tableName);
 
     const result = await docClient.send(new ScanCommand({ TableName: tableName }));
     const items = result.Items ?? [];
 
     if (items.length === 0) {
-      console.log("No data found — inserting initial data...");
-
-      for (const procedure of initial_data) {
-        const id = uuidv4();
-        const item = {
-          idTipoProcedimiento: id,
-          tipoProcedimiento: procedure,
-        };
-        await docClient.send(new PutCommand({ TableName: tableName, Item: item }));
-      }
-
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify({ message: "Table seeded successfully" }),
-      };
+      console.log("Seeding table with initial data...");
+      await populateInitialData();
+      return new Response(
+        JSON.stringify({ message: "Table seeded successfully" }),
+        { status: 200, headers }
+      );
     }
 
     console.log("Table already contains data");
-    return {
-      statusCode: 200,
+    return new Response(JSON.stringify({ message: "Table already initialized" }), {
+      status: 200,
       headers,
-      body: JSON.stringify({ message: "Table already initialized" }),
-    };
+    });
   } catch (err) {
     if (err.name === "ResourceNotFoundException") {
-      console.log("Table does not exist, creating:", tableName);
+      console.log("Table not found. Creating:", tableName);
 
       await client.send(
         new CreateTableCommand({
@@ -185,43 +235,42 @@ export async function initializeTable() {
         })
       );
 
-      console.log("Waiting for table to become ACTIVE...");
-      let active = false;
-
-      while (!active) {
+      while (true) {
         const desc = await client.send(
           new DescribeTableCommand({ TableName: tableName })
         );
-        if (desc.Table.TableStatus === "ACTIVE") active = true;
-        else await new Promise((res) => setTimeout(res, 1000));
+        if (desc.Table.TableStatus === "ACTIVE") break;
+        await new Promise((r) => setTimeout(r, 1000));
       }
 
-      console.log("Table ACTIVE, inserting data...");
+      console.log("Table active, inserting data...");
+      await populateInitialData();
 
-      for (const procedure of initial_data) {
-        const id = uuidv4();
-        const item = {
-          idTipoProcedimiento: id,
-          tipoProcedimiento: procedure,
-        };
-        await docClient.send(new PutCommand({ TableName: tableName, Item: item }));
-      }
-
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify({ message: "Table created and initialized" }),
-      };
+      return new Response(
+        JSON.stringify({ message: "Table created and initialized" }),
+        { status: 200, headers }
+      );
     }
 
-    console.error("Unexpected error:", err);
-    return {
-      statusCode: 500,
+    console.error("Error initializing table:", err);
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
       headers,
-      body: JSON.stringify({ error: err.message }),
-    };
+    });
   }
-};
+}
+
+// === Helper: populate data ===
+async function populateInitialData() {
+  for (const procedure of initial_data) {
+    const id = uuidv4();
+    const item = {
+      idTipoProcedimiento: id,
+      tipoProcedimiento: procedure,
+    };
+    await docClient.send(new PutCommand({ TableName: tableName, Item: item }));
+  }
+}
 
 const initial_data = [
   "Electrocardiograma",

@@ -11,240 +11,250 @@ import {
   DeleteCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { v4 as uuidv4 } from "uuid";
+import { AutoRouter } from "itty-router";
 
+// === AWS Setup ===
 const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client);
 const tableName = process.env.BLOOD_TYPE_TABLE;
 
+// === Common Headers ===
 const headers = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Credentials": true,
+  "Content-Type": "application/json",
 };
 
-const data = {
-  "A+": {
-    Da: ["A+", "AB+"],
-    Recibe: ["A+", "A-", "O+", "O-"],
-  },
-  "O+": {
-    Da: ["O+", "A+", "B+", "AB+"],
-    Recibe: ["O+", "O-"],
-  },
-  "B+": {
-    Da: ["B+", "AB+"],
-    Recibe: ["B+", "B-", "O+", "O-"],
-  },
-  "AB+": {
-    Da: ["AB+"],
-    Recibe: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
-  },
-  "A-": {
-    Da: ["A+", "A-", "AB+", "AB-"],
-    Recibe: ["A-", "O-"],
-  },
-  "O-": {
-    Da: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
-    Recibe: ["O-"],
-  },
-  "B-": {
-    Da: ["B+", "B-", "AB+", "AB-"],
-    Recibe: ["B-", "O-"],
-  },
-  "AB-": {
-    Da: ["AB+", "AB-"],
-    Recibe: ["AB-", "A-", "B-", "O-"],
-  },
+// === Initial Data ===
+const initial_data = {
+  "A+": { Da: ["A+", "AB+"], Recibe: ["A+", "A-", "O+", "O-"] },
+  "O+": { Da: ["O+", "A+", "B+", "AB+"], Recibe: ["O+", "O-"] },
+  "B+": { Da: ["B+", "AB+"], Recibe: ["B+", "B-", "O+", "O-"] },
+  "AB+": { Da: ["AB+"], Recibe: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] },
+  "A-": { Da: ["A+", "A-", "AB+", "AB-"], Recibe: ["A-", "O-"] },
+  "O-": { Da: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"], Recibe: ["O-"] },
+  "B-": { Da: ["B+", "B-", "AB+", "AB-"], Recibe: ["B-", "O-"] },
+  "AB-": { Da: ["AB+", "AB-"], Recibe: ["AB-", "A-", "B-", "O-"] },
 };
 
-// GET /bloodTypes
-export async function getBloodTypes(_) {
-  const params = {
-    TableName: tableName,
-  };
+// === Router ===
+const router = AutoRouter();
 
-  const result = await docClient.send(new ScanCommand(params));
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify(result.Items),
-  };
-};
+router
+  .get("/bloodTypes", getBloodTypes)
+  .get("/bloodTypes/filter/:filter", filterBloodTypes)
+  .post("/bloodTypes", createBloodType)
+  .put("/bloodTypes/:idBloodType", updateBloodType)
+  .delete("/bloodTypes/:idBloodType", deleteBloodType)
+  .get("/bloodTypes/initializeTable", initializeTable)
+  .all("*", () => new Response("Not Found", { status: 404 }));
 
-// POST /bloodTypes
-export async function createBloodType(event) {
-  const body = JSON.parse(event.body);
+// === Lambda Handler ===
+export const bloodTypesHandler = async (event) => {
+  try {
+    const url = `https://${event.headers.host}${event.rawPath}`;
+    const method = event.requestContext?.http.method;
 
-  const id = uuidv4();
-  await docClient.send(
-    new PutCommand({
-      TableName: tableName,
-      Item: {
-        idTipoSangre: body.idTipoSangre,
-        bloodType: body.bloodType,
-        give: body.give,
-        receive: body.receive,
-      },
-    })
-  );
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify({ id, ...body }),
-  };
-};
-
-// Get /filterBloodTypes/{filter}
-export async function filterBloodTypes(event) {
-  const filter = event.pathParameters.filter;
-
-  const params = {
-    TableName: tableName,
-    FilterExpression: "#bloodType = :filter",
-    ExpressionAttributeNames: {
-      "#bloodType": "bloodType",
-    },
-    ExpressionAttributeValues: {
-      ":filter": filter,
-    },
-  };
-
-  const result = await docClient.send(new ScanCommand(params));
-  const items = result.Items;
-
-  if (items) {
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify(items),
+    const init = {
+      method,
+      headers: event.headers,
+      body: event.body
+        ? Buffer.from(event.body, event.isBase64Encoded ? "base64" : "utf8")
+        : undefined,
     };
-  } else {
+
+    const request = new Request(url, init);
+    request.event = event;
+
+    const response = await router.fetch(request);
+
     return {
-      statusCode: 400,
+      statusCode: response.status,
+      headers: Object.fromEntries(response.headers.entries()),
+      body: await response.text(),
+    };
+  } catch (err) {
+    console.error("Error in bloodTypesHandler:", err);
+    return {
+      statusCode: 500,
       headers,
-      body: JSON.stringify({ error: "Error getting data" }),
+      body: JSON.stringify({ error: err.message }),
     };
   }
 };
 
-// PUT /bloodType/{idBloodType}
-export async function updateBloodTypes(event) {
-  const id = event.pathParameters.idBloodType;
-  const body = JSON.parse(event.body);
-  await docClient.send(
-    new UpdateCommand({
-      TableName: tableName,
-      Key: { id },
-      UpdateExpression: "SET #bloodType = :bloodType, #give = :give, #receive = :receive",
-      ExpressionAttributeNames: {
-        "#bloodType": "bloodType",
-        "#give": "give",
-        "#receive": "receive",
-      },
-      ExpressionAttributeValues: {
-        ":bloodType": body.bloodType,
-        ":give": body.give,
-        ":gireceiveve": body.receive,
-      },
-    })
-  );
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify({ id, ...body }),
-  };
-};
+// === ROUTE HANDLERS ===
 
-// DELETE /bloodType/{idBloodType}
-export async function deleteBloodType(event) {
-  const id = event.pathParameters.idBloodType;
-
-  await docClient.send(
-    new DeleteCommand({ TableName: tableName, Key: { id } })
-  );
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify({ deleted: id }),
-  };
-};
-
-// GET /initializeTable
-export async function initializeTable() {
+// GET /bloodTypes
+async function getBloodTypes() {
   try {
-    await client.send(
-      new DescribeTableCommand({
+    const result = await docClient.send(new ScanCommand({ TableName: tableName }));
+    return new Response(JSON.stringify(result.Items ?? []), { status: 200, headers });
+  } catch (err) {
+    console.error("Error fetching blood types:", err);
+    return new Response(JSON.stringify({ error: err.message }), { status: 500, headers });
+  }
+}
+
+// POST /bloodTypes
+async function createBloodType(req) {
+  try {
+    const body = await req.json();
+    const id = uuidv4();
+
+    const item = {
+      idTipoSangre: id,
+      bloodType: body.bloodType,
+      give: body.give,
+      receive: body.receive,
+    };
+
+    await docClient.send(new PutCommand({ TableName: tableName, Item: item }));
+
+    return new Response(JSON.stringify(item), { status: 200, headers });
+  } catch (err) {
+    console.error("Error creating blood type:", err);
+    return new Response(JSON.stringify({ error: err.message }), { status: 500, headers });
+  }
+}
+
+// GET /bloodTypes/filter/:filter
+async function filterBloodTypes(req) {
+  const { filter } = req.params;
+
+  const params = {
+    TableName: tableName,
+    FilterExpression: "contains(#bloodType, :filter)",
+    ExpressionAttributeNames: { "#bloodType": "bloodType" },
+    ExpressionAttributeValues: { ":filter": filter },
+  };
+
+  try {
+    const result = await docClient.send(new ScanCommand(params));
+    return new Response(JSON.stringify(result.Items ?? []), { status: 200, headers });
+  } catch (err) {
+    console.error("Error filtering blood types:", err);
+    return new Response(JSON.stringify({ error: err.message }), { status: 500, headers });
+  }
+}
+
+// PUT /bloodTypes/:idBloodType
+async function updateBloodType(req) {
+  try {
+    const { idBloodType } = req.params;
+    const body = await req.json();
+
+    await docClient.send(
+      new UpdateCommand({
         TableName: tableName,
+        Key: { idTipoSangre: idBloodType },
+        UpdateExpression: "SET #bloodType = :bt, #give = :g, #receive = :r",
+        ExpressionAttributeNames: {
+          "#bloodType": "bloodType",
+          "#give": "give",
+          "#receive": "receive",
+        },
+        ExpressionAttributeValues: {
+          ":bt": body.bloodType,
+          ":g": body.give,
+          ":r": body.receive,
+        },
       })
     );
+
+    return new Response(
+      JSON.stringify({ idTipoSangre: idBloodType, ...body }),
+      { status: 200, headers }
+    );
+  } catch (err) {
+    console.error("Error updating blood type:", err);
+    return new Response(JSON.stringify({ error: err.message }), { status: 500, headers });
+  }
+}
+
+// DELETE /bloodTypes/:idBloodType
+async function deleteBloodType(req) {
+  try {
+    const { idBloodType } = req.params;
+
+    await docClient.send(
+      new DeleteCommand({ TableName: tableName, Key: { idTipoSangre: idBloodType } })
+    );
+
+    return new Response(JSON.stringify({ deleted: idBloodType }), { status: 200, headers });
+  } catch (err) {
+    console.error("Error deleting blood type:", err);
+    return new Response(JSON.stringify({ error: err.message }), { status: 500, headers });
+  }
+}
+
+// GET /bloodTypes/initializeTable
+async function initializeTable() {
+  try {
+    await client.send(new DescribeTableCommand({ TableName: tableName }));
     console.log("Table exists:", tableName);
 
-    console.log("Checking if there's data on the table");
-
-    const result = await docClient.send(
-      new ScanCommand({ TableName: tableName })
-    );
-    const items = result.Items;
+    const result = await docClient.send(new ScanCommand({ TableName: tableName }));
+    const items = result.Items ?? [];
 
     if (items.length === 0) {
-      console.log("No data on table, adding data");
-      for (const [key, value] of Object.entries(data)) {
-        const id = uuidv4();
-
-        const item = {
-          idTipoSangre: id,
-          bloodType: key,
-          give: value["Da"],
-          receive: value["Recibe"],
-        };
-
-        await docClient.send(
-          new PutCommand({ TableName: tableName, Item: item })
-        );
-      }
+      console.log("Seeding blood types...");
+      await populateInitialData();
+      return new Response(
+        JSON.stringify({ message: "Table seeded successfully" }),
+        { status: 200, headers }
+      );
     }
+
+    console.log("Table already contains data");
+    return new Response(JSON.stringify({ message: "Table already initialized" }), {
+      status: 200,
+      headers,
+    });
   } catch (err) {
     if (err.name === "ResourceNotFoundException") {
-      console.log("Table does not exist... Creating table: ", tableName);
+      console.log("Creating blood type table:", tableName);
 
       await client.send(
         new CreateTableCommand({
           TableName: tableName,
-          AttributeDefinitions: [
-            { AttributeName: "idTipoSangre", AttributeType: "S" },
-          ],
+          AttributeDefinitions: [{ AttributeName: "idTipoSangre", AttributeType: "S" }],
           KeySchema: [{ AttributeName: "idTipoSangre", KeyType: "HASH" }],
           BillingMode: "PAY_PER_REQUEST",
         })
       );
 
-      console.log("Checking if table is active...");
-
-      let active = false;
-      while (!active) {
+      while (true) {
         const desc = await client.send(
           new DescribeTableCommand({ TableName: tableName })
         );
-        if (desc.Table.TableStatus === "ACTIVE") active = true;
-        else await new Promise((res) => setTimeout(res, 1000));
+        if (desc.Table.TableStatus === "ACTIVE") break;
+        await new Promise((r) => setTimeout(r, 1000));
       }
-      console.log("Table is Active, adding data");
 
-      for (const [key, value] of Object.entries(data)) {
-        const id = uuidv4();
+      console.log("Table active, inserting data...");
+      await populateInitialData();
 
-        const item = {
-          idTipoSangre: id,
-          bloodType: key,
-          give: value.Da,
-          receive: value.Recibe,
-        };
-
-        await docClient.send(
-          new PutCommand({ TableName: tableName, Item: item })
-        );
-      }
-    } else {
-      throw err;
+      return new Response(
+        JSON.stringify({ message: "Table created and initialized" }),
+        { status: 200, headers }
+      );
     }
+
+    console.error("Error initializing blood type table:", err);
+    return new Response(JSON.stringify({ error: err.message }), { status: 500, headers });
   }
-};
+}
+
+// === Helper: populate data ===
+async function populateInitialData() {
+  for (const [key, value] of Object.entries(initial_data)) {
+    const item = {
+      idTipoSangre: uuidv4(),
+      bloodType: key,
+      give: value.Da,
+      receive: value.Recibe,
+    };
+    await docClient.send(new PutCommand({ TableName: tableName, Item: item }));
+  }
+}
