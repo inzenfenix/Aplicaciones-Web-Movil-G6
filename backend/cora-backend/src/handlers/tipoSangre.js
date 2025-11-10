@@ -57,7 +57,7 @@ const data = {
 };
 
 // GET /bloodTypes
-export const getBloodTypes = async (_) => {
+export async function getBloodTypes(_) {
   const params = {
     TableName: tableName,
   };
@@ -71,7 +71,7 @@ export const getBloodTypes = async (_) => {
 };
 
 // POST /bloodTypes
-export const createBloodType = async (event) => {
+export async function createBloodType(event) {
   const body = JSON.parse(event.body);
 
   const id = uuidv4();
@@ -94,7 +94,7 @@ export const createBloodType = async (event) => {
 };
 
 // Get /filterBloodTypes/{filter}
-export const filterBloodTypes = async (event) => {
+export async function filterBloodTypes(event) {
   const filter = event.pathParameters.filter;
 
   const params = {
@@ -127,7 +127,7 @@ export const filterBloodTypes = async (event) => {
 };
 
 // PUT /bloodType/{idBloodType}
-export const updateBloodTypes = async (event) => {
+export async function updateBloodTypes(event) {
   const id = event.pathParameters.idBloodType;
   const body = JSON.parse(event.body);
   await docClient.send(
@@ -155,7 +155,7 @@ export const updateBloodTypes = async (event) => {
 };
 
 // DELETE /bloodType/{idBloodType}
-export const deleteBloodType = async (event) => {
+export async function deleteBloodType(event) {
   const id = event.pathParameters.idBloodType;
 
   await docClient.send(
@@ -169,7 +169,7 @@ export const deleteBloodType = async (event) => {
 };
 
 // GET /initializeTable
-export const initializeTable = async () => {
+export async function initializeTable() {
   try {
     await client.send(
       new DescribeTableCommand({

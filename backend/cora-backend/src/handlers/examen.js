@@ -1,7 +1,5 @@
 import {
   DynamoDBClient,
-  DescribeTableCommand,
-  CreateTableCommand,
 } from "@aws-sdk/client-dynamodb";
 import {
   DynamoDBDocumentClient,
@@ -11,6 +9,7 @@ import {
   DeleteCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { v4 as uuidv4 } from "uuid";
+import { AutoRouter } from "itty-router";
 
 const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client);
@@ -21,9 +20,52 @@ const headers = {
   "Access-Control-Allow-Credentials": true,
 };
 
+// Routing
+const router = AutoRouter();
+
+router
+  .get("/exams/:userId", getExams)
+  .get("/exams/:userId/exam/:idReceta", getExam)
+  .post("/exams", createExam)
+  .put("/exams/:userId/exam/:idReceta", updateExam)
+  .delete("/exams/:userId/exam/:idReceta", deleteExam);
+
+// Router handler
+export const examsHandler = async (event) => {
+  const url = `https://${event.headers.host}${event.rawPath}`;
+  const method = event.requestContext?.http.method;
+
+  const init = {
+    method: method,
+    headers: event.headers,
+    body: event.body
+      ? Buffer.from(event.body, event.isBase64Encoded ? "base64" : "utf8")
+      : undefined,
+  };
+
+  try {
+    const request = new Request(url, init);
+    request.event = event;
+
+    const response = await router.fetch(request);
+
+    return {
+      statusCode: response.status,
+      headers: Object.fromEntries(response.headers.entries()),
+      body: await response.text(),
+    };
+  } catch (err) {
+    console.error(err);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: err.message }),
+    };
+  }
+};
+
 // GET /exams/{userId}
-export const getExams = async (event) => {
-  const userId = event.pathParameters.userId;
+async function getExams(req) {
+  const { userId } = req.params;
   const params = {
     TableName: tableName,
     FilterExpression: "#userId = :userId",
@@ -43,10 +85,9 @@ export const getExams = async (event) => {
   };
 };
 
-// GET /exams/{userId}/exam/{idExam}
-export const getExam = async (event) => {
-  const userId = event.pathParameters.userId;
-  const id = event.pathParameters.idExam;
+// GET /exams/{userId}/exam/{idExamen}
+async function getExam(req) {
+  const { userId, idExamen} = req.params;
 
   const params = {
     TableName: tableName,
@@ -56,8 +97,8 @@ export const getExam = async (event) => {
       "#userId": "userId",
       "#idExamen": "idExamen",
     },
-    ExpressionAttributeValues: { ":userId": userId, ":idExamen": id },
-    Key: { userId, idExamen: id },
+    ExpressionAttributeValues: { ":userId": userId, ":idExamen": idExamen },
+    Key: { userId, idExamen },
   };
 
   const result = await docClient.send(new ScanCommand(params));
@@ -72,8 +113,8 @@ export const getExam = async (event) => {
 };
 
 // POST /exams
-export const createExam = async (event) => {
-  const body = JSON.parse(event.body);
+async function createExam(req) {
+  const body = await req.json();
 
   const id = uuidv4();
   await docClient.send(
@@ -95,15 +136,15 @@ export const createExam = async (event) => {
   };
 };
 
-// PUT /exams/{userId}/exam/{idExam}
-export const updateExam = async (event) => {
-  const userId = event.pathParameters.userId;
-  const id = event.pathParameters.idExam;
-  const body = JSON.parse(event.body);
+// PUT /exams/{userId}/exam/{idExamen}
+async function updateExam(req) {
+  const { userId, idExamen} = req.params;
+
+  const body = await req.json();
   await docClient.send(
     new UpdateCommand({
       TableName: tableName,
-      Key: { userId, id },
+      Key: { userId, idExamen },
       UpdateExpression: `
         SET 
           #nombreExamen = :nombreExamen, 
@@ -125,55 +166,23 @@ export const updateExam = async (event) => {
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify({ id, ...body }),
+    body: JSON.stringify({ idExamen, ...body }),
   };
 };
 
-// DELETE /exams/{userId}/exam/{idExam}
-export const deleteExam = async (event) => {
-  const idExam = event.pathParameters.idExam;
-  const userId = event.pathParameters.userId;
+// DELETE /exams/{userId}/exam/{idExamen}
+async function deleteExam(req) {
+  const { userId, idExamen} = req.params;
 
   await docClient.send(
     new DeleteCommand({
       TableName: tableName,
-      Key: { userId: userId, idExamen: idExam },
+      Key: { userId, idExamen },
     })
   );
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify({ deleted: idExam }),
+    body: JSON.stringify({ deleted: idExamen }),
   };
-};
-
-// GET /initializeTable
-export const initializeTable = async () => {
-  try {
-    await client.send(new DescribeTableCommand({ TableName: tableName }));
-    console.log("Table exists:", tableName);
-  } catch (err) {
-    if (err.name === "ResourceNotFoundException") {
-      console.log("Creating table:", tableName);
-
-      await client.send(
-        new CreateTableCommand({
-          TableName: tableName,
-          AttributeDefinitions: [
-            { AttributeName: "userId", AttributeType: "S" },
-            { AttributeName: "idExamen", AttributeType: "S" },
-          ],
-          KeySchema: [
-            { AttributeName: "userId", KeyType: "HASH" },
-            { AttributeName: "idExamen", KeyType: "RANGE" },
-          ],
-          BillingMode: "PAY_PER_REQUEST",
-        })
-      );
-
-      console.log("Table creation initiated.");
-    } else {
-      throw err;
-    }
-  }
 };

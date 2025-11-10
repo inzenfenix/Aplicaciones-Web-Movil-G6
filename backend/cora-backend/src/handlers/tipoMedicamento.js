@@ -9,7 +9,7 @@ import {
   PutCommand,
   ScanCommand,
 } from "@aws-sdk/lib-dynamodb";
-
+import { AutoRouter } from "itty-router";
 import { v4 as uuidv4 } from "uuid";
 
 const client = new DynamoDBClient({});
@@ -23,7 +23,7 @@ const headers = {
 };
 
 // GET /initializeTable
-export const initializeTable = async () => {
+export async function initializeTable() {
   try {
     await client.send(
       new DescribeTableCommand({
@@ -105,7 +105,7 @@ export const initializeTable = async () => {
 };
 
 // GET /allMedsTypes
-export const GetAllTypes = async () => {
+export async function GetAllTypes() {
   try {
     const res = await docClient.send(new ScanCommand({ TableName: tableName }));
     const items = res.Items;
@@ -125,7 +125,7 @@ export const GetAllTypes = async () => {
 };
 
 // Get /filterMedTypes
-export const filterMedTypes = async (event) => {
+export async function filterMedTypes(event) {
   const filter = event.pathParameters.filter;
 
   const params = {
@@ -163,7 +163,7 @@ export const filterMedTypes = async (event) => {
 };
 
 // POST /typeAllergies
-export const createMedType = async (event) => {
+export async function createMedType(event) {
   const body = JSON.parse(event.body);
   const id = uuidv4();
   await docClient.send(

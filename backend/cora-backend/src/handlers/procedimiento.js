@@ -1,7 +1,5 @@
 import {
   DynamoDBClient,
-  DescribeTableCommand,
-  CreateTableCommand,
 } from "@aws-sdk/client-dynamodb";
 import {
   DynamoDBDocumentClient,
@@ -11,6 +9,7 @@ import {
   DeleteCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { v4 as uuidv4 } from "uuid";
+import { AutoRouter } from "itty-router";
 
 const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client);
@@ -21,9 +20,52 @@ const headers = {
   "Access-Control-Allow-Credentials": true,
 };
 
+// Routing
+const router = AutoRouter();
+
+router
+  .get("/procedures/:userId", getProcedures)
+  .get("/procedures/:userId/procedure/:idProcedimiento", getProcedure)
+  .post("/procedures", createProcedure)
+  .put("/procedures/:userId/procedure/:idProcedimiento", updateProcedure)
+  .delete("/procedures/:userId/procedure/:idProcedimiento", deleteProcedure);
+
+// Router handler
+export const proceduresHandler = async (event) => {
+  const url = `https://${event.headers.host}${event.rawPath}`;
+  const method = event.requestContext?.http.method;
+
+  const init = {
+    method: method,
+    headers: event.headers,
+    body: event.body
+      ? Buffer.from(event.body, event.isBase64Encoded ? "base64" : "utf8")
+      : undefined,
+  };
+
+  try {
+    const request = new Request(url, init);
+    request.event = event;
+
+    const response = await router.fetch(request);
+
+    return {
+      statusCode: response.status,
+      headers: Object.fromEntries(response.headers.entries()),
+      body: await response.text(),
+    };
+  } catch (err) {
+    console.error(err);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: err.message }),
+    };
+  }
+};
+
 // GET /procedures/{userId}
-export const getProcedures = async (event) => {
-  const userId = event.pathParameters.userId;
+async function getProcedures(req) {
+  const { userId }  = req.params;
   const params = {
     TableName: tableName,
     FilterExpression: "#userId = :userId",
@@ -43,10 +85,10 @@ export const getProcedures = async (event) => {
   };
 };
 
-// GET /procedures/{userId}/procedure/{idProcedure}
-export const getProcedure = async (event) => {
-  const userId = event.pathParameters.userId;
-  const id = event.pathParameters.idProcedure;
+// GET /procedures/{userId}/procedure/{idProcedimiento}
+async function getProcedure(req) {
+
+  const { userId, idProcedimiento }  = req.params;
 
   const params = {
     TableName: tableName,
@@ -56,8 +98,8 @@ export const getProcedure = async (event) => {
       "#userId": "userId",
       "#idProcedimiento": "idProcedimiento",
     },
-    ExpressionAttributeValues: { ":userId": userId, ":idProcedimiento": id },
-    Key: { userId, idProcedimiento: id },
+    ExpressionAttributeValues: { ":userId": userId, ":idProcedimiento": idProcedimiento },
+    Key: { userId, idProcedimiento },
   };
 
   const result = await docClient.send(new ScanCommand(params));
@@ -72,8 +114,8 @@ export const getProcedure = async (event) => {
 };
 
 // POST /procedures
-export const createProcedure = async (event) => {
-  const body = JSON.parse(event.body);
+async function createProcedure(req) {
+  const body = await req.json();
 
   const id = uuidv4();
   await docClient.send(
@@ -95,15 +137,14 @@ export const createProcedure = async (event) => {
   };
 };
 
-// PUT /procedures/{userId}/procedure/{idProcedure}
-export const updateProcedure = async (event) => {
-  const userId = event.pathParameters.userId;
-  const id = event.pathParameters.idProcedure;
-  const body = JSON.parse(event.body);
+// PUT /procedures/{userId}/procedure/{idProcedimiento}
+async function updateProcedure(req) {
+  const { userId, idProcedimiento }  = req.params;
+  const body = await req.json();
   await docClient.send(
     new UpdateCommand({
       TableName: tableName,
-      Key: { userId, id },
+      Key: { userId, idProcedimiento },
       UpdateExpression: `
         SET 
           #idProcedimiento = :idProcedimiento, 
@@ -127,19 +168,18 @@ export const updateProcedure = async (event) => {
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify({ id, ...body }),
+    body: JSON.stringify({ idProcedimiento, ...body }),
   };
 };
 
-// DELETE /procedures/{userId}/procedure/{idProcedure}
-export const deleteProcedure = async (event) => {
-  const idProcedimiento = event.pathParameters.idProcedure;
-  const userId = event.pathParameters.userId;
-
+// DELETE /procedures/{userId}/procedure/{idProcedimiento}
+async function deleteProcedure(req) {
+  const { userId, idProcedimiento } = req.params;
+  
   await docClient.send(
     new DeleteCommand({
       TableName: tableName,
-      Key: { userId: userId, idProcedimiento: idProcedimiento },
+      Key: { userId, idProcedimiento },
     })
   );
   return {
@@ -147,35 +187,4 @@ export const deleteProcedure = async (event) => {
     headers,
     body: JSON.stringify({ deleted: idProcedimiento }),
   };
-};
-
-// GET /initializeTable
-export const initializeTable = async () => {
-  try {
-    await client.send(new DescribeTableCommand({ TableName: tableName }));
-    console.log("Table exists:", tableName);
-  } catch (err) {
-    if (err.name === "ResourceNotFoundException") {
-      console.log("Creating table:", tableName);
-
-      await client.send(
-        new CreateTableCommand({
-          TableName: tableName,
-          AttributeDefinitions: [
-            { AttributeName: "userId", AttributeType: "S" },
-            { AttributeName: "idProcedimiento", AttributeType: "S" },
-          ],
-          KeySchema: [
-            { AttributeName: "userId", KeyType: "HASH" },
-            { AttributeName: "idProcedimiento", KeyType: "RANGE" },
-          ],
-          BillingMode: "PAY_PER_REQUEST",
-        })
-      );
-
-      console.log("Table creation initiated.");
-    } else {
-      throw err;
-    }
-  }
 };

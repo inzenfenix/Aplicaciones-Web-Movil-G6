@@ -3,33 +3,33 @@ service: cora-backend
 provider:
   name: aws
   runtime: nodejs22.x
-  region: us-east-2
-  role: arn:aws:iam::626218016489:role/LabRole
+  region: us-east-1
+  role: arn:aws:iam::${aws:accountId}:role/LabRole
   stage: dev
-  timeout: 30
+  timeout: 29
   environment:
-    ALLERGIES_TABLE: Allergies
-    TYPE_ALLERGIES_TABLE: TypeAllergies
-    TYPE_MEDS_TABLE: TypeMeds
-    MEDS_TABLE: Meds
-    BLOOD_TYPE_TABLE: BloodType
-    RECIPE_TABLE: Recipe
-    SPECIALTY_TABLE: Specialty
-    PROCEDURE_TYPE_TABLE: TypeProcedure
-    EXAM_TYPE_TABLE: TypeExam
-    PROCEDURE_TABLE: Procedure
-    PROFESSIONAL_TABLE: Professional
+    ALLERGIES_TABLE: CORA_Allergies
+    TYPE_ALLERGIES_TABLE: CORA_TypeAllergies
+    TYPE_MEDS_TABLE: CORA_TypeMeds
+    MEDS_TABLE: CORA_Meds
+    BLOOD_TYPE_TABLE: CORA_BloodType
+    RECIPE_TABLE: CORA_Recipe
+    SPECIALTY_TABLE: CORA_Specialty
+    PROCEDURE_TYPE_TABLE: CORA_TypeProcedure
+    EXAM_TYPE_TABLE: CORA_TypeExam
+    PROCEDURE_TABLE: CORA_Procedure
+    PROFESSIONAL_TABLE: CORA_Professional
     EXAM_TABLE: CORA_Exam
     DIAGNOSIS_TABLE: CORA_Diagnosis
     CONSULTATION_TABLE: CORA_Consultation
-    PATIENT_TABLE: CORA_Patient
+    MEDICAL_RECORDS_TABLE: CORA_Medical_Record
     HISTORIC_CONSULTATION_TABLE: CORA_HistoricConsultation
-    CONNECTIONS_TABLE: ws-connections-${sls:stage}
+    CONNECTIONS_TABLE: CORA_ws-connections-${sls:stage}
 
   httpApi:
     cors:
       allowedOrigins:
-        - '*'
+        - "*"
       allowedHeaders:
         - Content-Type
         - Authorization
@@ -53,17 +53,157 @@ resources:
             KeyType: HASH
         StreamSpecification:
           StreamViewType: NEW_AND_OLD_IMAGES
-    
+
     ConnectionsTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: ws-connections-${sls:stage}
+        TableName: CORA_ws-connections-${sls:stage}
         BillingMode: PAY_PER_REQUEST
         AttributeDefinitions:
           - AttributeName: connectionId
             AttributeType: S
         KeySchema:
           - AttributeName: connectionId
+            KeyType: HASH
+
+    AllergiesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: CORA_Allergies
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: idAlergia
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: idAlergia
+            KeyType: RANGE
+
+    ConsultationsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: CORA_Consultation
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: idConsulta
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: idConsulta
+            KeyType: RANGE
+
+    MedsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: CORA_Meds
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: idMedicamento
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: idMedicamento
+            KeyType: RANGE
+
+    RecipesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: CORA_Recipe
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: idReceta
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: idReceta
+            KeyType: RANGE
+
+    ProceduresTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: CORA_Procedure
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: idProcedimiento
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: idProcedimiento
+            KeyType: RANGE
+
+    ProfessionalsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: CORA_Professionals
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: idProfesional
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: idProfesional
+            KeyType: RANGE
+
+    ExamsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: CORA_Exam
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: idExamen
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: idExamen
+            KeyType: RANGE
+
+    DiagnosisesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: CORA_Diagnosis
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: idDiagnostico
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: idDiagnostico
+            KeyType: RANGE
+
+    MedicalRecordsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: CORA_Medical_Record
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
             KeyType: HASH
 
 plugins:
@@ -76,72 +216,30 @@ custom:
     number: 2
 
 functions:
-#Allergies
-  initializeAllergies:
-      handler: src/handlers/alergias.initializeTable
-      events:
-        - httpApi:
-            path: /allergies/initializeAllergies
-            method: GET
-
-  getAllergies:
-    handler: src/handlers/alergias.getAllergies
-    events:
-      - httpApi:
-          path: /allergies/{userId}
-          method: GET
-
-  filterAllergies:
-    handler: src/handlers/alergias.filterAllergies
-    events:
-      - httpApi:
-          path: /allergies/{userId}/filter/{filter}
-          method: GET
-
-  createAllergy:
-    handler: src/handlers/alergias.createAllergy
+  #Allergies
+  allergiesHandler:
+    handler: src/handlers/alergias.allergiesHandler
     events:
       - httpApi:
           path: /allergies
-          method: POST
+          method: ANY
 
-  updateAllergy:
-    handler: src/handlers/alergias.updateAllergy
+      - httpApi:
+          path: /allergies/{proxy+}
+          method: ANY
+
+  # Type Allergy
+  typeAllergiesHandler:
+    handler: src/handlers/tipoAlergia.typeAllergiesHandler
     events:
       - httpApi:
-          path: /allergies/{userId}/allergyId/{id}
-          method: PUT
-
-  deleteAllergy:
-    handler: src/handlers/alergias.deleteAllergy
-    events:
+          path: /typeAllergies
+          method: ANY
       - httpApi:
-          path: /allergies/{userId}/allergyId/{id}
-          method: DELETE
+          path: /typeAllergies/{proxy+}
+          method: ANY
 
-# Type Allergy
-  createTypeAllergyTable:
-    handler: src/handlers/tipoAlergia.initializeTable
-    events:
-      - httpApi:
-          path: /typeAllergies/createTable
-          method: GET
-
-  getAllTypesAllergies:
-    handler: src/handlers/tipoAlergia.GetAllTypes
-    events:
-      - httpApi:
-          path: /typeAllergies/getAll
-          method: GET
-
-  getTypesAllergiesFiltered:
-    handler: src/handlers/tipoAlergia.filterAllergies
-    events:
-      - httpApi:
-          path: /typeAllergies/filterAllergies/{filter}
-          method: GET
-
-#MedsType
+  #MedsType
   createTypesMedsTable:
     handler: src/handlers/tipoMedicamento.initializeTable
     events:
@@ -163,49 +261,24 @@ functions:
           path: /typeMeds/filterMeds/{filter}
           method: GET
 
-#Meds
-  initializeMeds:
-      handler: src/handlers/medicamento.initializeTable
-      events:
-        - httpApi:
-            path: /meds/initializeMeds
-            method: GET
-
-  getMeds:
-    handler: src/handlers/medicamento.getMed
-    events:
-      - httpApi:
-          path: /meds/{idMedicamento}
-          method: GET
-
-  createMed:
-    handler: src/handlers/medicamento.createMed
+  #Meds
+  medsHandler:
+    handler: src/handlers/medicamento.medsHandler
     events:
       - httpApi:
           path: /meds
-          method: POST
-
-  updateMed:
-    handler: src/handlers/medicamento.updateMed
-    events:
+          method: ANY
       - httpApi:
-          path: /meds/{idMedicamento}
-          method: PUT
+          path: /meds/{proxy+}
+          method: ANY
 
-  deleteMed:
-    handler: src/handlers/medicamento.deleteMed
-    events:
-      - httpApi:
-          path: /meds/{idMedicamento}
-          method: DELETE
-
-#BloodType
+  #BloodType
   initializeBloodTypes:
-      handler: src/handlers/tipoSangre.initializeTable
-      events:
-        - httpApi:
-            path: /bloodTypes/initializeBloodTypes
-            method: GET
+    handler: src/handlers/tipoSangre.initializeTable
+    events:
+      - httpApi:
+          path: /bloodTypes/initializeBloodTypes
+          method: GET
 
   getBloodTypes:
     handler: src/handlers/tipoSangre.getBloodTypes
@@ -221,99 +294,35 @@ functions:
           path: /bloodTypes/{filter}
           method: GET
 
-#Recipe
-  initializeRecipe:
-      handler: src/handlers/receta.initializeTable
-      events:
-        - httpApi:
-            path: /recipes/initializeRecipes
-            method: GET
-
-  getRecipes:
-    handler: src/handlers/receta.getRecipes
-    events:
-      - httpApi:
-          path: /recipes/{userId}
-          method: GET
-
-  getRecipe:
-    handler: src/handlers/receta.getRecipe
-    events:
-      - httpApi:
-          path: /recipes/{userId}/recipe/{idRecipe}
-          method: GET
-
-  createRecipe:
-    handler: src/handlers/receta.createRecipe
+  #Recipe
+  recipesHandler:
+    handler: src/handlers/receta.recipesHandler
     events:
       - httpApi:
           path: /recipes
-          method: POST
-
-  updateRecipe:
-    handler: src/handlers/receta.updateRecipe
-    events:
+          method: ANY
       - httpApi:
-          path: /recipes/{userId}/recipe/{idRecipe}
-          method: PUT
+          path: /recipes/{proxy+}
+          method: ANY
 
-  deleteRecipe:
-    handler: src/handlers/receta.deleteRecipe
-    events:
-      - httpApi:
-          path: /recipes/{userId}/recipe/{idRecipe}
-          method: DELETE
-
-#Specialties
-  initializeSpecialties:
-      handler: src/handlers/especialidad.initializeTable
-      events:
-        - httpApi:
-            path: /specialties/initializeSpecialties
-            method: GET
-
-  getSpecialties:
-    handler: src/handlers/especialidad.getSpecialties
+  #Specialties
+  specialtiesHandler:
+    handler: src/handlers/especialidad.specialtiesHandler
     events:
       - httpApi:
           path: /specialties
-          method: GET
-
-  filterSpecialties:
-    handler: src/handlers/especialidad.filterSpecialties
-    events:
+          method: ANY
       - httpApi:
-          path: /specialties/filter/{filter}
-          method: GET
+          path: /specialties/{proxy+}
+          method: ANY
 
-  createSpecialties:
-    handler: src/handlers/especialidad.createSpecialty
-    events:
-      - httpApi:
-          path: /specialties
-          method: POST
-
-  updateSpecialties:
-    handler: src/handlers/especialidad.updateSpecialty
-    events:
-      - httpApi:
-          path:  /specialties/{idSpecialty}
-          method: PUT
-
-  deleteSpecialties:
-    handler: src/handlers/especialidad.deleteSpecialty
-    events:
-      - httpApi:
-          path: /specialties/{idSpecialty}
-          method: DELETE
-
-#TipoProcedimiento
+  #TipoProcedimiento
   initializeProcedureTypes:
-      handler: src/handlers/tipoProcedimiento.initializeTable
-      events:
-        - httpApi:
-            path: /procedureTypes/initializeSpecialties
-            method: GET
+    handler: src/handlers/tipoProcedimiento.initializeTable
+    events:
+      - httpApi:
+          path: /procedureTypes/initializeSpecialties
+          method: GET
 
   getProcedureType:
     handler: src/handlers/tipoProcedimiento.getProcedureTypes
@@ -329,287 +338,87 @@ functions:
           path: /procedureTypes/filter/{filter}
           method: GET
 
-#TipoExamen
-  initializeExamTypes:
-      handler: src/handlers/tipoExamen.initializeTable
-      events:
-        - httpApi:
-            path: /examType/initializeExamTypes
-            method: GET
-
-  getExamTypes:
-    handler: src/handlers/tipoExamen.getExamTypes
+  #TipoExamen
+  examTypeHandler:
+    handler: src/handlers/tipoExamen.examTypeHandler
     events:
       - httpApi:
           path: /examType
-          method: GET
+          method: ANY
 
-  filterExamTypes:
-    handler: src/handlers/tipoExamen.filterExamTypes
-    events:
       - httpApi:
-          path: /examType/filter/{filter}
-          method: GET
+          path: /examType/{proxy+}
+          method: ANY
 
-#Procedure
-  initializeProcedure:
-      handler: src/handlers/procedimiento.initializeTable
-      events:
-        - httpApi:
-            path: /procedures/initializeProcedures
-            method: GET
 
-  getProcedures:
-    handler: src/handlers/procedimiento.getProcedures
-    events:
-      - httpApi:
-          path: /procedures/{userId}
-          method: GET
-
-  getProcedure:
-    handler: src/handlers/procedimiento.getProcedure
-    events:
-      - httpApi:
-          path: /procedures/{userId}/procedure/{idProcedure}
-          method: GET
-
-  createProcedure:
-    handler: src/handlers/procedimiento.createProcedure
+  #Procedure
+  proceduresHandler:
+    handler: src/handlers/procedimiento.proceduresHandler
     events:
       - httpApi:
           path: /procedures
-          method: POST
+          method: ANY
 
-  updateProcedure:
-    handler: src/handlers/procedimiento.updateProcedure
-    events:
       - httpApi:
-          path: /procedures/{userId}/procedure/{idProcedure}
-          method: PUT
+          path: /procedures/{proxy+}
+          method: ANY
 
-  deleteProcedure:
-    handler: src/handlers/procedimiento.deleteProcedure
-    events:
-      - httpApi:
-          path: /procedures/{userId}/procedure/{idProcedure}
-          method: DELETE
-
-#Professional
-  initializeProfessional:
-      handler: src/handlers/profesional.initializeTable
-      events:
-        - httpApi:
-            path: /examType/initializeProfessionals
-            method: GET
-
-  getProfessional:
-    handler: src/handlers/profesional.GetAllProfessionals
-    events:
-      - httpApi:
-          path: /professionals/all
-          method: GET
-
-  filterProfessional:
-    handler: src/handlers/profesional.filterProfessionals
-    events:
-      - httpApi:
-          path: /professionals/filter/{filter}
-          method: GET
-
-  createProfessional:
-    handler: src/handlers/profesional.createProfessional
+  #Professional
+  professionalsHandler:
+    handler: src/handlers/profesional.professionalsHandler
     events:
       - httpApi:
           path: /professionals
-          method: POST
-
-  updateProfessional:
-    handler: src/handlers/profesional.updateProfessional
-    events:
+          method: ANY
       - httpApi:
-          path:  /professionals/{idProfessional}
-          method: PUT
+          path: /professionals/{proxy+}
+          method: ANY      
 
-  deleteProfessional:
-    handler: src/handlers/profesional.deleteProfessional
-    events:
-      - httpApi:
-          path: /professionals/{idProfessional}
-          method: DELETE
-
-#Exam
-  initializeExams:
-      handler: src/handlers/examen.initializeTable
-      events:
-        - httpApi:
-            path: /examType/initializeExams
-            method: GET
-
-  getExams:
-    handler: src/handlers/examen.getExams
-    events:
-      - httpApi:
-          path: /exams/{userId}
-          method: GET
-
-  getExam:
-    handler: src/handlers/examen.getExam
-    events:
-      - httpApi:
-          path: /exams/{userId}/exam/{idExam}
-          method: GET
-
-  createExam:
-    handler: src/handlers/examen.createExam
+  #Exam
+  examsHandler:
+    handler: src/handlers/examen.examsHandler
     events:
       - httpApi:
           path: /exams
-          method: POST
-
-  updateExam:
-    handler: src/handlers/examen.updateExam
-    events:
+          method: ANY
       - httpApi:
-          path:  /exams/{userId}/exam/{idExam}
-          method: PUT
+          path: /exams/{proxy+}
+          method: ANY
 
-  deleteExam:
-    handler: src/handlers/examen.deleteExam
-    events:
-      - httpApi:
-          path: /exams/{userId}/exam/{idExam}
-          method: DELETE
-
-#Diagnosis
-  initializeDiagnosis:
-      handler: src/handlers/diagnostico.initializeTable
-      events:
-        - httpApi:
-            path: /diagnosises/initializeDiagnosis
-            method: GET
-
-  getDiagnosises:
-    handler: src/handlers/diagnostico.getDiagnosises
-    events:
-      - httpApi:
-          path: /diagnosises/{userId}
-          method: GET
-
-  getDiagnosis:
-    handler: src/handlers/diagnostico.getDiagnosis
-    events:
-      - httpApi:
-          path: /diagnosises/{userId}/diagnosis/{idDiagnosis}
-          method: GET
-
-  createDiagnosis:
-    handler: src/handlers/diagnostico.createDiagnosis
+  #Diagnosis
+  diagnosisesHandler:
+    handler: src/handlers/diagnostico.diagnosisesHandler
     events:
       - httpApi:
           path: /diagnosises
-          method: POST
-
-  updateDiagnosis:
-    handler: src/handlers/diagnostico.updateDiagnosis
-    events:
+          method: ANY
       - httpApi:
-          path: /diagnosises/{userId}/diagnosis/{idDiagnosis}
-          method: PUT
+          path: /diagnosises/{proxy+}
+          method: ANY
 
-  deleteDiagnosis:
-    handler: src/handlers/diagnostico.deleteDiagnosis
-    events:
-      - httpApi:
-          path: /diagnosises/{userId}/diagnosis/{idDiagnosis}
-          method: DELETE
-
-#Consultation
-  initializeConsultation:
-      handler: src/handlers/consulta.initializeTable
-      events:
-        - httpApi:
-            path: /consultations/initializeConsultation
-            method: GET
-
-  getConsultations:
-    handler: src/handlers/consulta.getConsultations
-    events:
-      - httpApi:
-          path: /consultations/{userId}
-          method: GET
-
-  getConsultation:
-    handler: src/handlers/consulta.getConsultation
-    events:
-      - httpApi:
-          path: /consultations/{userId}/consultation/{idConsultation}
-          method: GET
-
-  createConsultation:
-    handler: src/handlers/consulta.createConsultation
+  #Consultation
+  consultationsHandler:
+    handler: src/handlers/consulta.consultationsHandler
     events:
       - httpApi:
           path: /consultations
-          method: POST
+          method: ANY
+      - httpApi:
+          path: /consultations/{proxy+}
+          method: ANY
 
-  updateConsultation:
-    handler: src/handlers/consulta.updateConsultation
+  #Ficha Medica
+  medicalRecordsHandler:
+    handler: src/handlers/ficha_medica.medicalRecordsHandler
     events:
       - httpApi:
-          path: /consultations/{userId}/consultation/{idConsultation}
-          method: PUT
-
-  deleteConsultation:
-    handler: src/handlers/consulta.deleteConsultation
-    events:
+          path: /medicalRecords
+          method: ANY
       - httpApi:
-          path: /consultations/{userId}/consultation/{idConsultation}
-          method: DELETE
+          path: /medicalRecords/{proxy+}
+          method: ANY
 
-#Patient
-  initializePatients:
-      handler: src/handlers/paciente.initializeTable
-      events:
-        - httpApi:
-            path: /patients/initializePatient
-            method: GET
-
-  getPatients:
-    handler: src/handlers/paciente.getPatients
-    events:
-      - httpApi:
-          path: /patients
-          method: GET
-
-  getPatient:
-    handler: src/handlers/paciente.getPatient
-    events:
-      - httpApi:
-          path: /patients/{userId}
-          method: GET
-
-  createPatient:
-    handler: src/handlers/paciente.createPatient
-    events:
-      - httpApi:
-          path: /patients
-          method: POST
-
-  updatePatient:
-    handler: src/handlers/paciente.updatePatient
-    events:
-      - httpApi:
-          path: /patients/{userId}
-          method: PUT
-
-  deletePatient:
-    handler: src/handlers/paciente.deletePatient
-    events:
-      - httpApi:
-          path: /patients/{userId}
-          method: DELETE
-
-#Historical Consultations
+  #Historical Consultations
 
   getHistoricConsultations:
     handler: src/handlers/historial_consulta.getHistoricConsultations
@@ -660,7 +469,7 @@ functions:
       - websocket:
           route: $disconnect
 
-#Randomizer
+  #Randomizer
   randomizeData:
     handler: src/handlers/randomizer.randomize
     events:

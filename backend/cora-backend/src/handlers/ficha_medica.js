@@ -1,7 +1,5 @@
 import {
   DynamoDBClient,
-  DescribeTableCommand,
-  CreateTableCommand,
 } from "@aws-sdk/client-dynamodb";
 import {
   DynamoDBDocumentClient,
@@ -10,23 +8,66 @@ import {
   UpdateCommand,
   DeleteCommand,
 } from "@aws-sdk/lib-dynamodb";
-import { v4 as uuidv4 } from "uuid";
+import { AutoRouter } from "itty-router";
 
 const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client);
 
-const patientTableName = process.env.PATIENT_TABLE;
-const alergiaTableName = process.env.ALLERGIES_TABLE;
+const medicalRecordsTableName = process.env.MEDICAL_RECORDS_TABLE;
+const allergiesTableName = process.env.ALLERGIES_TABLE;
 
 const headers = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Credentials": true,
 };
 
-// GET /patients
-export const getPatients = async (_) => {
+// Routing
+const router = AutoRouter();
+
+router
+  .get("/medicalRecords", getMedicalRecords)
+  .get("/medicalRecords/:userId", getMedicalRecord)
+  .post("/medicalRecords", createMedicalRecord)
+  .put("/medicalRecords/:userId", updateMedicalRecord)
+  .delete("/medicalRecords/:userId", deleteMedicalRecord);
+
+// Router handler
+export const medicalRecordsHandler = async (event) => {
+  const url = `https://${event.headers.host}${event.rawPath}`;
+  const method = event.requestContext?.http.method;
+
+  const init = {
+    method: method,
+    headers: event.headers,
+    body: event.body
+      ? Buffer.from(event.body, event.isBase64Encoded ? "base64" : "utf8")
+      : undefined,
+  };
+
+  try {
+    const request = new Request(url, init);
+    request.event = event;
+
+    const response = await router.fetch(request);
+
+    return {
+      statusCode: response.status,
+      headers: Object.fromEntries(response.headers.entries()),
+      body: await response.text(),
+    };
+  } catch (err) {
+    console.error(err);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: err.message }),
+    };
+  }
+};
+
+// GET /medicalRecords
+async function getMedicalRecords(_) {
   const params = {
-    TableName: patientTableName,
+    TableName: medicalRecordsTableName,
   };
 
   const result = await docClient.send(new ScanCommand(params));
@@ -61,20 +102,18 @@ export const getPatients = async (_) => {
   }
 };
 
-// GET /patients/{userId}
-export const getPatient = async (event) => {
-  const userId = event.pathParameters.userId;
-  const id = event.pathParameters.idConsultation;
+// GET /medicalRecords/{userId}
+async function getMedicalRecord(req) {
+  const { userId } = req.params;
 
   const params = {
-    TableName: patientTableName,
-    FilterExpression: "#userId = :userId and #idConsulta = :idConsulta",
+    TableName: medicalRecordsTableName,
+    FilterExpression: "#userId = :userId",
     ExpressionAttributeNames: {
       "#userId": "userId",
-      "#idConsulta": "idConsulta",
     },
-    ExpressionAttributeValues: { ":userId": userId, ":idConsulta": id },
-    Key: { userId, idConsulta: id },
+    ExpressionAttributeValues: { ":userId": userId },
+    Key: { userId },
   };
 
   const result = await docClient.send(new ScanCommand(params));
@@ -113,13 +152,13 @@ export const getPatient = async (event) => {
   };
 };
 
-// POST /patients
-export const createPatient = async (event) => {
-  const body = JSON.parse(event.body);
+// POST /medicalRecords
+async function createMedicalRecord(req) {
+  const body = await req.json();
 
   await docClient.send(
     new PutCommand({
-      TableName: patientTableName,
+      TableName: medicalRecordsTableName,
       Item: {
         userId: body.userId,
         idAlergias: body.idAlergias,
@@ -139,13 +178,13 @@ export const createPatient = async (event) => {
   };
 };
 
-// PUT /patients/{userId}
-export const updatePatient = async (event) => {
-  const userId = event.pathParameters.userId;
-  const body = JSON.parse(event.body);
+// PUT /medicalRecords/{userId}
+async function updateMedicalRecord(req) {
+  const { userId } = req.params;
+  const body = await req.json();
   await docClient.send(
     new UpdateCommand({
-      TableName: patientTableName,
+      TableName: medicalRecordsTableName,
       Key: { userId, id },
       UpdateExpression: `SET 
           #idAlergias = :idAlergias, 
@@ -182,13 +221,13 @@ export const updatePatient = async (event) => {
   };
 };
 
-// DELETE /patients/{userId}
-export const deletePatient = async (event) => {
-  const userId = event.pathParameters.userId;
+// DELETE /medicalRecords/{userId}
+async function deleteMedicalRecord(req) {
+  const { userId } = req.params;
 
   await docClient.send(
     new DeleteCommand({
-      TableName: patientTableName,
+      TableName: medicalRecordsTableName,
       Key: { userId: userId },
     })
   );
@@ -199,38 +238,9 @@ export const deletePatient = async (event) => {
   };
 };
 
-// GET /patients/initializePatient
-export const initializeTable = async () => {
-  try {
-    await client.send(
-      new DescribeTableCommand({ TableName: patientTableName })
-    );
-    console.log("Table exists:", patientTableName);
-  } catch (err) {
-    if (err.name === "ResourceNotFoundException") {
-      console.log("Creating table:", patientTableName);
-
-      await client.send(
-        new CreateTableCommand({
-          TableName: patientTableName,
-          AttributeDefinitions: [
-            { AttributeName: "userId", AttributeType: "S" },
-          ],
-          KeySchema: [{ AttributeName: "userId", KeyType: "HASH" }],
-          BillingMode: "PAY_PER_REQUEST",
-        })
-      );
-
-      console.log("Table creation initiated.");
-    } else {
-      throw err;
-    }
-  }
-};
-
 async function getAllergyFromId(idAlergia, userId) {
   const params = {
-    TableName: examTableName,
+    TableName: allergiesTableName,
     FilterExpression: "#idAlergia = :idAlergia",
     ExpressionAttributeNames: { "#idAlergia": "idAlergia" },
     ExpressionAttributeValues: { ":idAlergia": idAlergia },

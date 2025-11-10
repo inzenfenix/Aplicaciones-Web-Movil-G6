@@ -1,16 +1,17 @@
 import {
   DynamoDBClient,
-  CreateTableCommand,
-  DescribeTableCommand,
 } from "@aws-sdk/client-dynamodb";
 
 import {
   DynamoDBDocumentClient,
   PutCommand,
   ScanCommand,
+  UpdateCommand,
+  DeleteCommand
 } from "@aws-sdk/lib-dynamodb";
 
 import { v4 as uuidv4 } from "uuid";
+import { AutoRouter } from "itty-router";
 
 const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client);
@@ -22,35 +23,52 @@ const headers = {
   "Access-Control-Allow-Credentials": true,
 };
 
-// GET /initializeTable
-export const initializeTable = async () => {
+// Routing
+const router = AutoRouter();
+
+router
+  .get("/professionals", getAllProfessionals)
+  .get("/professionals/filter/:filter", filterProfessionals)
+  .post("/professionals", createProfessional)
+  .put("/professionals/:idProfesional", updateProfessional)
+  .delete("/professionals/:idProfesional", deleteProfessional);
+
+// Router handler
+export const professionalsHandler = async (event) => {
+  const url = `https://${event.headers.host}${event.rawPath}`;
+  const method = event.requestContext?.http.method;
+
+  const init = {
+    method: method,
+    headers: event.headers,
+    body: event.body
+      ? Buffer.from(event.body, event.isBase64Encoded ? "base64" : "utf8")
+      : undefined,
+  };
+
   try {
-    await client.send(new DescribeTableCommand({ TableName: tableName }));
-    console.log("Table exists:", tableName);
+    const request = new Request(url, init);
+    request.event = event;
+
+    const response = await router.fetch(request);
+
+    return {
+      statusCode: response.status,
+      headers: Object.fromEntries(response.headers.entries()),
+      body: await response.text(),
+    };
   } catch (err) {
-    if (err.name === "ResourceNotFoundException") {
-      console.log("Creating table:", tableName);
-
-      await client.send(
-        new CreateTableCommand({
-          TableName: tableName,
-          AttributeDefinitions: [
-            { AttributeName: "idProfesional", AttributeType: "S" },
-          ],
-          KeySchema: [{ AttributeName: "idProfesional", KeyType: "HASH" }],
-          BillingMode: "PAY_PER_REQUEST",
-        })
-      );
-
-      console.log("Table creation initiated.");
-    } else {
-      throw err;
-    }
+    console.error(err);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: err.message }),
+    };
   }
 };
 
-// GET /professionals/all
-export const GetAllProfessionals = async () => {
+
+// GET /professionals
+async function getAllProfessionals() {
   try {
     const res = await docClient.send(new ScanCommand({ TableName: tableName }));
     const items = res.Items;
@@ -70,8 +88,8 @@ export const GetAllProfessionals = async () => {
 };
 
 // Get /professionals/filter/{filter}
-export const filterProfessionals = async (event) => {
-  const filter = event.pathParameters.filter;
+async function filterProfessionals(req) {
+  const { filter } = req.params;
 
   const params = {
     TableName: tableName,
@@ -115,8 +133,8 @@ export const filterProfessionals = async (event) => {
 };
 
 // POST /professionals
-export const createProfessional = async (event) => {
-  const body = JSON.parse(event.body);
+async function createProfessional(req) {
+  const body = await req.json();
   const id = uuidv4();
   await docClient.send(
     new PutCommand({
@@ -139,14 +157,15 @@ export const createProfessional = async (event) => {
   };
 };
 
-// PUT /professionals/{idProfessional}
-export const updateProfessional = async (event) => {
-  const id = event.pathParameters.idProfessional;
-  const body = JSON.parse(event.body);
+// PUT /professionals/{idProfesional}
+async function updateProfessional(req) {
+  const { idProfesional } = req.params;
+  const body = await req.json();
+
   await docClient.send(
     new UpdateCommand({
       TableName: tableName,
-      Key: { idProfesional: id },
+      Key: { idProfesional },
       UpdateExpression: `
         SET 
           #nombre = :nombre, 
@@ -176,20 +195,20 @@ export const updateProfessional = async (event) => {
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify({ id, ...body }),
+    body: JSON.stringify({ idProfesional, ...body }),
   };
 };
 
-// DELETE /professionals/{idProfessional}
-export const deleteProfessional = async (event) => {
-  const id = event.pathParameters.idProfessional;
+// DELETE /professionals/{idProfesional}
+async function deleteProfessional(req) {
+  const { idProfesional } = req.params;
 
   await docClient.send(
-    new DeleteCommand({ TableName: tableName, Key: { idProfesional: id } })
+    new DeleteCommand({ TableName: tableName, Key: { idProfesional } })
   );
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify({ deleted: id }),
+    body: JSON.stringify({ deleted: idProfesional }),
   };
 };

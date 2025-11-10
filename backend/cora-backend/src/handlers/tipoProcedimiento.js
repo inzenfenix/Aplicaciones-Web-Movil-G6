@@ -22,7 +22,7 @@ const headers = {
 };
 
 // GET /procedureTypes
-export const getProcedureTypes = async (_) => {
+export async function getProcedureTypes(_) {
   const params = {
     TableName: tableName,
   };
@@ -36,7 +36,7 @@ export const getProcedureTypes = async (_) => {
 };
 
 // POST /procedureTypes
-export const createProcedureType = async (event) => {
+export async function createProcedureType(event) {
   const body = JSON.parse(event.body);
 
   const id = uuidv4();
@@ -57,7 +57,7 @@ export const createProcedureType = async (event) => {
 };
 
 // Get /procedureTypes/filter/{filter}
-export const filterProcedureTypes = async (event) => {
+export async function filterProcedureTypes(event) {
   const filter = event.pathParameters.filter;
 
   const params = {
@@ -90,7 +90,7 @@ export const filterProcedureTypes = async (event) => {
 };
 
 // PUT /procedureTypes/{idProcedureType}
-export const updateProcedureType = async (event) => {
+export async function updateProcedureType(event) {
   const id = event.pathParameters.idProcedureType;
   const body = JSON.parse(event.body);
   await docClient.send(
@@ -114,7 +114,7 @@ export const updateProcedureType = async (event) => {
 };
 
 // DELETE /procedureTypes/{idProcedureType}
-export const deleteProcedureType = async (event) => {
+export async function deleteProcedureType(event) {
   const id = event.pathParameters.idProcedureType;
 
   await docClient.send(
@@ -131,7 +131,7 @@ export const deleteProcedureType = async (event) => {
 };
 
 // GET /initializeTable
-export const initializeTable = async () => {
+export async function initializeTable() {
   try {
     // Check if table exists
     await client.send(

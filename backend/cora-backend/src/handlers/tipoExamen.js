@@ -11,6 +11,7 @@ import {
   DeleteCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { v4 as uuidv4 } from "uuid";
+import { AutoRouter } from "itty-router";
 
 const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client);
@@ -19,207 +20,244 @@ const tableName = process.env.EXAM_TYPE_TABLE;
 const headers = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Credentials": true,
+  "Content-Type": "application/json",
 };
 
-// GET /examType
-export const getExamTypes = async (_) => {
-  const params = {
-    TableName: tableName,
+// ------------------------------
+// ROUTER SETUP
+// ------------------------------
+const router = AutoRouter();
+
+router
+  .get("/examType", getExamTypes)
+  .get("/examType/filter/:filter", filterExamTypes)
+  .post("/examType", createExamType)
+  .put("/examType/:idExamType", updateExamTypes)
+  .delete("/examType/:idExamType", deleteExamType)
+  .get("/examType/initializeTable", initializeTable);
+
+router.all("*", () => new Response("Not Found", { status: 404 }));
+
+// ------------------------------
+// HANDLER FOR SERVERLESS
+// ------------------------------
+export const examTypeHandler = async (event) => {
+  const url = `https://${event.headers.host}${event.rawPath}`;
+  const method = event.requestContext?.http.method;
+
+  const init = {
+    method,
+    headers: event.headers,
+    body: event.body
+      ? Buffer.from(event.body, event.isBase64Encoded ? "base64" : "utf8")
+      : undefined,
   };
 
-  const result = await docClient.send(new ScanCommand(params));
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify(result.Items),
-  };
-};
+  try {
+    const request = new Request(url, init);
+    request.event = event;
 
-// POST /examType
-export const createExamType = async (event) => {
-  const body = JSON.parse(event.body);
+    const response = await router.fetch(request);
 
-  const id = uuidv4();
-  await docClient.send(
-    new PutCommand({
-      TableName: tableName,
-      Item: {
-        idTipoExamen: id,
-        nombre: body.nombre,
-        tipo: body.tipo,
-      },
-    })
-  );
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify({ id, ...body }),
-  };
-};
-
-// Get /examType/filter/{filter}
-export const filterExamTypes = async (event) => {
-  const filter = event.pathParameters.filter;
-
-  const params = {
-    TableName: tableName,
-    FilterExpression: "contains(#nombre, :filter) OR contains(#tipo, :filter)",
-    ExpressionAttributeNames: {
-      "#nombre": "nombre",
-      "#tipo": "tipo",
-    },
-    ExpressionAttributeValues: {
-      ":filter": filter,
-    },
-  };
-
-  const result = await docClient.send(new ScanCommand(params));
-  const items = result.Items;
-
-  if (items) {
     return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify(items),
+      statusCode: response.status,
+      headers: Object.fromEntries(response.headers.entries()),
+      body: await response.text(),
     };
-  } else {
+  } catch (err) {
+    console.error(err);
     return {
-      statusCode: 400,
+      statusCode: 500,
       headers,
-      body: JSON.stringify({ error: "Error getting data" }),
+      body: JSON.stringify({ error: err.message }),
     };
   }
 };
 
-// PUT /examType/{idExamType}
-export const updateExamTypes = async (event) => {
-  const id = event.pathParameters.idExamType;
-  const body = JSON.parse(event.body);
-  await docClient.send(
-    new UpdateCommand({
+// ------------------------------
+// ROUTE FUNCTIONS
+// ------------------------------
+
+// GET /examType
+async function getExamTypes() {
+  try {
+    const result = await docClient.send(new ScanCommand({ TableName: tableName }));
+    return new Response(JSON.stringify(result.Items ?? []), { status: 200, headers });
+  } catch (err) {
+    console.error(err);
+    return new Response(JSON.stringify({ error: err.message }), { status: 500, headers });
+  }
+}
+
+// POST /examType
+async function createExamType(req) {
+  try {
+    const body = await req.json();
+    const id = uuidv4();
+
+    await docClient.send(
+      new PutCommand({
+        TableName: tableName,
+        Item: {
+          idTipoExamen: id,
+          nombre: body.nombre,
+          tipo: body.tipo,
+        },
+      })
+    );
+
+    return new Response(JSON.stringify({ id, ...body }), { status: 200, headers });
+  } catch (err) {
+    console.error(err);
+    return new Response(JSON.stringify({ error: err.message }), { status: 500, headers });
+  }
+}
+
+// GET /examType/filter/:filter
+async function filterExamTypes(req) {
+  try {
+    const { filter } = req.params;
+
+    const params = {
       TableName: tableName,
-      Key: { idProcedureType: id },
-      UpdateExpression: "SET #nombre = :nombre, #tipo = :tipo",
+      FilterExpression: "contains(#nombre, :filter) OR contains(#tipo, :filter)",
       ExpressionAttributeNames: {
         "#nombre": "nombre",
         "#tipo": "tipo",
       },
       ExpressionAttributeValues: {
-        ":nombre": body.nombre,
-        ":tipo": body.tipo
+        ":filter": filter,
       },
-    })
-  );
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify({ id, ...body }),
-  };
-};
+    };
 
-// DELETE /examType/{idExamType}
-export const deleteProcedureType = async (event) => {
-  const id = event.pathParameters.idExamType;
+    const result = await docClient.send(new ScanCommand(params));
+    return new Response(JSON.stringify(result.Items ?? []), { status: 200, headers });
+  } catch (err) {
+    console.error(err);
+    return new Response(JSON.stringify({ error: err.message }), { status: 500, headers });
+  }
+}
 
-  await docClient.send(
-    new DeleteCommand({ TableName: tableName, Key: { idTipoExamen: id } })
-  );
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify({ deleted: id }),
-  };
-};
-
-// GET /initializeTable
-export const initializeTable = async () => {
+// PUT /examType/:idExamType
+async function updateExamTypes(req) {
   try {
-    await client.send(
-      new DescribeTableCommand({
+    const { idExamType } = req.params;
+    const body = await req.json();
+
+    await docClient.send(
+      new UpdateCommand({
         TableName: tableName,
+        Key: { idTipoExamen: idExamType },
+        UpdateExpression: "SET #nombre = :nombre, #tipo = :tipo",
+        ExpressionAttributeNames: {
+          "#nombre": "nombre",
+          "#tipo": "tipo",
+        },
+        ExpressionAttributeValues: {
+          ":nombre": body.nombre,
+          ":tipo": body.tipo,
+        },
       })
     );
+
+    return new Response(JSON.stringify({ id: idExamType, ...body }), {
+      status: 200,
+      headers,
+    });
+  } catch (err) {
+    console.error(err);
+    return new Response(JSON.stringify({ error: err.message }), { status: 500, headers });
+  }
+}
+
+// DELETE /examType/:idExamType
+async function deleteExamType(req) {
+  try {
+    const { idExamType } = req.params;
+
+    await docClient.send(
+      new DeleteCommand({
+        TableName: tableName,
+        Key: { idTipoExamen: idExamType },
+      })
+    );
+
+    return new Response(JSON.stringify({ deleted: idExamType }), { status: 200, headers });
+  } catch (err) {
+    console.error(err);
+    return new Response(JSON.stringify({ error: err.message }), { status: 500, headers });
+  }
+}
+
+// ------------------------------
+// INITIALIZE TABLE
+// ------------------------------
+async function initializeTable() {
+  try {
+    await client.send(new DescribeTableCommand({ TableName: tableName }));
     console.log("Table exists:", tableName);
 
-    console.log("Checking if there's data on the table");
-
-    const result = await docClient.send(
-      new ScanCommand({ TableName: tableName })
-    );
-    const items = result.Items;
+    const result = await docClient.send(new ScanCommand({ TableName: tableName }));
+    const items = result.Items ?? [];
 
     if (items.length === 0) {
-      console.log("No data on table, adding data");
+      console.log("Table empty, seeding initial data...");
       for (const exam of initial_data) {
         const id = uuidv4();
-
         const item = {
           idTipoExamen: id,
           nombre: exam.name,
           tipo: exam.type,
         };
-
-        await docClient.send(
-          new PutCommand({ TableName: tableName, Item: item })
-        );
+        await docClient.send(new PutCommand({ TableName: tableName, Item: item }));
       }
-
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify("ok"),
-      };
     }
+
+    return new Response(JSON.stringify({ message: "Initialization complete" }), {
+      status: 200,
+      headers,
+    });
   } catch (err) {
     if (err.name === "ResourceNotFoundException") {
-      console.log("Table does not exist... Creating table: ", tableName);
-
+      console.log("Table does not exist. Creating:", tableName);
       await client.send(
         new CreateTableCommand({
           TableName: tableName,
-          AttributeDefinitions: [
-            { AttributeName: "idTipoExamen", AttributeType: "S" },
-          ],
+          AttributeDefinitions: [{ AttributeName: "idTipoExamen", AttributeType: "S" }],
           KeySchema: [{ AttributeName: "idTipoExamen", KeyType: "HASH" }],
           BillingMode: "PAY_PER_REQUEST",
         })
       );
 
-      console.log("Checking if table is active...");
-
+      console.log("Waiting for table to become ACTIVE...");
       let active = false;
       while (!active) {
-        const desc = await client.send(
-          new DescribeTableCommand({ TableName: tableName })
-        );
+        const desc = await client.send(new DescribeTableCommand({ TableName: tableName }));
         if (desc.Table.TableStatus === "ACTIVE") active = true;
         else await new Promise((res) => setTimeout(res, 1000));
       }
-      console.log("Table is Active, adding data");
 
+      console.log("Table active, seeding data...");
       for (const exam of initial_data) {
         const id = uuidv4();
-
         const item = {
           idTipoExamen: id,
           nombre: exam.name,
           tipo: exam.type,
         };
-
-        await docClient.send(
-          new PutCommand({ TableName: tableName, Item: item })
-        );
+        await docClient.send(new PutCommand({ TableName: tableName, Item: item }));
       }
-      return {
-          statusCode: 200,
-          headers,
-          body: JSON.stringify("ok"),
-        };
+
+      return new Response(JSON.stringify({ message: "Table created and seeded" }), {
+        status: 200,
+        headers,
+      });
     } else {
-      throw err;
+      console.error(err);
+      return new Response(JSON.stringify({ error: err.message }), { status: 500, headers });
     }
   }
-};
+}
 
 const initial_data = [
   { name: "Hemograma completo", type: "Laboratorio" },

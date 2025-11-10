@@ -1,7 +1,5 @@
 import {
   DynamoDBClient,
-  DescribeTableCommand,
-  CreateTableCommand,
 } from "@aws-sdk/client-dynamodb";
 import {
   DynamoDBDocumentClient,
@@ -11,6 +9,17 @@ import {
   DeleteCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { v4 as uuidv4 } from "uuid";
+import { AutoRouter } from "itty-router";
+
+// Routing
+const router = AutoRouter();
+
+router
+  .get("/consultations/:userId", getConsultations)
+  .get("/consultations/:userId/consultation/:idConsulta", getConsultation)
+  .post("/consultations", createConsultation)
+  .put("/consultations/:userId/consultation/:idConsulta", updateConsultation)
+  .delete("/consultations/:userId/consultation/:idConsulta", deleteConsultation);
 
 const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client);
@@ -32,9 +41,43 @@ const headers = {
   "Access-Control-Allow-Credentials": true,
 };
 
+// Router handler
+export const consultationsHandler = async (event) => {
+  const url = `https://${event.headers.host}${event.rawPath}`;
+  const method = event.requestContext?.http.method;
+
+  const init = {
+    method: method,
+    headers: event.headers,
+    body: event.body
+      ? Buffer.from(event.body, event.isBase64Encoded ? "base64" : "utf8")
+      : undefined,
+  };
+
+  try {
+    const request = new Request(url, init);
+    request.event = event;
+
+    const response = await router.fetch(request);
+
+    return {
+      statusCode: response.status,
+      headers: Object.fromEntries(response.headers.entries()),
+      body: await response.text(),
+    };
+  } catch (err) {
+    console.error(err);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: err.message }),
+    };
+  }
+};
+
+
 // GET /consultations/{userId}
-export const getConsultations = async (event) => {
-  const userId = event.pathParameters.userId;
+async function getConsultations(req) {
+  const { userId } = req.params;
   const params = {
     TableName: consultationTableName,
     FilterExpression: "#userId = :userId",
@@ -108,10 +151,9 @@ export const getConsultations = async (event) => {
   };
 };
 
-// GET /consultations/{userId}/consultation/{idConsultation}
-export const getConsultation = async (event) => {
-  const userId = event.pathParameters.userId;
-  const id = event.pathParameters.idConsultation;
+// GET /consultations/{userId}/consultation/{idConsulta}
+async function getConsultation(req) {
+  const { userId, idConsulta } = req.params;
 
   const params = {
     TableName: consultationTableName,
@@ -120,7 +162,7 @@ export const getConsultation = async (event) => {
       "#userId": "userId",
       "#idConsulta": "idConsulta",
     },
-    ExpressionAttributeValues: { ":userId": userId, ":idConsulta": id },
+    ExpressionAttributeValues: { ":userId": userId, ":idConsulta": idConsulta },
     Key: { userId, idConsulta: id },
   };
 
@@ -188,8 +230,8 @@ export const getConsultation = async (event) => {
 };
 
 // POST /consultations
-export const createConsultation = async (event) => {
-  const body = JSON.parse(event.body);
+async function createConsultation(req) {
+  const body = await req.json();
 
   const id = uuidv4();
   await docClient.send(
@@ -215,15 +257,16 @@ export const createConsultation = async (event) => {
   };
 };
 
-// PUT /consultations/{userId}/consultation/{idConsultation}
-export const updateConsultation = async (event) => {
-  const userId = event.pathParameters.userId;
-  const id = event.pathParameters.idConsultation;
-  const body = JSON.parse(event.body);
+// PUT /consultations/{userId}/consultation/{idConsulta}
+async function updateConsultation(req) {
+  const { userId, idConsulta } = req.params;
+
+  const body = await req.json();
+
   await docClient.send(
     new UpdateCommand({
       TableName: consultationTableName,
-      Key: { userId, id },
+      Key: { userId, idConsulta },
       UpdateExpression:
         `SET 
           #idProfesional = :idProfesional, 
@@ -256,59 +299,26 @@ export const updateConsultation = async (event) => {
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify({ id, ...body }),
+    body: JSON.stringify({ idConsulta, ...body }),
   };
 };
 
-// DELETE /consultations/{userId}/consultation/{idConsultation}
-export const deleteConsultation = async (event) => {
-  const idConsulta = event.pathParameters.idConsultation;
-  const userId = event.pathParameters.userId;
+// DELETE /consultations/{userId}/consultation/{idConsulta}
+async function deleteConsultation(req) {
+
+  const { userId, idConsulta } = req.params;
 
   await docClient.send(
     new DeleteCommand({
       TableName: consultationTableName,
-      Key: { userId: userId, idConsulta: idConsulta },
+      Key: { userId, idConsulta },
     })
   );
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify({ deleted: idDiagnostico }),
+    body: JSON.stringify({ deleted: idConsulta }),
   };
-};
-
-// GET /diagnosises/initializeRecipes
-export const initializeTable = async () => {
-  try {
-    await client.send(
-      new DescribeTableCommand({ TableName: consultationTableName })
-    );
-    console.log("Table exists:", consultationTableName);
-  } catch (err) {
-    if (err.name === "ResourceNotFoundException") {
-      console.log("Creating table:", consultationTableName);
-
-      await client.send(
-        new CreateTableCommand({
-          TableName: consultationTableName,
-          AttributeDefinitions: [
-            { AttributeName: "userId", AttributeType: "S" },
-            { AttributeName: "idConsulta", AttributeType: "S" },
-          ],
-          KeySchema: [
-            { AttributeName: "userId", KeyType: "HASH" },
-            { AttributeName: "idConsulta", KeyType: "RANGE" },
-          ],
-          BillingMode: "PAY_PER_REQUEST",
-        })
-      );
-
-      console.log("Table creation initiated.");
-    } else {
-      throw err;
-    }
-  }
 };
 
 async function getProfessionalFromId(idProfesional) {

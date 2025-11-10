@@ -8,6 +8,7 @@
     "@aws-sdk/client-dynamodb": "^3.913.0",
     "@aws-sdk/lib-dynamodb": "^3.913.0",
     "faker": "^6.6.6",
+    "itty-router": "^5.0.22",
     "uuid": "^13.0.0"
   },
   "type": "module"

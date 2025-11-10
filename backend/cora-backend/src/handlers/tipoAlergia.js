@@ -4,9 +4,14 @@ import {
   DescribeTableCommand,
 } from "@aws-sdk/client-dynamodb";
 
-import { DynamoDBDocumentClient, PutCommand, ScanCommand } from "@aws-sdk/lib-dynamodb";
+import {
+  DynamoDBDocumentClient,
+  PutCommand,
+  ScanCommand,
+} from "@aws-sdk/lib-dynamodb";
 
 import { v4 as uuidv4 } from "uuid";
+import { AutoRouter } from "itty-router";
 
 const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client);
@@ -18,56 +23,106 @@ const headers = {
   "Access-Control-Allow-Credentials": true,
 };
 
-// GET /initializeTable
-export const initializeTable = async () => {
+// Routing
+const router = AutoRouter();
+
+router
+  .get("/typeAllergies", GetAllTypes)
+  .get("/typeAllergies/filter/:filter", filterTypeAllergies)
+  .post("/typeAllergies", createTypeAllergy)
+  .get("/typeAllergies/initializeTable", initializeTable);
+
+router.all("*", () => new Response("Not Found", { status: 404 }));
+
+// Router handler
+export const typeAllergiesHandler = async (event) => {
+  const url = `https://${event.headers.host}${event.rawPath}`;
+  const method = event.requestContext?.http.method;
+
+  const init = {
+    method: method,
+    headers: event.headers,
+    body: event.body
+      ? Buffer.from(event.body, event.isBase64Encoded ? "base64" : "utf8")
+      : undefined,
+  };
+
   try {
-    await client.send(
-      new DescribeTableCommand({
-        TableName: tableName,
-      })
-    );
+    const request = new Request(url, init);
+    request.event = event;
+
+    const response = await router.fetch(request);
+
+    return {
+      statusCode: response.status,
+      headers: Object.fromEntries(response.headers.entries()),
+      body: await response.text(),
+    };
+  } catch (err) {
+    console.error(err);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: err.message }),
+    };
+  }
+};
+
+// GET /initializeTable
+async function initializeTable() {
+  try {
+    await client.send(new DescribeTableCommand({ TableName: tableName }));
     console.log("Table exists:", tableName);
 
-    console.log("Checking if there's data on the table");
-
+    // Check if data already exists
     const result = await docClient.send(
       new ScanCommand({ TableName: tableName })
     );
-    const items = result.Items;
+    const items = result.Items ?? [];
 
-    if (items.length === 0) {
-      console.log("No data on table, adding data");
-      for (const allergy of initial_data) {
-        const id = uuidv4();
-
-        const item = {
-          idAllergyType: id,
-          allergen: allergy.alergeno,
-          typeAllergen: allergy.tipo,
-        };
-
-        await docClient.send(
-          new PutCommand({ TableName: tableName, Item: item })
-        );
-      }
+    if (items.length > 0) {
+      return new Response(
+        JSON.stringify({ message: "Table already initialized" }),
+        { status: 200, headers }
+      );
     }
+
+    console.log("No data found, seeding initial data...");
+
+    for (const allergy of initial_data) {
+      const id = uuidv4();
+      const item = {
+        idTipoAlergia: id,
+        alergeno: allergy.alergeno,
+        tipoAlergeno: allergy.tipo,
+      };
+      await docClient.send(
+        new PutCommand({ TableName: tableName, Item: item })
+      );
+    }
+
+    return new Response(
+      JSON.stringify({ message: "Table seeded successfully" }),
+      {
+        status: 200,
+        headers,
+      }
+    );
   } catch (err) {
     if (err.name === "ResourceNotFoundException") {
-      console.log("Table does not exist... Creating table: ", tableName);
+      console.log("Table not found, creating:", tableName);
 
       await client.send(
         new CreateTableCommand({
           TableName: tableName,
           AttributeDefinitions: [
-            { AttributeName: "idAllergyType", AttributeType: "S" },
+            { AttributeName: "idTipoAlergia", AttributeType: "S" },
           ],
-          KeySchema: [{ AttributeName: "idAllergyType", KeyType: "HASH" }],
+          KeySchema: [{ AttributeName: "idTipoAlergia", KeyType: "HASH" }],
           BillingMode: "PAY_PER_REQUEST",
         })
       );
 
-      console.log("Checking if table is active...");
-
+      // Wait for table to be active
       let active = false;
       while (!active) {
         const desc = await client.send(
@@ -76,98 +131,107 @@ export const initializeTable = async () => {
         if (desc.Table.TableStatus === "ACTIVE") active = true;
         else await new Promise((res) => setTimeout(res, 1000));
       }
-      console.log("Table is Active, adding data");
+
+      console.log("Table is active, seeding data...");
 
       for (const allergy of initial_data) {
         const id = uuidv4();
-
         const item = {
-          idAllergyType: id,
-          allergen: allergy.alergeno,
-          typeAllergen: allergy.tipo,
+          idTipoAlergia: id,
+          alergeno: allergy.alergeno,
+          tipoAlergeno: allergy.tipo,
         };
-
         await docClient.send(
           new PutCommand({ TableName: tableName, Item: item })
         );
       }
-    } else {
-      throw err;
-    }
-  }
-};
 
-// GET /allAllergies
-export const GetAllTypes = async () => {
+      return new Response(
+        JSON.stringify({ message: "Table created and seeded" }),
+        {
+          status: 200,
+          headers,
+        }
+      );
+    }
+
+    console.error("Initialize table error:", err);
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
+      headers,
+    });
+  }
+}
+
+// GET /typeAllergies
+async function GetAllTypes() {
   try {
     const res = await docClient.send(new ScanCommand({ TableName: tableName }));
-    const items = res.Items;
-
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify(items),
-    };
+    const items = res.Items ?? [];
+    return new Response(JSON.stringify(items), { status: 200, headers });
   } catch (error) {
-    return {
-      statusCode: 400,
-      headers,
-      body: { err: "Error getting data", error },
-    };
+    console.error("Error fetching all allergies:", error);
+    return new Response(
+      JSON.stringify({ error: "Error getting data", message: error.message }),
+      { status: 500, headers }
+    );
   }
-};
+}
 
-// Get /filterAllergies
-export const filterAllergies = async (event) => {
-  const filter = event.pathParameters.filter;
+// GET /typeAllergies/filter/:filter
+async function filterTypeAllergies(req) {
+  try {
+    const { filter } = req.params;
 
-  const params = {
-    TableName: tableName,
-    FilterExpression:
-      "contains(#allergen, :filter) OR contains(#typeAllergen, :filter)",
-    ExpressionAttributeNames: {
-      "#allergen": "allergen",
-      "#typeAllergen": "typeAllergen",
-    },
-    ExpressionAttributeValues: {
-      ":filter": filter,
-    },
-  };
-
-  const result = await docClient.send(new ScanCommand(params));
-  const items = result.Items;
-
-  if (items) {
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify(items),
+    const params = {
+      TableName: tableName,
+      FilterExpression:
+        "contains(#alergeno, :filter) OR contains(#tipoAlergeno, :filter)",
+      ExpressionAttributeNames: {
+        "#alergeno": "alergeno",
+        "#tipoAlergeno": "tipoAlergeno",
+      },
+      ExpressionAttributeValues: {
+        ":filter": filter,
+      },
     };
-  } else {
-    return {
-      statusCode: 400,
-      headers,
-      body: JSON.stringify({ error: "Error getting data" }),
-    };
+
+    const result = await docClient.send(new ScanCommand(params));
+    const items = result.Items ?? [];
+
+    return new Response(JSON.stringify(items), { status: 200, headers });
+  } catch (error) {
+    console.error("Error filtering allergies:", error);
+    return new Response(
+      JSON.stringify({ error: "Error filtering data", message: error.message }),
+      { status: 500, headers }
+    );
   }
-};
+}
 
 // POST /typeAllergies
-export const createAllergy = async (event) => {
-  const body = JSON.parse(event.body);
-  const id = uuidv4();
-  await docClient.send(
-    new PutCommand({
-      TableName: tableName,
-      Item: { idAllergyType: id, allergen: body.allergen, typeAllergen: body.typeAllergen },
-    })
-  );
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify({ id, ...body }),
-  };
-};
+async function createTypeAllergy(req) {
+  try {
+    const body = await req.json();
+    const id = uuidv4();
+
+    const item = {
+      idTipoAlergia: id,
+      alergeno: body.alergeno,
+      tipoAlergeno: body.tipoAlergeno,
+    };
+
+    await docClient.send(new PutCommand({ TableName: tableName, Item: item }));
+
+    return new Response(JSON.stringify(item), { status: 200, headers });
+  } catch (error) {
+    console.error("Error creating allergy:", error);
+    return new Response(
+      JSON.stringify({ error: "Error creating item", message: error.message }),
+      { status: 500, headers }
+    );
+  }
+}
 
 const initial_data = [
   {

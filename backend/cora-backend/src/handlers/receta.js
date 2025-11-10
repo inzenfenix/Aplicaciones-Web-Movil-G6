@@ -1,7 +1,5 @@
 import {
   DynamoDBClient,
-  DescribeTableCommand,
-  CreateTableCommand,
 } from "@aws-sdk/client-dynamodb";
 import {
   DynamoDBDocumentClient,
@@ -11,6 +9,7 @@ import {
   DeleteCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { v4 as uuidv4 } from "uuid";
+import { AutoRouter } from "itty-router";
 
 const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client);
@@ -22,9 +21,53 @@ const headers = {
   "Access-Control-Allow-Credentials": true,
 };
 
+// Routing
+const router = AutoRouter();
+
+router
+  .get("/recipes/:userId", getRecipes)
+  .get("/recipes/:userId/recipe/:idReceta", getRecipe)
+  .post("/recipes", createRecipe)
+  .put("/recipes/:userId/recipe/:idReceta", updateRecipe)
+  .delete("/recipes/:userId/recipe/:idReceta", deleteRecipe);
+
+// Router handler
+export const recipesHandler = async (event) => {
+  const url = `https://${event.headers.host}${event.rawPath}`;
+  const method = event.requestContext?.http.method;
+
+  const init = {
+    method: method,
+    headers: event.headers,
+    body: event.body
+      ? Buffer.from(event.body, event.isBase64Encoded ? "base64" : "utf8")
+      : undefined,
+  };
+
+  try {
+    const request = new Request(url, init);
+    request.event = event;
+
+    const response = await router.fetch(request);
+
+    return {
+      statusCode: response.status,
+      headers: Object.fromEntries(response.headers.entries()),
+      body: await response.text(),
+    };
+  } catch (err) {
+    console.error(err);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: err.message }),
+    };
+  }
+};
+
 // GET /recipes/{userId}
-export const getRecipes = async (event) => {
-  const userId = event.pathParameters.userId;
+async function getRecipes(req) {
+  const { userId } = req.params;
+
   const params = {
     TableName: recipeTableName,
     FilterExpression: "#userId = :userId",
@@ -66,17 +109,16 @@ export const getRecipes = async (event) => {
   };
 };
 
-// GET /recipes/{userId}/recipe/{idRecipe}
-export const getRecipe = async (event) => {
-  const userId = event.pathParameters.userId;
-  const id = event.pathParameters.idRecipe;
+// GET /recipes/{userId}/recipe/{idReceta}
+async function getRecipe(req) {
+  const { userId, idReceta } = req.params;
 
   const params = {
     TableName: recipeTableName,
     FilterExpression: "#userId = :userId and #idReceta = :idReceta",
     ExpressionAttributeNames: { "#userId": "userId", "#idReceta": "idReceta" },
-    ExpressionAttributeValues: { ":userId": userId, ":idReceta": id },
-    Key: { userId, idReceta: id },
+    ExpressionAttributeValues: { ":userId": userId, ":idReceta": idReceta },
+    Key: { userId, idReceta },
   };
 
   const result = await docClient.send(new ScanCommand(params));
@@ -110,8 +152,8 @@ export const getRecipe = async (event) => {
 };
 
 // POST /recipes
-export const createRecipe = async (event) => {
-  const body = JSON.parse(event.body);
+async function createRecipe(req) {
+  const body = await req.json();
 
   const id = uuidv4();
   await docClient.send(
@@ -132,15 +174,14 @@ export const createRecipe = async (event) => {
   };
 };
 
-// PUT /recipes/{userId}/recipe/{idRecipe}
-export const updateRecipe = async (event) => {
-  const userId = event.pathParameters.userId;
-  const id = event.pathParameters.idRecipe;
-  const body = JSON.parse(event.body);
+// PUT /recipes/{userId}/recipe/{idReceta}
+const updateRecipe = async (req) => {
+  const { userId, idReceta } = req.params;
+  const body = await req.json();
   await docClient.send(
     new UpdateCommand({
       TableName: recipeTableName,
-      Key: { userId, id },
+      Key: { userId, idReceta },
       UpdateExpression:
         "SET #idMedicamentos = :idMedicamentos, #instruccion = :instruccion",
       ExpressionAttributeNames: {
@@ -156,19 +197,18 @@ export const updateRecipe = async (event) => {
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify({ id, ...body }),
+    body: JSON.stringify({ idReceta, ...body }),
   };
 };
 
-// DELETE /recipes/{userId}/recipe/{idRecipe}
-export const deleteRecipe = async (event) => {
-  const idReceta = event.pathParameters.idRecipe;
-  const userId = event.pathParameters.userId;
+// DELETE /recipes/{userId}/recipe/{idReceta}
+async function deleteRecipe(req) {
+  const { userId, idReceta } = req.params;
 
   await docClient.send(
     new DeleteCommand({
       TableName: recipeTableName,
-      Key: { userId: userId, idReceta: idReceta },
+      Key: { userId, idReceta },
     })
   );
   return {
@@ -176,37 +216,6 @@ export const deleteRecipe = async (event) => {
     headers,
     body: JSON.stringify({ deleted: idReceta }),
   };
-};
-
-// GET /initializeTable
-export const initializeTable = async () => {
-  try {
-    await client.send(new DescribeTableCommand({ TableName: recipeTableName }));
-    console.log("Table exists:", recipeTableName);
-  } catch (err) {
-    if (err.name === "ResourceNotFoundException") {
-      console.log("Creating table:", recipeTableName);
-
-      await client.send(
-        new CreateTableCommand({
-          TableName: recipeTableName,
-          AttributeDefinitions: [
-            { AttributeName: "userId", AttributeType: "S" },
-            { AttributeName: "idReceta", AttributeType: "S" },
-          ],
-          KeySchema: [
-            { AttributeName: "userId", KeyType: "HASH" },
-            { AttributeName: "idReceta", KeyType: "RANGE" },
-          ],
-          BillingMode: "PAY_PER_REQUEST",
-        })
-      );
-
-      console.log("Table creation initiated.");
-    } else {
-      throw err;
-    }
-  }
 };
 
 async function getMedFromId(idMedicamento) {

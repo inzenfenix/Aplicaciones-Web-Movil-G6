@@ -11,6 +11,7 @@ import {
   DeleteCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { v4 as uuidv4 } from "uuid";
+import { AutoRouter } from "itty-router";
 
 const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client);
@@ -21,8 +22,52 @@ const headers = {
   "Access-Control-Allow-Credentials": true,
 };
 
+// Routing
+const router = AutoRouter();
+
+router
+  .get("/specialties", getSpecialties)
+  .get("/specialties/filter/:filter", filterSpecialties)
+  .post("/specialties", createSpecialty)
+  .put("/specialties/:idEspecialidad", updateSpecialty)
+  .delete("/specialties/:idEspecialidad", deleteSpecialty)
+  .post("/specialties/initializeTable", initializeTable)
+
+// Router handler
+export const specialtiesHandler = async (event) => {
+  const url = `https://${event.headers.host}${event.rawPath}`;
+  const method = event.requestContext?.http.method;
+
+  const init = {
+    method: method,
+    headers: event.headers,
+    body: event.body
+      ? Buffer.from(event.body, event.isBase64Encoded ? "base64" : "utf8")
+      : undefined,
+  };
+
+  try {
+    const request = new Request(url, init);
+    request.event = event;
+
+    const response = await router.fetch(request);
+
+    return {
+      statusCode: response.status,
+      headers: Object.fromEntries(response.headers.entries()),
+      body: await response.text(),
+    };
+  } catch (err) {
+    console.error(err);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: err.message }),
+    };
+  }
+};
+
 // GET /specialties
-export const getSpecialties = async (_) => {
+async function getSpecialties(_) {
   const params = {
     TableName: tableName,
   };
@@ -36,8 +81,8 @@ export const getSpecialties = async (_) => {
 };
 
 // POST /specialties
-export const createSpecialty = async (event) => {
-  const body = JSON.parse(event.body);
+async function createSpecialty(req) {
+  const body = await req.json();
 
   const id = uuidv4();
   await docClient.send(
@@ -57,8 +102,9 @@ export const createSpecialty = async (event) => {
 };
 
 // Get /specialties/filter/{filter}
-export const filterSpecialties = async (event) => {
-  const filter = event.pathParameters.filter;
+async function filterSpecialties(req) {
+
+  const { filter } = req.params;
 
   const params = {
     TableName: tableName,
@@ -89,14 +135,14 @@ export const filterSpecialties = async (event) => {
   }
 };
 
-// PUT /specialties/{idSpecialty}
-export const updateSpecialty = async (event) => {
-  const id = event.pathParameters.idSpecialty;
-  const body = JSON.parse(event.body);
+// PUT /specialties/{idEspecialidad}
+async function updateSpecialty(req) {
+  const { idEspecialidad } = req.params;
+  const body = await req.json();
   await docClient.send(
     new UpdateCommand({
       TableName: tableName,
-      Key: { idEspecialidad: id },
+      Key: { idEspecialidad },
       UpdateExpression: "SET #especialidad = :especialidad",
       ExpressionAttributeNames: {
         "#especialidad": "especialidad",
@@ -109,26 +155,26 @@ export const updateSpecialty = async (event) => {
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify({ id, ...body }),
+    body: JSON.stringify({ idEspecialidad, ...body }),
   };
 };
 
 // DELETE /specialties/{idSpecialty}
-export const deleteSpecialty = async (event) => {
-  const id = event.pathParameters.idSpecialty;
+async function deleteSpecialty(req) {
+  const { idEspecialidad } = req.params;
 
   await docClient.send(
-    new DeleteCommand({ TableName: tableName, Key: { idEspecialidad: id } })
+    new DeleteCommand({ TableName: tableName, Key: { idEspecialidad } })
   );
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify({ deleted: id }),
+    body: JSON.stringify({ deleted: idEspecialidad }),
   };
 };
 
 // GET /initializeTable
-export const initializeTable = async () => {
+async function initializeTable() {
   try {
     await client.send(
       new DescribeTableCommand({

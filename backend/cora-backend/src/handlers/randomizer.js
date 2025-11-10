@@ -181,8 +181,8 @@ export async function randomize() {
       const allergy = {
         userId: idPatient,
         idAlergia: idAllergies,
-        allergen: chosenType.allergen,
-        typeAllergen: chosenType.typeAllergen,
+        alergeno: chosenType.alergeno,
+        tipoAlergeno: chosenType.tipoAlergeno,
       };
       allergyIds.push(idAllergies);
       await put(TABLE.ALLERGIES, allergy);
