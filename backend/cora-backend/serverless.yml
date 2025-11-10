@@ -240,26 +240,15 @@ functions:
           method: ANY
 
   #MedsType
-  createTypesMedsTable:
-    handler: src/handlers/tipoMedicamento.initializeTable
+  typeMedsHandler:
+    handler: src/handlers/tipoMedicamento.typeMedsHandler
     events:
       - httpApi:
-          path: /typeMeds/createTable
-          method: GET
-
-  getAllMedsTypes:
-    handler: src/handlers/tipoMedicamento.GetAllTypes
-    events:
+          path: /typeMeds
+          method: ANY
       - httpApi:
-          path: /typeMeds/getAll
-          method: GET
-
-  getMedsTypesFiltered:
-    handler: src/handlers/tipoMedicamento.filterMedTypes
-    events:
-      - httpApi:
-          path: /typeMeds/filterMeds/{filter}
-          method: GET
+          path: /typeMeds/{proxy+}
+          method: ANY
 
   #Meds
   medsHandler:

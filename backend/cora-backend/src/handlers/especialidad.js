@@ -20,9 +20,10 @@ const tableName = process.env.SPECIALTY_TABLE;
 const headers = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Credentials": true,
+  "Content-Type": "application/json",
 };
 
-// Routing
+// === Routing ===
 const router = AutoRouter();
 
 router
@@ -31,11 +32,11 @@ router
   .post("/specialties", createSpecialty)
   .put("/specialties/:idEspecialidad", updateSpecialty)
   .delete("/specialties/:idEspecialidad", deleteSpecialty)
-  .post("/specialties/initializeTable", initializeTable);
+  .get("/specialties/initializeTable", initializeTable);
 
 router.all("*", () => new Response("Not Found", { status: 404 }));
 
-// Lambda handler
+// === Lambda Handler ===
 export const specialtiesHandler = async (event) => {
   try {
     const url = `https://${event.headers.host}${event.rawPath}`;
@@ -50,14 +51,15 @@ export const specialtiesHandler = async (event) => {
     };
 
     const request = new Request(url, init);
-    request.event = event; // helpful for debugging
+    request.event = event;
 
     const response = await router.fetch(request);
+    const responseBody = await response.text();
 
     return {
       statusCode: response.status,
       headers: Object.fromEntries(response.headers.entries()),
-      body: await response.text(),
+      body: responseBody,
     };
   } catch (err) {
     console.error("Error in specialtiesHandler:", err);
@@ -69,109 +71,125 @@ export const specialtiesHandler = async (event) => {
   }
 };
 
-// === GET /specialties ===
+// === ROUTES ===
+
+// GET /specialties
 async function getSpecialties() {
   try {
     const result = await docClient.send(
       new ScanCommand({ TableName: tableName })
     );
-    return {
-      statusCode: 200,
+    return new Response(JSON.stringify(result.Items ?? []), {
+      status: 200,
       headers,
-      body: JSON.stringify(result.Items ?? []),
-    };
+    });
   } catch (err) {
     console.error("Error fetching specialties:", err);
-    return {
-      statusCode: 500,
+    return new Response(JSON.stringify({ error: "Error fetching specialties" }), {
+      status: 500,
       headers,
-      body: JSON.stringify({ error: "Error fetching specialties" }),
-    };
+    });
   }
 }
 
-// === POST /specialties ===
+// POST /specialties
 async function createSpecialty(req) {
-  const body = await req.json();
-  const id = uuidv4();
+  try {
+    const body = await req.json();
+    const id = uuidv4();
 
-  const item = {
-    idEspecialidad: id,
-    especialidad: body.especialidad,
-  };
+    const item = {
+      idEspecialidad: id,
+      especialidad: body.especialidad,
+    };
 
-  await docClient.send(new PutCommand({ TableName: tableName, Item: item }));
+    await docClient.send(new PutCommand({ TableName: tableName, Item: item }));
 
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify(item),
-  };
+    return new Response(JSON.stringify(item), { status: 201, headers });
+  } catch (err) {
+    console.error("Error creating specialty:", err);
+    return new Response(JSON.stringify({ error: "Failed to create specialty" }), {
+      status: 500,
+      headers,
+    });
+  }
 }
 
-// === GET /specialties/filter/:filter ===
+// GET /specialties/filter/:filter
 async function filterSpecialties(req) {
-  const { filter } = req.params;
-  const params = {
-    TableName: tableName,
-    FilterExpression: "contains(#especialidad, :filter)",
-    ExpressionAttributeNames: {
-      "#especialidad": "especialidad",
-    },
-    ExpressionAttributeValues: {
-      ":filter": filter,
-    },
-  };
-
-  const result = await docClient.send(new ScanCommand(params));
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify(result.Items ?? []),
-  };
-}
-
-// === PUT /specialties/:idEspecialidad ===
-async function updateSpecialty(req) {
-  const { idEspecialidad } = req.params;
-  const body = await req.json();
-
-  await docClient.send(
-    new UpdateCommand({
+  try {
+    const { filter } = req.params;
+    const params = {
       TableName: tableName,
-      Key: { idEspecialidad },
-      UpdateExpression: "SET #especialidad = :especialidad",
+      FilterExpression: "contains(#especialidad, :filter)",
       ExpressionAttributeNames: { "#especialidad": "especialidad" },
-      ExpressionAttributeValues: { ":especialidad": body.especialidad },
-    })
-  );
+      ExpressionAttributeValues: { ":filter": filter },
+    };
 
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify({ idEspecialidad, ...body }),
-  };
+    const result = await docClient.send(new ScanCommand(params));
+    return new Response(JSON.stringify(result.Items ?? []), {
+      status: 200,
+      headers,
+    });
+  } catch (err) {
+    console.error("Error filtering specialties:", err);
+    return new Response(JSON.stringify({ error: "Failed to filter specialties" }), {
+      status: 500,
+      headers,
+    });
+  }
 }
 
-// === DELETE /specialties/:idEspecialidad ===
+// PUT /specialties/:idEspecialidad
+async function updateSpecialty(req) {
+  try {
+    const { idEspecialidad } = req.params;
+    const body = await req.json();
+
+    await docClient.send(
+      new UpdateCommand({
+        TableName: tableName,
+        Key: { idEspecialidad },
+        UpdateExpression: "SET #especialidad = :especialidad",
+        ExpressionAttributeNames: { "#especialidad": "especialidad" },
+        ExpressionAttributeValues: { ":especialidad": body.especialidad },
+      })
+    );
+
+    return new Response(
+      JSON.stringify({ idEspecialidad, ...body }),
+      { status: 200, headers }
+    );
+  } catch (err) {
+    console.error("Error updating specialty:", err);
+    return new Response(JSON.stringify({ error: "Failed to update specialty" }), {
+      status: 500,
+      headers,
+    });
+  }
+}
+
+// DELETE /specialties/:idEspecialidad
 async function deleteSpecialty(req) {
-  const { idEspecialidad } = req.params;
-
-  await docClient.send(
-    new DeleteCommand({
-      TableName: tableName,
-      Key: { idEspecialidad: { S: idEspecialidad } },
-    })
-  );
-
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify({ deleted: idEspecialidad }),
-  };
+  try {
+    const { idEspecialidad } = req.params;
+    await docClient.send(
+      new DeleteCommand({ TableName: tableName, Key: { idEspecialidad } })
+    );
+    return new Response(JSON.stringify({ deleted: idEspecialidad }), {
+      status: 200,
+      headers,
+    });
+  } catch (err) {
+    console.error("Error deleting specialty:", err);
+    return new Response(JSON.stringify({ error: "Failed to delete specialty" }), {
+      status: 500,
+      headers,
+    });
+  }
 }
 
-// === POST /specialties/initializeTable ===
+// GET /specialties/initializeTable
 async function initializeTable() {
   try {
     await client.send(new DescribeTableCommand({ TableName: tableName }));
@@ -180,31 +198,33 @@ async function initializeTable() {
     const result = await docClient.send(
       new ScanCommand({ TableName: tableName })
     );
+
     if (result.Items?.length > 0) {
-      return {
-        statusCode: 200,
+      return new Response(JSON.stringify({ message: "Table already initialized" }), {
+        status: 200,
         headers,
-        body: JSON.stringify({ message: "Table already initialized" }),
-      };
+      });
     }
 
     console.log("Populating specialties table...");
     for (const specialty of initial_data) {
       const id = uuidv4();
-      const item = { idEspecialidad: id, especialidad: specialty };
       await docClient.send(
-        new PutCommand({ TableName: tableName, Item: item })
+        new PutCommand({
+          TableName: tableName,
+          Item: { idEspecialidad: id, especialidad: specialty },
+        })
       );
     }
 
-    return {
-      statusCode: 200,
+    return new Response(JSON.stringify({ message: "Initialization complete" }), {
+      status: 200,
       headers,
-      body: JSON.stringify({ message: "Initialization complete" }),
-    };
+    });
   } catch (err) {
     if (err.name === "ResourceNotFoundException") {
       console.log("Table not found. Creating:", tableName);
+
       await client.send(
         new CreateTableCommand({
           TableName: tableName,
@@ -236,18 +256,17 @@ async function initializeTable() {
         );
       }
 
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify({ message: "Table created and initialized" }),
-      };
+      return new Response(
+        JSON.stringify({ message: "Table created and initialized" }),
+        { status: 200, headers }
+      );
     }
+
     console.error("Error initializing table:", err);
-    return {
-      statusCode: 500,
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
       headers,
-      body: JSON.stringify({ error: err.message }),
-    };
+    });
   }
 }
 

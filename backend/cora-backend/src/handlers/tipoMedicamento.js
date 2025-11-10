@@ -3,7 +3,6 @@ import {
   CreateTableCommand,
   DescribeTableCommand,
 } from "@aws-sdk/client-dynamodb";
-
 import {
   DynamoDBDocumentClient,
   PutCommand,
@@ -12,128 +11,92 @@ import {
 import { AutoRouter } from "itty-router";
 import { v4 as uuidv4 } from "uuid";
 
+// === AWS Setup ===
 const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client);
-
 const tableName = process.env.TYPE_MEDS_TABLE;
 
+// === Common Headers ===
 const headers = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Credentials": true,
+  "Content-Type": "application/json",
 };
 
-// GET /initializeTable
-export async function initializeTable() {
+// === Router Setup ===
+const router = AutoRouter();
+
+router
+  .get("/typeMeds", getAllMedsTypes)
+  .get("/typeMeds/filter/:filter", filterMedTypes)
+  .post("/typeMeds", createMedType)
+  .get("/typeMeds/initializeTable", initializeTable)
+  .all("*", () => new Response("Not Found", { status: 404 }));
+
+// === Lambda Handler ===
+export const typeMedsHandler = async (event) => {
   try {
-    await client.send(
-      new DescribeTableCommand({
-        TableName: tableName,
-      })
-    );
-    console.log("Table exists:", tableName);
+    const url = `https://${event.headers.host}${event.rawPath}`;
+    const method = event.requestContext?.http.method;
+    const init = {
+      method,
+      headers: event.headers,
+      body: event.body
+        ? Buffer.from(event.body, event.isBase64Encoded ? "base64" : "utf8")
+        : undefined,
+    };
 
-    console.log("Checking if there's data on the table");
+    const request = new Request(url, init);
+    request.event = event; // pass event for pathParams if needed
 
-    const result = await docClient.send(
-      new ScanCommand({ TableName: tableName })
-    );
-    const items = result.Items;
+    const response = await router.fetch(request);
 
-    if (items.length === 0) {
-      console.log("No data on table, adding data");
-
-      for (const med of medsInitialData) {
-        const id = uuidv4();
-
-        const item = {
-          idMedType: id,
-          name: med.name,
-          typeSimple: med.typeSimple,
-          typePharma: med.typePharma,
-        };
-
-        await docClient.send(
-          new PutCommand({ TableName: tableName, Item: item })
-        );
-      }
-    }
+    // Extract clean response
+    return {
+      statusCode: response.status,
+      headers: Object.fromEntries(response.headers.entries()),
+      body: await response.text(),
+    };
   } catch (err) {
-    if (err.name === "ResourceNotFoundException") {
-      console.log("Table does not exist... Creating table: ", tableName);
-
-      await client.send(
-        new CreateTableCommand({
-          TableName: tableName,
-          AttributeDefinitions: [
-            { AttributeName: "idMedType", AttributeType: "S" },
-          ],
-          KeySchema: [{ AttributeName: "idMedType", KeyType: "HASH" }],
-          BillingMode: "PAY_PER_REQUEST",
-        })
-      );
-
-      console.log("Checking if table is active...");
-
-      let active = false;
-      while (!active) {
-        const desc = await client.send(
-          new DescribeTableCommand({ TableName: tableName })
-        );
-        if (desc.Table.TableStatus === "ACTIVE") active = true;
-        else await new Promise((res) => setTimeout(res, 1000));
-      }
-      console.log("Table is Active, adding data");
-
-      for (const med of medsInitialData) {
-        const id = uuidv4();
-
-        const item = {
-          idMedType: id,
-          name: med.name,
-          typeSimple: med.typeSimple,
-          typePharma: med.typePharma,
-        };
-
-        await docClient.send(
-          new PutCommand({ TableName: tableName, Item: item })
-        );
-      }
-    } else {
-      throw err;
-    }
+    console.error("Error in typeMedsHandler:", err);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: err.message }),
+    };
   }
 };
 
-// GET /allMedsTypes
-export async function GetAllTypes() {
+// === ROUTE HANDLERS ===
+
+// GET /typeMeds
+async function getAllMedsTypes() {
   try {
-    const res = await docClient.send(new ScanCommand({ TableName: tableName }));
-    const items = res.Items;
-
-    return {
-      statusCode: 200,
+    const result = await docClient.send(new ScanCommand({ TableName: tableName }));
+    return new Response(JSON.stringify(result.Items ?? []), {
+      status: 200,
       headers,
-      body: JSON.stringify(items),
-    };
-  } catch (error) {
-    return {
-      statusCode: 400,
+    });
+  } catch (err) {
+    console.error("Error getting meds types:", err);
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
       headers,
-      body: { err: "Error getting data", error },
-    };
+    });
   }
-};
+}
 
-// Get /filterMedTypes
-export async function filterMedTypes(event) {
-  const filter = event.pathParameters.filter;
+// GET /typeMeds/filter/:filter
+async function filterMedTypes(req) {
+  const { filter } = req.params;
 
   const params = {
     TableName: tableName,
-    FilterExpression:
-      `contains(#name, :filter) OR 
-       contains(#typeAllergen, :filter) OR
-       contains(#typePharma, :filter)`,
+    FilterExpression: `
+      contains(#name, :filter) OR
+      contains(#typeSimple, :filter) OR
+      contains(#typePharma, :filter)
+    `,
     ExpressionAttributeNames: {
       "#name": "name",
       "#typeSimple": "typeSimple",
@@ -144,45 +107,118 @@ export async function filterMedTypes(event) {
     },
   };
 
-  const result = await docClient.send(new ScanCommand(params));
-  const items = result.Items;
-
-  if (items) {
-    return {
-      statusCode: 200,
+  try {
+    const result = await docClient.send(new ScanCommand(params));
+    return new Response(JSON.stringify(result.Items ?? []), {
+      status: 200,
       headers,
-      body: JSON.stringify(items),
-    };
-  } else {
-    return {
-      statusCode: 400,
+    });
+  } catch (err) {
+    console.error("Error filtering meds types:", err);
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
       headers,
-      body: JSON.stringify({ error: "Error getting data" }),
-    };
+    });
   }
-};
+}
 
-// POST /typeAllergies
-export async function createMedType(event) {
-  const body = JSON.parse(event.body);
-  const id = uuidv4();
-  await docClient.send(
-    new PutCommand({
-      TableName: tableName,
-      Item: {
-        idMedType: id,
-        name: med.name,
-        typeSimple: med.typeSimple,
-        typePharma: med.typePharma,
-      },
-    })
-  );
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify({ id, ...body }),
-  };
-};
+// POST /typeMeds
+async function createMedType(req) {
+  try {
+    const body = await req.json();
+    const id = uuidv4();
+
+    const item = {
+      idMedType: id,
+      name: body.name,
+      typeSimple: body.typeSimple,
+      typePharma: body.typePharma,
+    };
+
+    await docClient.send(new PutCommand({ TableName: tableName, Item: item }));
+
+    return new Response(JSON.stringify(item), { status: 200, headers });
+  } catch (err) {
+    console.error("Error creating med type:", err);
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
+      headers,
+    });
+  }
+}
+
+// GET /typeMeds/initializeTable
+async function initializeTable() {
+  try {
+    await client.send(new DescribeTableCommand({ TableName: tableName }));
+    console.log("Table exists:", tableName);
+
+    const result = await docClient.send(new ScanCommand({ TableName: tableName }));
+    if (result.Items?.length > 0) {
+      return new Response(JSON.stringify({ message: "Table already initialized" }), {
+        status: 200,
+        headers,
+      });
+    }
+
+    await populateInitialData();
+    return new Response(JSON.stringify({ message: "Existing table initialized" }), {
+      status: 200,
+      headers,
+    });
+  } catch (err) {
+    if (err.name === "ResourceNotFoundException") {
+      console.log("Table not found. Creating:", tableName);
+      await client.send(
+        new CreateTableCommand({
+          TableName: tableName,
+          AttributeDefinitions: [{ AttributeName: "idMedType", AttributeType: "S" }],
+          KeySchema: [{ AttributeName: "idMedType", KeyType: "HASH" }],
+          BillingMode: "PAY_PER_REQUEST",
+        })
+      );
+
+      while (true) {
+        const desc = await client.send(
+          new DescribeTableCommand({ TableName: tableName })
+        );
+        if (desc.Table?.TableStatus === "ACTIVE") break;
+        await new Promise((r) => setTimeout(r, 1000));
+      }
+
+      await populateInitialData();
+
+      return new Response(
+        JSON.stringify({ message: "Table created and initialized" }),
+        { status: 200, headers }
+      );
+    }
+
+    console.error("Error initializing table:", err);
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
+      headers,
+    });
+  }
+}
+
+// === Helper: Insert initial data ===
+async function populateInitialData() {
+  for (const med of medsInitialData) {
+    const id = uuidv4();
+    await docClient.send(
+      new PutCommand({
+        TableName: tableName,
+        Item: {
+          idMedType: id,
+          name: med.name,
+          typeSimple: med.typeSimple,
+          typePharma: med.typePharma,
+        },
+      })
+    );
+  }
+}
 
 const medsInitialData = [
   { "name": "Paracetamol", "typeSimple": "Analgésico para dolor y fiebre", "typePharma": "Analgésico / Antipirético" },
