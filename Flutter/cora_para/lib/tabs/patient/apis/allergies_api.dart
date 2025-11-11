@@ -13,8 +13,6 @@ class AllergiesAPI {
 
     final response = await http.get(url);
 
-    print(jsonDecode(response.body));
-
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
       return data;
