@@ -9,6 +9,13 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,6 +37,7 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: SingleChildScrollView(
+          controller: _scrollController,
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -95,11 +103,37 @@ class _HomePageState extends State<HomePage> {
                   icon: Icons.local_hospital,
                   iconColor: Colors.red.shade400,
                 ),
+                const SizedBox(height: 24),
+                Center(
+                  child: ElevatedButton(
+                    style: ButtonStyle(
+                      textStyle: WidgetStateProperty.all(
+                        TextStyle(wordSpacing: 2.1, letterSpacing: 1.3),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text("Volver "),
+                        const Icon(Icons.arrow_upward),
+                      ],
+                    ),
+                    onPressed: () => {_scrollToTop()},
+                  ),
+                ),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  void _scrollToTop() {
+    _scrollController.animateTo(
+      0,
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeInOut,
     );
   }
 }
