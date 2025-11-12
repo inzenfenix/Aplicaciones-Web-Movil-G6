@@ -104,15 +104,11 @@ resources:
         TableName: CORA_Meds
         BillingMode: PAY_PER_REQUEST
         AttributeDefinitions:
-          - AttributeName: userId
-            AttributeType: S
           - AttributeName: idMedicamento
             AttributeType: S
         KeySchema:
-          - AttributeName: userId
-            KeyType: HASH
           - AttributeName: idMedicamento
-            KeyType: RANGE
+            KeyType: HASH
 
     RecipesTable:
       Type: AWS::DynamoDB::Table
