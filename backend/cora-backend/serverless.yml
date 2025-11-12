@@ -6,7 +6,6 @@ provider:
   region: us-east-1
   role: arn:aws:iam::${aws:accountId}:role/LabRole
   stage: dev
-  timeout: 29
   environment:
     ALLERGIES_TABLE: CORA_Allergies
     TYPE_ALLERGIES_TABLE: CORA_TypeAllergies
@@ -430,6 +429,7 @@ functions:
 
   #Randomizer
   randomizeData:
+    timeout: 101
     handler: src/handlers/randomizer.randomize
     events:
       - httpApi:
