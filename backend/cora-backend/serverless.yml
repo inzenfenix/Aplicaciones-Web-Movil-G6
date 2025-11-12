@@ -149,18 +149,14 @@ resources:
     ProfessionalsTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: CORA_Professionals
+        TableName: CORA_Professional
         BillingMode: PAY_PER_REQUEST
         AttributeDefinitions:
-          - AttributeName: userId
-            AttributeType: S
           - AttributeName: idProfesional
             AttributeType: S
         KeySchema:
-          - AttributeName: userId
-            KeyType: HASH
           - AttributeName: idProfesional
-            KeyType: RANGE
+            KeyType: HASH
 
     ExamsTable:
       Type: AWS::DynamoDB::Table

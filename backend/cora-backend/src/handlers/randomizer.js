@@ -26,7 +26,7 @@ const TABLE = {
   EXAM: process.env.EXAM_TABLE,
   DIAGNOSIS: process.env.DIAGNOSIS_TABLE,
   CONSULTATION: process.env.CONSULTATION_TABLE,
-  PATIENT: process.env.PATIENT_TABLE,
+  MEDICAL_RECORD: process.env.MEDICAL_RECORDS_TABLE,
   HISTORIC_CONSULTATION: process.env.HISTORIC_CONSULTATION_TABLE,
 };
 
@@ -52,7 +52,11 @@ async function scanAll(table) {
 }
 
 async function put(table, item) {
-  return ddb.send(new PutCommand({ TableName: table, Item: item }));
+  try {
+    return ddb.send(new PutCommand({ TableName: table, Item: item }));
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 // Chilean RUT generator (simple, not fully validated—produces typical format)
@@ -298,7 +302,7 @@ export async function randomize() {
     };
 
     patients.push(patientItem);
-    await put(TABLE.PATIENT, patientItem);
+    await put(TABLE.MEDICAL_RECORD, patientItem);
 
     const idHistoric = uuidv4();
     const hist = {
