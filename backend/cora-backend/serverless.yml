@@ -11,7 +11,7 @@ provider:
     ALLERGIES_TABLE: CORA_Allergies
     TYPE_ALLERGIES_TABLE: CORA_TypeAllergies
     TYPE_MEDS_TABLE: CORA_TypeMeds
-    MEDS_TABLE: CORA_Meds
+    MEDS_TABLE: CORA_Medicamentos
     BLOOD_TYPE_TABLE: CORA_BloodType
     RECIPE_TABLE: CORA_Recipe
     SPECIALTY_TABLE: CORA_Specialty
@@ -101,7 +101,7 @@ resources:
     MedsTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: CORA_Meds
+        TableName: CORA_Medicamentos
         BillingMode: PAY_PER_REQUEST
         AttributeDefinitions:
           - AttributeName: idMedicamento
