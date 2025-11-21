@@ -68,7 +68,7 @@ export const typeAllergiesHandler = async (event) => {
 };
 
 // GET /initializeTable
-async function initializeTable() {
+export async function initializeTable() {
   try {
     await client.send(new DescribeTableCommand({ TableName: tableName }));
     console.log("Table exists:", tableName);

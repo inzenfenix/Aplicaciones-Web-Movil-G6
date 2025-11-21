@@ -7,6 +7,14 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import { faker } from "@faker-js/faker";
 
+//Tables
+import { initializeTable as initTableEspecialidad } from "./especialidad.js";
+import { initializeTable as initTableAlergia } from "./tipoAlergia.js";
+import { initializeTable as initTableExamen } from "./tipoExamen.js";
+import { initializeTable as initTableMeds } from "./tipoMedicamento.js";
+import { initializeTable as initTableProc } from "./tipoProcedimiento.js";
+import { initializeTable as initTableBlood } from "./tipoSangre.js";
+
 const client = new DynamoDBClient({});
 const ddb = DynamoDBDocumentClient.from(client);
 
@@ -29,6 +37,17 @@ const TABLE = {
   MEDICAL_RECORD: process.env.MEDICAL_RECORDS_TABLE,
   HISTORIC_CONSULTATION: process.env.HISTORIC_CONSULTATION_TABLE,
 };
+
+async function ensureTables()
+{
+  await initTableEspecialidad();
+  await initTableAlergia();
+  await initTableExamen();
+  await initTableMeds();
+  await initTableProc();
+  await initTableBlood();
+
+}
 
 function ensureEnv() {
   const missing = Object.entries(TABLE)
@@ -96,6 +115,7 @@ async function ensureTypeTablePopulated(tableName, pkName, samples) {
 }
 
 export async function randomize() {
+  await ensureTables();
   ensureEnv();
 
   // 1) Make sure type tables have values (we will use name + id for linking)

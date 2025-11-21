@@ -144,11 +144,10 @@ async function getConsultations(req) {
     }
   }
 
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify(cleaned_data),
-  };
+  return new Response(JSON.stringify(cleaned_data), {
+    status: 200,
+    headers
+  });
 };
 
 // GET /consultations/{userId}/consultation/{idConsulta}
@@ -175,58 +174,57 @@ async function getConsultation(req) {
 
     const idRecetas = item.idRecetas;
 
-      const recipes = [];
+    const recipes = [];
 
-      for (const idReceta of idRecetas) {
-        const recipe = await getRecipeFromId(idReceta, userId);
+    for (const idReceta of idRecetas) {
+      const recipe = await getRecipeFromId(idReceta, userId);
 
-        recipes.push({ idReceta: idReceta, receta: recipe });
-      }
+      recipes.push({ idReceta: idReceta, receta: recipe });
+    }
 
-      const idDiagnosticos = item.idDiagnosticos;
+    const idDiagnosticos = item.idDiagnosticos;
 
-      const diagnosises = [];
+    const diagnosises = [];
 
-      for (const idDiagnostico of idDiagnosticos) {
-        const diagnosis = await getDiagnosisFromId(idDiagnostico, userId);
+    for (const idDiagnostico of idDiagnosticos) {
+      const diagnosis = await getDiagnosisFromId(idDiagnostico, userId);
 
-        diagnosises.push({
-          idDiagnostico: idDiagnostico,
-          diagnostico: diagnosis,
-        });
-      }
+      diagnosises.push({
+        idDiagnostico: idDiagnostico,
+        diagnostico: diagnosis,
+      });
+    }
 
-      const idProcedmientos = item.idProcedmientos;
+    const idProcedmientos = item.idProcedmientos;
 
-      const procedures = [];
+    const procedures = [];
 
-      for (const idProcedmiento of idProcedmientos) {
-        const procedure = await getProcedureFromId(idProcedmiento);
+    for (const idProcedmiento of idProcedmientos) {
+      const procedure = await getProcedureFromId(idProcedmiento);
 
-        procedures.push({
-          idProcedmiento: idProcedmiento,
-          procedimiento: procedure,
-        });
-      }
+      procedures.push({
+        idProcedmiento: idProcedmiento,
+        procedimiento: procedure,
+      });
+    }
 
-      cleaned_data = {
-        userId: item.userId,
-        idConsulta: item.idConsulta,
-        profesional: getProfessionalFromId(item.idProfesional),
-        recetas: recipes,
-        diagnosticos: diagnosises,
-        procedimientos: procedures,
-        razonConsulta: item.razonConsulta,
-        lugar: item.lugar,
-        fechaAtencion: item.fechaAtencion,
-      };
+    cleaned_data = {
+      userId: item.userId,
+      idConsulta: item.idConsulta,
+      profesional: getProfessionalFromId(item.idProfesional),
+      recetas: recipes,
+      diagnosticos: diagnosises,
+      procedimientos: procedures,
+      razonConsulta: item.razonConsulta,
+      lugar: item.lugar,
+      fechaAtencion: item.fechaAtencion,
+    };
   }
 
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify(cleaned_data),
-  };
+  return new Response(JSON.stringify(cleaned_data), {
+    status: 200,
+    headers
+  });
 };
 
 // POST /consultations
@@ -250,11 +248,10 @@ async function createConsultation(req) {
       },
     })
   );
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify({ id, ...body }),
-  };
+  return new Response(JSON.stringify({ id, ...body }), {
+    status: 200,
+    headers
+  });
 };
 
 // PUT /consultations/{userId}/consultation/{idConsulta}
@@ -280,7 +277,7 @@ async function updateConsultation(req) {
         "#idProfesional": "idProfesional",
         "#idRecetas": "idRecetas",
         "#idDiagnosticos": "idDiagnosticos",
-        "#idProcedimientos": "idProcedimientos",
+        "#idProcedimientos": "idProcedmimientos",
         "#razonConsulta": "razonConsulta",
         "#lugar": "lugar",
         "#fechaAtencion": "fechaAtencion",
@@ -296,16 +293,15 @@ async function updateConsultation(req) {
       },
     })
   );
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify({ idConsulta, ...body }),
-  };
+
+  return new Response(JSON.stringify({ idConsulta, ...body }), {
+    status: 200,
+    headers
+  });
 };
 
 // DELETE /consultations/{userId}/consultation/{idConsulta}
 async function deleteConsultation(req) {
-
   const { userId, idConsulta } = req.params;
 
   await docClient.send(
@@ -314,12 +310,14 @@ async function deleteConsultation(req) {
       Key: { userId, idConsulta },
     })
   );
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify({ deleted: idConsulta }),
-  };
+  return new Response(JSON.stringify({ deleted: idConsulta }), {
+    status: 200,
+    headers
+  });
 };
+
+
+// ----------------- HELPERS -----------------
 
 async function getProfessionalFromId(idProfesional) {
   const params = {
@@ -375,8 +373,6 @@ async function getRecipeFromId(idReceta, userId) {
 
     if (item == null) return null;
 
-    const cleaned_data = [];
-
     const idMedicamentos = item.idMedicamentos;
     const meds = [];
 
@@ -385,13 +381,11 @@ async function getRecipeFromId(idReceta, userId) {
       meds.push({ idMedicamento: idMedicamento, medicamento: med });
     }
 
-    cleaned_data = {
+    return {
       idReceta: item.idReceta,
       medicamentos: meds,
       instruccion: item.instruccion,
     };
-
-    return cleaned_data;
   } else return null;
 }
 
@@ -426,8 +420,6 @@ async function getDiagnosisFromId(idDiagnosis, userId) {
 
     if (item == null) return null;
 
-    const cleaned_data = [];
-
     const idExamenes = item.idExamenes;
     const exams = [];
 
@@ -436,13 +428,11 @@ async function getDiagnosisFromId(idDiagnosis, userId) {
       exams.push({ idExamen: idExamen, examen: exam });
     }
 
-    cleaned_data = {
+    return {
       idDiagnostico: item.idDiagnostico,
       detalleDiagnostico: item.detalleDiagnostico,
       examenes: exams,
     };
-
-    return cleaned_data;
   } else return null;
 }
 

@@ -429,7 +429,7 @@ functions:
 
   #Randomizer
   randomizeData:
-    timeout: 101
+    timeout: 360
     handler: src/handlers/randomizer.randomize
     events:
       - httpApi:

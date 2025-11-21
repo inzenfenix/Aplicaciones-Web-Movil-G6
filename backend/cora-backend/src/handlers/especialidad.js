@@ -190,7 +190,7 @@ async function deleteSpecialty(req) {
 }
 
 // GET /specialties/initializeTable
-async function initializeTable() {
+export async function initializeTable() {
   try {
     await client.send(new DescribeTableCommand({ TableName: tableName }));
     console.log("Table exists:", tableName);

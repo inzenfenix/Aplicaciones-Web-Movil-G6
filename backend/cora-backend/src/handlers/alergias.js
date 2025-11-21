@@ -17,10 +17,18 @@ const tableName = process.env.ALLERGIES_TABLE;
 
 const headers = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Credentials": true,
+  "Access-Control-Allow-Credentials": "true",
+  "Content-Type": "application/json",
 };
 
-// Routing
+// Helper to standardize Response output
+const jsonResponse = (status, data) =>
+  new Response(JSON.stringify(data), {
+    status,
+    headers,
+  });
+
+// Router
 const router = AutoRouter();
 
 router
@@ -30,13 +38,13 @@ router
   .put("/allergies/:userId/allergy/:idAlergia", updateAllergy)
   .delete("/allergies/:userId/allergy/:idAlergia", deleteAllergy);
 
-// Router handler
+// Lambda router handler
 export const allergiesHandler = async (event) => {
   const url = `https://${event.headers.host}${event.rawPath}`;
   const method = event.requestContext?.http.method;
 
   const init = {
-    method: method,
+    method,
     headers: event.headers,
     body: event.body
       ? Buffer.from(event.body, event.isBase64Encoded ? "base64" : "utf8")
@@ -58,130 +66,131 @@ export const allergiesHandler = async (event) => {
     console.error(err);
     return {
       statusCode: 500,
+      headers,
       body: JSON.stringify({ error: err.message }),
     };
   }
 };
 
+// ==========================
+// Handlers
+// ==========================
 
 // GET /allergies/{userId}
 async function getAllergies(req) {
-  const { userId } = req.params;
+  try {
+    const { userId } = req.params;
 
-  const params = {
-    TableName: tableName,
-    FilterExpression: "#userId = :userId",
-    ExpressionAttributeNames: { "#userId": "userId" },
-    ExpressionAttributeValues: { ":userId": userId },
-    Key: { userId },
-  };
-
-  const result = await docClient.send(new ScanCommand(params));
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify(result.Items),
-  };
-};
-
-// Get /filterAllergies
-async function filterAllergies(req) {
-
-  const { userId, filter } = req.params;
-
-  const params = {
-    TableName: tableName,
-    Key: { userId },
-    FilterExpression:
-      "contains(#alergeno, :filter) OR contains(#tipoAlergeno, :filter)",
-    ExpressionAttributeNames: {
-      "#alergeno": "alergeno",
-      "#tipoAlergeno": "tipoAlergeno",
-    },
-    ExpressionAttributeValues: {
-      ":filter": filter,
-    },
-  };
-
-  const result = await docClient.send(new ScanCommand(params));
-  const items = result.Items;
-
-  if (items) {
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify(items),
+    const params = {
+      TableName: tableName,
+      FilterExpression: "#userId = :userId",
+      ExpressionAttributeNames: { "#userId": "userId" },
+      ExpressionAttributeValues: { ":userId": userId },
     };
-  } else {
-    return {
-      statusCode: 400,
-      headers,
-      body: JSON.stringify({ error: "Error getting data" }),
-    };
+
+    const result = await docClient.send(new ScanCommand(params));
+
+    return jsonResponse(200, result.Items ?? []);
+  } catch (err) {
+    return jsonResponse(500, { error: err.message });
   }
-};
+}
 
-// POST /allergies
-async function createAllergy(req) {
-  const body = await req.json();
+// GET /allergies/{userId}/filter/{filter}
+async function filterAllergies(req) {
+  try {
+    const { userId, filter } = req.params;
 
-  const id = uuidv4();
-  await docClient.send(
-    new PutCommand({
+    const params = {
       TableName: tableName,
-      Item: {
-        userId: body.userId,
-        idAlergia: id,
-        alergeno: body.alergeno,
-        tipoAlergeno: body.tipoAlergeno,
-      },
-    })
-  );
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify({ id, ...body }),
-  };
-};
-
-// PUT /allergies/{userId}/allergy/{idAlergia}
-async function updateAllergy(req) {
-const { userId, idAlergia } = req.params;
-
-  const body = await req.json();
-  await docClient.send(
-    new UpdateCommand({
-      TableName: tableName,
-      Key: { userId, idAlergia },
-      UpdateExpression: "SET #alergeno = :alergeno, #tipoAlergeno = :tipoAlergeno",
+      FilterExpression:
+        "(#userId = :userId) AND (contains(#alergeno, :filter) OR contains(#tipoAlergeno, :filter))",
       ExpressionAttributeNames: {
+        "#userId": "userId",
         "#alergeno": "alergeno",
         "#tipoAlergeno": "tipoAlergeno",
       },
       ExpressionAttributeValues: {
-        ":alergeno": body.alergeno,
-        ":tipoAlergeno": body.tipoAlergeno,
+        ":userId": userId,
+        ":filter": filter,
       },
-    })
-  );
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify({ idAlergia, ...body }),
-  };
-};
+    };
 
-// DELETE /allergies/{id}/allergy/{idAlergia}
+    const result = await docClient.send(new ScanCommand(params));
+
+    return jsonResponse(200, result.Items ?? []);
+  } catch (err) {
+    return jsonResponse(500, { error: err.message });
+  }
+}
+
+// POST /allergies
+async function createAllergy(req) {
+  try {
+    const body = await req.json();
+    const id = uuidv4();
+
+    await docClient.send(
+      new PutCommand({
+        TableName: tableName,
+        Item: {
+          userId: body.userId,
+          idAlergia: id,
+          alergeno: body.alergeno,
+          tipoAlergeno: body.tipoAlergeno,
+        },
+      })
+    );
+
+    return jsonResponse(201, { id, ...body });
+  } catch (err) {
+    return jsonResponse(500, { error: err.message });
+  }
+}
+
+// PUT /allergies/{userId}/allergy/{idAlergia}
+async function updateAllergy(req) {
+  try {
+    const { userId, idAlergia } = req.params;
+    const body = await req.json();
+
+    await docClient.send(
+      new UpdateCommand({
+        TableName: tableName,
+        Key: { userId, idAlergia },
+        UpdateExpression:
+          "SET #alergeno = :alergeno, #tipoAlergeno = :tipoAlergeno",
+        ExpressionAttributeNames: {
+          "#alergeno": "alergeno",
+          "#tipoAlergeno": "tipoAlergeno",
+        },
+        ExpressionAttributeValues: {
+          ":alergeno": body.alergeno,
+          ":tipoAlergeno": body.tipoAlergeno,
+        },
+      })
+    );
+
+    return jsonResponse(200, { idAlergia, ...body });
+  } catch (err) {
+    return jsonResponse(500, { error: err.message });
+  }
+}
+
+// DELETE /allergies/{userId}/allergy/{idAlergia}
 async function deleteAllergy(req) {
+  try {
+    const { userId, idAlergia } = req.params;
 
-  const { userId, idAlergia } = req.params;
+    await docClient.send(
+      new DeleteCommand({
+        TableName: tableName,
+        Key: { userId, idAlergia },
+      })
+    );
 
-  await docClient.send(
-    new DeleteCommand({ TableName: tableName, Key: { userId, idAlergia } })
-  );
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify({ deleted: idAlergia }),
-  };
-};
+    return jsonResponse(200, { deleted: idAlergia });
+  } catch (err) {
+    return jsonResponse(500, { error: err.message });
+  }
+}

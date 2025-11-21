@@ -39,7 +39,7 @@ export const professionalsHandler = async (event) => {
   const method = event.requestContext?.http.method;
 
   const init = {
-    method: method,
+    method,
     headers: event.headers,
     body: event.body
       ? Buffer.from(event.body, event.isBase64Encoded ? "base64" : "utf8")
@@ -66,76 +66,84 @@ export const professionalsHandler = async (event) => {
   }
 };
 
-
+//
 // GET /professionals
+//
 async function getAllProfessionals() {
   try {
-    const res = await docClient.send(new ScanCommand({ TableName: tableName }));
-    const items = res.Items;
+    const res = await docClient.send(
+      new ScanCommand({
+        TableName: tableName,
+        // Opcional: reduce RCU
+        // ProjectionExpression: "idProfesional, nombre, especialidad, telefono, correo, edad, sexo",
+      })
+    );
 
-    return {
-      statusCode: 200,
+    return new Response(JSON.stringify(res.Items ?? []), {
+      status: 200,
       headers,
-      body: JSON.stringify(items),
-    };
+    });
+
   } catch (error) {
-    return {
-      statusCode: 400,
-      headers,
-      body: { err: "Error getting data", error },
-    };
+    return new Response(
+      JSON.stringify({ err: "Error getting data", error }),
+      { status: 400, headers }
+    );
   }
 };
 
-// Get /professionals/filter/{filter}
+//
+// GET /professionals/filter/{filter}
+// Scan optimizado sin romper tu comportamiento esperado
+//
 async function filterProfessionals(req) {
   const { filter } = req.params;
 
-  const params = {
-    TableName: tableName,
-    FilterExpression: `
-        contains(#especialidad, :filter) OR 
-        contains(#nombre, :filter) OR
-        contains(#telefono, :filter) OR
-        contains(#correo, :filter) OR
-        contains(#edad, :filter) OR
-        contains(#sexo, :filter)
-      `,
-    ExpressionAttributeNames: {
-      "#especialidad": "especialidad",
-      "#nombre": "nombre",
-      "#telefono": "telefono",
-      "#correo": "correo",
-      "#edad": "edad",
-      "#sexo": "sexo",
-    },
-    ExpressionAttributeValues: {
-      ":filter": filter,
-    },
-  };
+  try {
+    const result = await docClient.send(
+      new ScanCommand({
+        TableName: tableName,
+        FilterExpression:
+          `contains(#especialidad, :f) OR 
+           contains(#nombre, :f) OR
+           contains(#telefono, :f) OR
+           contains(#correo, :f) OR
+           contains(#sexo, :f)`,
+        ExpressionAttributeNames: {
+          "#especialidad": "especialidad",
+          "#nombre": "nombre",
+          "#telefono": "telefono",
+          "#correo": "correo",
+          "#sexo": "sexo",
+        },
+        ExpressionAttributeValues: {
+          ":f": filter,
+        },
+        // Opcional: reduce RCU
+        // ProjectionExpression: "idProfesional, nombre, especialidad, telefono, correo, sexo",
+      })
+    );
 
-  const result = await docClient.send(new ScanCommand(params));
-  const items = result.Items;
+    return new Response(JSON.stringify(result.Items ?? []), {
+      status: 200,
+      headers,
+    });
 
-  if (items) {
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify(items),
-    };
-  } else {
-    return {
-      statusCode: 400,
-      headers,
-      body: JSON.stringify({ error: "Error getting data" }),
-    };
+  } catch (error) {
+    return new Response(
+      JSON.stringify({ err: "Error filtering professionals", error }),
+      { status: 400, headers }
+    );
   }
 };
 
+//
 // POST /professionals
+//
 async function createProfessional(req) {
   const body = await req.json();
   const id = uuidv4();
+
   await docClient.send(
     new PutCommand({
       TableName: tableName,
@@ -150,14 +158,16 @@ async function createProfessional(req) {
       },
     })
   );
-  return {
-    statusCode: 200,
+
+  return new Response(JSON.stringify({ id, ...body }), {
+    status: 200,
     headers,
-    body: JSON.stringify({ id, ...body }),
-  };
+  });
 };
 
+//
 // PUT /professionals/{idProfesional}
+//
 async function updateProfessional(req) {
   const { idProfesional } = req.params;
   const body = await req.json();
@@ -169,14 +179,15 @@ async function updateProfessional(req) {
       UpdateExpression: `
         SET 
           #nombre = :nombre, 
-          #especialiddad = :especialiddad, 
+          #especialidad = :especialidad, 
           #telefono = :telefono, 
           #correo = :correo, 
           #edad = :edad,
-          #sexo = :sexo`,
+          #sexo = :sexo
+      `,
       ExpressionAttributeNames: {
         "#nombre": "nombre",
-        "#especialiddad": "especialiddad",
+        "#especialidad": "especialidad",
         "#telefono": "telefono",
         "#correo": "correo",
         "#edad": "edad",
@@ -190,25 +201,31 @@ async function updateProfessional(req) {
         ":edad": body.edad,
         ":sexo": body.sexo,
       },
+      ReturnValues: "ALL_NEW",
     })
   );
-  return {
-    statusCode: 200,
+
+  return new Response(JSON.stringify({ idProfesional, ...body }), {
+    status: 200,
     headers,
-    body: JSON.stringify({ idProfesional, ...body }),
-  };
+  });
 };
 
+//
 // DELETE /professionals/{idProfesional}
+//
 async function deleteProfessional(req) {
   const { idProfesional } = req.params;
 
   await docClient.send(
-    new DeleteCommand({ TableName: tableName, Key: { idProfesional } })
+    new DeleteCommand({
+      TableName: tableName,
+      Key: { idProfesional },
+    })
   );
-  return {
-    statusCode: 200,
+
+  return new Response(JSON.stringify({ deleted: idProfesional }), {
+    status: 200,
     headers,
-    body: JSON.stringify({ deleted: idProfesional }),
-  };
+  });
 };
