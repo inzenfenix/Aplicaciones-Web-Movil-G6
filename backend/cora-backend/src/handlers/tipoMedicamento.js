@@ -93,14 +93,14 @@ async function filterMedTypes(req) {
   const params = {
     TableName: tableName,
     FilterExpression: `
-      contains(#name, :filter) OR
-      contains(#typeSimple, :filter) OR
-      contains(#typePharma, :filter)
+      contains(#nombre, :filter) OR
+      contains(#tipoSimple, :filter) OR
+      contains(#tipoFarma, :filter)
     `,
     ExpressionAttributeNames: {
-      "#name": "name",
-      "#typeSimple": "typeSimple",
-      "#typePharma": "typePharma",
+      "#nombre": "nombre",
+      "#tipoSimple": "tipoSimple",
+      "#tipoFarma": "tipoFarma",
     },
     ExpressionAttributeValues: {
       ":filter": filter,
@@ -129,10 +129,10 @@ async function createMedType(req) {
     const id = uuidv4();
 
     const item = {
-      idMedType: id,
-      name: body.name,
-      typeSimple: body.typeSimple,
-      typePharma: body.typePharma,
+      idTipoMedicamento: id,
+      nombre: body.nombre,
+      tipoSimple: body.tipoSimple,
+      tipoFarma: body.tipoFarma,
     };
 
     await docClient.send(new PutCommand({ TableName: tableName, Item: item }));
@@ -172,8 +172,8 @@ export async function initializeTable() {
       await client.send(
         new CreateTableCommand({
           TableName: tableName,
-          AttributeDefinitions: [{ AttributeName: "idMedType", AttributeType: "S" }],
-          KeySchema: [{ AttributeName: "idMedType", KeyType: "HASH" }],
+          AttributeDefinitions: [{ AttributeName: "idTipoMedicamento", AttributeType: "S" }],
+          KeySchema: [{ AttributeName: "idTipoMedicamento", KeyType: "HASH" }],
           BillingMode: "PAY_PER_REQUEST",
         })
       );
@@ -210,10 +210,10 @@ async function populateInitialData() {
       new PutCommand({
         TableName: tableName,
         Item: {
-          idMedType: id,
-          name: med.name,
-          typeSimple: med.typeSimple,
-          typePharma: med.typePharma,
+          idTipoMedicamento: id,
+          nombre: med.name,
+          tipoSimple: med.typeSimple,
+          tipoFarma: med.typePharma,
         },
       })
     );

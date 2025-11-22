@@ -65,9 +65,8 @@ class _MainPageState extends State<MainPage> {
       );
 
       setState(() {
-        if(closest != null)
-        {
-        temp = '${closest.temperatura.toString()} °C';
+        if (closest != null) {
+          temp = '${closest.temperatura.toString()} °C';
         }
       });
     } catch (e) {
@@ -85,7 +84,12 @@ class _MainPageState extends State<MainPage> {
             trailing: Text(temp, style: TextStyle(fontSize: 16.0)),
             title: Text(
               widget.title,
-              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 24.0),
+              style: TextStyle(
+                fontSize: 22.0,
+                fontWeight: FontWeight.w200,
+                letterSpacing: 1.3,
+                wordSpacing: 1.5,
+              ),
             ),
           ),
         ),

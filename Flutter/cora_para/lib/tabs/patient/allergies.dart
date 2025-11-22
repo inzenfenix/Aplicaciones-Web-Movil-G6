@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'apis/allergies_api.dart';
+import 'package:cora_para/tabs/patient/apis/allergies_api.dart';
 
 class AllergiesPage extends StatefulWidget {
   final String rut;
@@ -25,8 +25,8 @@ class _AllergiesPageState extends State<AllergiesPage> {
     List<dynamic> selectedFilteredData = List.empty(growable: true);
 
     for (var allergy in userAllergies) {
-      String allergen = allergy["allergen"] as String;
-      String typeAllergen = allergy["typeAllergen"] as String;
+      String allergen = allergy["alergeno"] as String;
+      String typeAllergen = allergy["tipoAlergeno"] as String;
 
       if (allergen.toLowerCase().contains(searchInput.toLowerCase()) ||
           typeAllergen.toLowerCase().contains(searchInput.toLowerCase())) {
@@ -154,7 +154,8 @@ Widget listCard({required List<dynamic>? values}) {
         child: ListTile(
           leading: Text('${i + 1}.', style: TextStyle(fontSize: 16.0)),
           title: Text(
-            '${values[i]["allergen"]}\nTipo: ${values[i]["typeAllergen"]}',
+            '${values[i]["alergeno"]}\n'
+            'Tipo: ${values[i]["tipoAlergeno"].toString()}',
           ),
         ),
       ),

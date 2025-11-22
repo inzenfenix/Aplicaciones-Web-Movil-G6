@@ -182,7 +182,7 @@ export async function randomize() {
       idMedicamento: idMeds,
       nombreMedicamento: t.nombre,
       tipoSimple: t.tipoSimple,
-      tipoPharma: t.tipoPharma,
+      tipoFarma: t.tipoFarma,
       gramaje: faker.number.float({ min: 0.1, max: 7.1, fractionDigits: 2 }),
       cantidad: faker.number.bigInt({ min: 1, max: 2 }),
       indicacion: faker.lorem.paragraph(),

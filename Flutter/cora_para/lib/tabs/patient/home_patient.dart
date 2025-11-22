@@ -1,3 +1,4 @@
+import 'package:cora_para/tabs/patient/recipes.dart';
 import 'package:flutter/material.dart';
 import 'allergies.dart';
 
@@ -61,10 +62,26 @@ class _PatientHomePageState extends State<PatientHomePage> {
                 title: "General",
                 children: [
                   responsiveGrid([
-                    infoCard(title: "Tipo Sangre", subtitle: "AB+", sideColor: sideCardColor),
-                    infoCard(title: "¿Crónico?", subtitle: "Sí", sideColor: sideCardColor),
-                    infoCard(title: "¿Fumador/a?", subtitle: "Sí", sideColor: sideCardColor),
-                    infoCard(title: "Seguro", subtitle: "ISAPRE", sideColor: sideCardColor),
+                    infoCard(
+                      title: "Tipo Sangre",
+                      subtitle: "AB+",
+                      sideColor: sideCardColor,
+                    ),
+                    infoCard(
+                      title: "¿Crónico?",
+                      subtitle: "Sí",
+                      sideColor: sideCardColor,
+                    ),
+                    infoCard(
+                      title: "¿Fumador/a?",
+                      subtitle: "Sí",
+                      sideColor: sideCardColor,
+                    ),
+                    infoCard(
+                      title: "Seguro",
+                      subtitle: "ISAPRE",
+                      sideColor: sideCardColor,
+                    ),
                   ], crossAxisCount),
                 ],
               ),
@@ -76,12 +93,36 @@ class _PatientHomePageState extends State<PatientHomePage> {
                 title: "Estadísticas",
                 children: [
                   responsiveGrid([
-                    infoCard(title: "Latidos", subtitle: "69 bpm", sideColor: sideCardColor),
-                    infoCard(title: "Glucosa", subtitle: "150 mg/dL", sideColor: sideCardColor),
-                    infoCard(title: "Presión", subtitle: "120/80 mmHg", sideColor: sideCardColor),
-                    infoCard(title: "Colesterol", subtitle: "150 mg/dL", sideColor: sideCardColor),
-                    infoCard(title: "Respiración", subtitle: "32 rpm", sideColor: sideCardColor),
-                    infoCard(title: "Temperatura", subtitle: "36.6°", sideColor: sideCardColor),
+                    infoCard(
+                      title: "Latidos",
+                      subtitle: "69 bpm",
+                      sideColor: sideCardColor,
+                    ),
+                    infoCard(
+                      title: "Glucosa",
+                      subtitle: "150 mg/dL",
+                      sideColor: sideCardColor,
+                    ),
+                    infoCard(
+                      title: "Presión",
+                      subtitle: "120/80 mmHg",
+                      sideColor: sideCardColor,
+                    ),
+                    infoCard(
+                      title: "Colesterol",
+                      subtitle: "150 mg/dL",
+                      sideColor: sideCardColor,
+                    ),
+                    infoCard(
+                      title: "Respiración",
+                      subtitle: "32 rpm",
+                      sideColor: sideCardColor,
+                    ),
+                    infoCard(
+                      title: "Temperatura",
+                      subtitle: "36.6°",
+                      sideColor: sideCardColor,
+                    ),
                   ], crossAxisCount),
                 ],
               ),
@@ -99,15 +140,27 @@ class _PatientHomePageState extends State<PatientHomePage> {
                       onPressedButton: () {
                         showDialog<String>(
                           context: context,
-                          builder: (BuildContext context) => Dialog(
-                            child: AllergiesPage(rut: widget.rut),
-                          ),
+                          builder: (BuildContext context) =>
+                              Dialog(child: AllergiesPage(rut: widget.rut)),
                         );
                       },
                     ),
-                    infoButtonCard(title: "Recetas", icon: Icons.receipt),
+                    infoButtonCard(
+                      title: "Recetas",
+                      icon: Icons.receipt,
+                      onPressedButton: () {
+                        showDialog<String>(
+                          context: context,
+                          builder: (BuildContext context) =>
+                              Dialog(child: RecipesPage(rut: widget.rut)),
+                        );
+                      },
+                    ),
                     infoButtonCard(title: "Historial", icon: Icons.history),
-                    infoButtonCard(title: "Hábitos", icon: Icons.watch_later_outlined),
+                    infoButtonCard(
+                      title: "Hábitos",
+                      icon: Icons.watch_later_outlined,
+                    ),
                   ], crossAxisCount),
                 ],
               ),
@@ -118,7 +171,10 @@ class _PatientHomePageState extends State<PatientHomePage> {
                 icon: const Icon(Icons.arrow_upward),
                 label: const Text("Volver arriba"),
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
                   textStyle: const TextStyle(letterSpacing: 1.2),
                 ),
                 onPressed: _scrollToTop,
@@ -204,7 +260,10 @@ Widget infoCard({
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
+          Text(
+            title,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0),
+          ),
           const SizedBox(height: 6.0),
           const Divider(thickness: 0.8),
           const SizedBox(height: 6.0),
@@ -235,7 +294,10 @@ Widget infoButtonCard({
             const SizedBox(height: 8.0),
             Text(
               title,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 15.0,
+              ),
             ),
           ],
         ),

@@ -97,7 +97,7 @@ async function updateMed(req) {
         SET 
           #nombreMedicamento = :nombreMedicamento, 
           #tipoSimple = :tipoSimple, 
-          #tipoPharma = :tipoPharma,
+          #tipoFarma = :tipoFarma,
           #gramaje = :gramaje,
           #cantidad = :cantidad,
           #indicacion = :indicacion
@@ -105,7 +105,7 @@ async function updateMed(req) {
       ExpressionAttributeNames: {
         "#nombreMedicamento": "nombreMedicamento",
         "#tipoSimple": "tipoSimple",
-        "#tipoPharma": "tipoPharma",
+        "#tipoFarma": "tipoFarma",
         "#gramaje": "gramaje",
         "#cantidad": "cantidad",
         "#indicacion": "indicacion",
@@ -113,7 +113,7 @@ async function updateMed(req) {
       ExpressionAttributeValues: {
         ":nombreMedicamento": body.nombreMedicamento,
         ":tipoSimple": body.tipoSimple,
-        ":tipoPharma": body.tipoPharma,
+        ":tipoFarma": body.tipoFarma,
         ":gramaje": body.gramaje,
         ":cantidad": body.cantidad,
         ":indicacion": body.indicacion,
@@ -161,7 +161,7 @@ async function createMed(req) {
         idMedicamento: id,
         nombreMedicamento: body.nombreMedicamento,
         tipoSimple: body.tipoSimple,
-        tipoPharma: body.tipoPharma,
+        tipoFarma: body.tipoFarma,
         gramaje: body.gramaje,
         cantidad: body.cantidad,
         indicacion: body.indicacion,

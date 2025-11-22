@@ -248,7 +248,7 @@ async function createRecipe(req) {
 }
 
 // PUT /recipes/{userId}/recipe/{idReceta}
-const updateRecipe = async (req) => {
+async function updateRecipe(req) {
   try {
     const { userId, idReceta } = req.params;
     const body = await req.json();
