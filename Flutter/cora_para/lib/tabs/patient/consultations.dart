@@ -408,7 +408,7 @@ Widget consultationList({
                         final ex = e["examen"] ?? {};
                         return ListTile(
                           leading: const Icon(Icons.note),
-                          title: Text(ex["idExamen"] ?? ""),
+                          title: Text("Examen: ${examenes.indexOf(e) + 1}"),
                           subtitle: Text(
                             "Indicacion: ${ex["indicacion"] ?? ""}",
                           ),
