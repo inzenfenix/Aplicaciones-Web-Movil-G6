@@ -297,7 +297,7 @@ export async function randomize() {
       const consultation = {
         userId: idPatient,
         idConsulta: idConsultation,
-        idProfesional: professional,
+        idProfesional: professional.idProfesional,
         idRecetas: recipes.map((r) => r.idReceta),
         idDiagnosticos: diagnosises.map((d) => d.idDiagnostico),
         idProcedimientos: procedures.map((p) => p.idProcedimiento),
