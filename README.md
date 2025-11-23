@@ -37,7 +37,7 @@ el siguiente comando se puede utilizar para la configuración:
 4. En cada carpeta se encuentran las Aplicaciones de frontend correspondiente, utilice los sistemas de estos Frameworks para inicializarlo, por ejemplo para Ionic:
 
     ``` bash
-    npm i -g ionic-cli
+    npm install -g @ionic/cli
     npm i
     ionic serve
     ```
