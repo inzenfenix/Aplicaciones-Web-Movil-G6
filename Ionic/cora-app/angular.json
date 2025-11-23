@@ -103,12 +103,22 @@
             "karmaConfig": "karma.conf.js",
             "inlineStyleLanguage": "scss",
             "assets": [
-              {
-                "glob": "**/*",
-                "input": "src/assets",
-                "output": "assets"
-              }
-            ],
+                      {
+                        "glob": "**/*",
+                        "input": "src/assets",
+                        "output": "assets"
+                      },
+                      {
+                        "glob": "**/*.svg",
+                        "input": "src/assets",
+                        "output": "assets"
+                      },
+                      {
+                        "glob": "pdf.worker.min.mjs",
+                        "input": "./node_modules/pdfjs-dist/build/pdf/",
+                        "output": "./assets/"
+                      }
+                    ],
             "styles": ["src/global.scss", "src/theme/variables.scss"],
             "scripts": []
           },

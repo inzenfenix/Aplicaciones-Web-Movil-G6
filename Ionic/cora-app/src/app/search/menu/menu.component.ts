@@ -5,7 +5,7 @@ import { SearchHistorialAtencionComponent } from '../search-historial-atencion/s
 import { BookOpenCheck, LucideAngularModule, NotebookText } from 'lucide-angular';
 
 @Component({
-  selector: 'app-menu',
+  selector: 'app-search-menu',
   templateUrl: './menu.component.html',
   styleUrls: ['./menu.component.scss'],
   imports: [

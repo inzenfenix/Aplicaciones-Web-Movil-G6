@@ -7,51 +7,108 @@
   </ion-toolbar>
   <ion-searchbar [debounce]="500" placeholder="Buscar..." animated="true" />
 </ion-header>
+
 <ion-content class="ion-padding" style="overflow-y: auto">
-  <ion-button shape="round" (click)="toggleInputAccordion()">
-    <span> Añadir recetas </span>
-    <lucide-angular [img]="add"/>
-  </ion-button>
+  
+  <input 
+    type="file" 
+    id="pdfInput" 
+    accept="application/pdf" 
+    (change)="onFileSelected($event)" 
+    style="display: none;" 
+  />
+
+  <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+    <ion-button shape="round" (click)="toggleInputAccordion()" class="ion-flex-grow">
+      <span> Añadir </span>
+      <lucide-angular [img]="add" style="margin-left: 8px;"/>
+    </ion-button>
+
+    <ion-button shape="round" color="secondary" (click)="escanearReceta()">
+      <lucide-angular [img]="cameraIcon" />
+    </ion-button>
+
+    <ion-button shape="round" color="tertiary" (click)="triggerFileInput()">
+      <lucide-angular [img]="uploadIcon" />
+    </ion-button>
+  </div>
+
+  @if (mostrandoOpciones) {
+    <ion-card color="light" style="margin: 0 0 15px 0; border: 1px solid #ddd;">
+      <ion-card-header>
+        <ion-card-subtitle>1. Vista previa del documento:</ion-card-subtitle>
+      </ion-card-header>
+      
+      <div style="text-align: center; background: #000; margin-bottom: 10px; min-height: 100px; display: flex; align-items: center; justify-content: center;">
+        @if (imagenCapturada) {
+          <img [src]="imagenCapturada" style="max-height: 250px; max-width: 100%; object-fit: contain;" />
+        } @else {
+          <ion-spinner name="dots" color="light"></ion-spinner>
+        }
+      </div>
+
+      <ion-card-header>
+        <ion-card-subtitle>2. Toca el texto correcto:</ion-card-subtitle>
+      </ion-card-header>
+      
+      <ion-card-content>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          @for (texto of textosDetectados; track texto) {
+            <ion-chip (click)="seleccionarTexto(texto)" color="primary" outline="true">
+              <ion-label class="ion-text-wrap">{{ texto }}</ion-label>
+              <lucide-angular [img]="checkIcon" size="16"></lucide-angular>
+            </ion-chip>
+          }
+        </div>
+        
+        <ion-button fill="clear" size="small" (click)="limpiarSeleccion()" color="danger" style="margin-top: 10px;">
+          <lucide-angular [img]="trashIcon" size="16" style="margin-right: 5px;"></lucide-angular>
+          Descartar
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+  }
+
   <ion-accordion-group #accordionAlergiasGroup>
     <ion-accordion value="anadir-data">
       <div class="ion-padding" slot="content">
         <ion-input
+          label="Nombre del medicamento"
           label-placement="floating"
           fill="solid"
-          placeholder="Ingresar receta"
-          style="margin-bottom: 5px; padding: 10px 10px"
+          placeholder="Escribe o selecciona arriba..."
+          style="margin-bottom: 5px;"
+          [value]="nuevaReceta"
           (ionInput)="handleInputNewAllergy($event)"
         />
-        <div>
-          <ion-button shape="round" (click)="toggleInputAccordion()">
-            <span> Confirmar </span>
+        
+        <div style="margin-top: 10px;">
+          <ion-button shape="round" (click)="confirmarReceta()">
+            <span> Guardar </span>
           </ion-button>
-          <ion-button
-            shape="round"
-            fill="outline"
-            (click)="toggleInputAccordion()"
-          >
+          <ion-button shape="round" fill="outline" (click)="toggleInputAccordion()">
             <span> Cancelar </span>
           </ion-button>
         </div>
       </div>
     </ion-accordion>
   </ion-accordion-group>
+
   <ion-item-divider />
   <ion-list>
-    @if(items.length != 0) { @for (item of items; track item; let index =
-    $index) {
-    <ion-item>
-      <ion-label>{{ item }}</ion-label>
-      <ion-button fill="outline">Eliminar</ion-button>
-    </ion-item>
-    } } @else {
-    <p>No se encontraron resultados.</p>
+    @if(items.length != 0) { 
+      @for (item of items; track item; let index = $index) {
+        <ion-item>
+          <ion-label class="ion-text-wrap">{{ item }}</ion-label>
+          <ion-button fill="outline" slot="end" color="danger">Eliminar</ion-button>
+        </ion-item>
+      } 
+    } @else {
+      <p class="ion-padding">No hay recetas guardadas.</p>
     }
   </ion-list>
+
   <ion-infinite-scroll (ionInfinite)="onIonInfinite($event)">
     <ion-infinite-scroll-content></ion-infinite-scroll-content>
   </ion-infinite-scroll>
 </ion-content>
-<ion-item-divider />
-<ion-footer style="padding: 5px 10px"> </ion-footer>

@@ -22,7 +22,7 @@ import { ExamenMedicoComponent } from '../examen-medico/examen-medico.component'
 import { AtencionMedicaComponent } from '../atencion-medica/atencion-medica.component';
 
 @Component({
-  selector: 'app-menu',
+  selector: 'app-add-menu',
   templateUrl: './menu.component.html',
   styleUrls: ['./menu.component.scss'],
   imports: [
