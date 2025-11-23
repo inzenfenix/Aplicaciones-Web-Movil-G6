@@ -41,3 +41,9 @@ el siguiente comando se puede utilizar para la configuración:
     npm i
     ionic serve
     ```
+
+5. Para el funcionamiento correcto de las aplicaciones (en etapa de desarrollo) debes provisionar tus propios archivos .env, todas las aplicaciones utilizan el siguiente fórmato para su .env:
+
+    ```
+    BACKEND_ADDRESS=<BACKEND_URL>
+    ```
