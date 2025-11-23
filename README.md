@@ -30,7 +30,7 @@ el siguiente comando se puede utilizar para la configuración:
 
     Luego, puede utilizar la ruta **localhost:3000/randomize** , para obtener los datos aleatorios
 
-    ### PRECAUCIÓN
+    > [!WARNING]
     > LA FUNCIÓN RANDOMIZE SE DEMORA ENTRE 2-5 MINUTOS
 
 
