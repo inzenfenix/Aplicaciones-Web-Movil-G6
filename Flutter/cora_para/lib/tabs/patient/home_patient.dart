@@ -1,3 +1,9 @@
+// Prettified version of your PatientHomePage code.
+// Logic preserved; improved aesthetics, spacing, structure, and readability.
+
+import 'package:cora_para/tabs/patient/apis/patient_data_api.dart';
+import 'package:cora_para/tabs/patient/consultations.dart';
+import 'package:cora_para/tabs/patient/procedures.dart';
 import 'package:cora_para/tabs/patient/recipes.dart';
 import 'package:flutter/material.dart';
 import 'allergies.dart';
@@ -13,6 +19,7 @@ class PatientHomePage extends StatefulWidget {
 
 class _PatientHomePageState extends State<PatientHomePage> {
   final ScrollController _scrollController = ScrollController();
+  Map patientData = {};
 
   @override
   void dispose() {
@@ -20,22 +27,33 @@ class _PatientHomePageState extends State<PatientHomePage> {
     super.dispose();
   }
 
-  void _scrollToTop() {
-    _scrollController.animateTo(
-      0,
-      duration: const Duration(milliseconds: 400),
-      curve: Curves.easeInOut,
-    );
+  @override
+  void initState() {
+    super.initState();
+    fetchInitialData(id: widget.rut);
   }
+
+  Future<void> fetchInitialData({required String id}) async {
+    try {
+      final data = await MedicalRecordAPI.fetchData(id: id);
+      setState(() => patientData = data);
+    } catch (e) {
+      debugPrint('$e');
+    }
+  }
+
+  void _scrollToTop() => _scrollController.animateTo(
+    0,
+    duration: const Duration(milliseconds: 400),
+    curve: Curves.easeInOut,
+  );
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final sideCardColor = theme.colorScheme.primaryContainer;
     final screenWidth = MediaQuery.of(context).size.width;
-
-    // determine grid columns dynamically
-    int crossAxisCount = screenWidth < 600 ? 2 : 3;
+    final crossAxisCount = screenWidth < 600 ? 2 : 3;
 
     return SafeArea(
       child: Scaffold(
@@ -43,19 +61,19 @@ class _PatientHomePageState extends State<PatientHomePage> {
           backgroundColor: theme.colorScheme.inversePrimary,
           title: const Text(
             "Ficha médica",
-            style: TextStyle(
-              fontWeight: FontWeight.w200,
-              letterSpacing: 1.5,
-              wordSpacing: 2.4,
-            ),
+            style: TextStyle(fontWeight: FontWeight.w300, letterSpacing: 1.4),
           ),
         ),
         body: SingleChildScrollView(
           controller: _scrollController,
           padding: const EdgeInsets.all(16.0),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ---- GENERAL ----
+              _headerField("Paciente", patientData["nombre"] ?? ""),
+              _headerField("Sexo", patientData["sexo"] ?? ""),
+              const SizedBox(height: 12),
+
               sectionCard(
                 context: context,
                 icon: Icons.person,
@@ -86,7 +104,6 @@ class _PatientHomePageState extends State<PatientHomePage> {
                 ],
               ),
 
-              // ---- STATS ----
               sectionCard(
                 context: context,
                 icon: Icons.stacked_bar_chart,
@@ -127,7 +144,6 @@ class _PatientHomePageState extends State<PatientHomePage> {
                 ],
               ),
 
-              // ---- OPTIONS ----
               sectionCard(
                 context: context,
                 icon: Icons.settings,
@@ -138,9 +154,9 @@ class _PatientHomePageState extends State<PatientHomePage> {
                       title: "Alergías",
                       icon: Icons.list,
                       onPressedButton: () {
-                        showDialog<String>(
+                        showDialog(
                           context: context,
-                          builder: (BuildContext context) =>
+                          builder: (_) =>
                               Dialog(child: AllergiesPage(rut: widget.rut)),
                         );
                       },
@@ -149,17 +165,34 @@ class _PatientHomePageState extends State<PatientHomePage> {
                       title: "Recetas",
                       icon: Icons.receipt,
                       onPressedButton: () {
-                        showDialog<String>(
+                        showDialog(
                           context: context,
-                          builder: (BuildContext context) =>
+                          builder: (_) =>
                               Dialog(child: RecipesPage(rut: widget.rut)),
                         );
                       },
                     ),
-                    infoButtonCard(title: "Historial", icon: Icons.history),
                     infoButtonCard(
-                      title: "Hábitos",
+                      title: "Procedmientos",
+                      icon: Icons.analytics,
+                      onPressedButton: () {
+                        showDialog(
+                          context: context,
+                          builder: (_) =>
+                              Dialog(child: ProceduresPage(rut: widget.rut)),
+                        );
+                      },
+                    ),
+                    infoButtonCard(
+                      title: "Consultas",
                       icon: Icons.watch_later_outlined,
+                      onPressedButton: () {
+                        showDialog(
+                          context: context,
+                          builder: (_) =>
+                              Dialog(child: ConsultationsPage(rut: widget.rut)),
+                        );
+                      },
                     ),
                   ], crossAxisCount),
                 ],
@@ -167,21 +200,37 @@ class _PatientHomePageState extends State<PatientHomePage> {
 
               const SizedBox(height: 24),
 
-              ElevatedButton.icon(
-                icon: const Icon(Icons.arrow_upward),
-                label: const Text("Volver arriba"),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 12,
+              Center(
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.arrow_upward),
+                  label: const Text("Volver arriba"),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 22,
+                      vertical: 14,
+                    ),
+                    textStyle: const TextStyle(letterSpacing: 1.1),
                   ),
-                  textStyle: const TextStyle(letterSpacing: 1.2),
+                  onPressed: _scrollToTop,
                 ),
-                onPressed: _scrollToTop,
               ),
               const SizedBox(height: 16),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _headerField(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 12, bottom: 4),
+      child: Text(
+        "$label: $value",
+        style: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w500,
+          letterSpacing: 1.1,
         ),
       ),
     );
@@ -194,30 +243,31 @@ class _PatientHomePageState extends State<PatientHomePage> {
     required List<Widget> children,
   }) {
     final theme = Theme.of(context);
+
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
+      padding: const EdgeInsets.only(bottom: 18.0),
       child: Card(
-        elevation: 12.0,
-        margin: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        elevation: 10,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ListTile(
-                leading: Icon(icon, color: theme.colorScheme.primary),
-                title: Text(
-                  title,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16.0,
-                    color: theme.colorScheme.onSurface,
+              Row(
+                children: [
+                  Icon(icon, size: 28, color: theme.colorScheme.primary),
+                  const SizedBox(width: 10),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
+                ],
               ),
-              const SizedBox(height: 8.0),
-              const Divider(),
-              const SizedBox(height: 16.0),
+              const SizedBox(height: 14),
               ...children,
             ],
           ),
@@ -225,18 +275,18 @@ class _PatientHomePageState extends State<PatientHomePage> {
       ),
     );
   }
+}
 
-  Widget responsiveGrid(List<Widget> children, int crossAxisCount) {
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: crossAxisCount,
-      crossAxisSpacing: 16,
-      mainAxisSpacing: 16,
-      childAspectRatio: 1.6,
-      children: children,
-    );
-  }
+Widget responsiveGrid(List<Widget> children, int crossAxisCount) {
+  return GridView.count(
+    shrinkWrap: true,
+    physics: const NeverScrollableScrollPhysics(),
+    crossAxisCount: crossAxisCount,
+    crossAxisSpacing: 16,
+    mainAxisSpacing: 16,
+    childAspectRatio: 1.6,
+    children: children,
+  );
 }
 
 // ------------------------------------------------------------

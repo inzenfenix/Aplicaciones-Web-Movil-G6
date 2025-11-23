@@ -47,7 +47,7 @@ export const consultationsHandler = async (event) => {
   const method = event.requestContext?.http.method;
 
   const init = {
-    method: method,
+    method,
     headers: event.headers,
     body: event.body
       ? Buffer.from(event.body, event.isBase64Encoded ? "base64" : "utf8")
@@ -56,7 +56,6 @@ export const consultationsHandler = async (event) => {
 
   try {
     const request = new Request(url, init);
-    request.event = event;
 
     const response = await router.fetch(request);
 
@@ -75,6 +74,7 @@ export const consultationsHandler = async (event) => {
 };
 
 
+
 // GET /consultations/{userId}
 async function getConsultations(req) {
   const { userId } = req.params;
@@ -83,33 +83,36 @@ async function getConsultations(req) {
     FilterExpression: "#userId = :userId",
     ExpressionAttributeNames: { "#userId": "userId" },
     ExpressionAttributeValues: { ":userId": userId },
-    Key: { userId },
   };
 
   const result = await docClient.send(new ScanCommand(params));
 
   const cleaned_data = [];
 
-  if (result != null) {
-    const items = result.Items;
+  
 
+  if (result != null) {
+    const items = result.Items ?? [];
+    
     for (const item of items) {
-      const idRecetas = item.idRecetas;
+      
+      const idRecetas = item.idRecetas ?? [];
+
 
       const recipes = [];
 
       for (const idReceta of idRecetas) {
-        const recipe = await getRecipeFromId(idReceta, userId);
+        const recipe = await getRecipeFromId(idReceta);
 
         recipes.push({ idReceta: idReceta, receta: recipe });
       }
 
-      const idDiagnosticos = item.idDiagnosticos;
+      const idDiagnosticos = item.idDiagnosticos ?? [];
 
       const diagnosises = [];
 
       for (const idDiagnostico of idDiagnosticos) {
-        const diagnosis = await getDiagnosisFromId(idDiagnostico, userId);
+        const diagnosis = await getDiagnosisFromId(idDiagnostico);
 
         diagnosises.push({
           idDiagnostico: idDiagnostico,
@@ -117,23 +120,27 @@ async function getConsultations(req) {
         });
       }
 
-      const idProcedmientos = item.idProcedmientos;
+
+      const idProcedimientos = item.idProcedimientos ?? [];
+      
 
       const procedures = [];
 
-      for (const idProcedmiento of idProcedmientos) {
-        const procedure = await getProcedureFromId(idProcedmiento);
+      for (const idProcedimiento of idProcedimientos) {
+        const procedure = await getProcedureFromId(idProcedimiento, userId);
 
         procedures.push({
-          idProcedmiento: idProcedmiento,
+          idProcedimiento: idProcedimiento,
           procedimiento: procedure,
         });
       }
 
+      const professional = await getProfessionalFromId(item.idProfesional);
+
       cleaned_data.push({
         userId: item.userId,
         idConsulta: item.idConsulta,
-        profesional: getProfessionalFromId(item.idProfesional),
+        profesional: professional,
         recetas: recipes,
         diagnosticos: diagnosises,
         procedimientos: procedures,
@@ -142,6 +149,8 @@ async function getConsultations(req) {
         fechaAtencion: item.fechaAtencion,
       });
     }
+
+    console.log(cleaned_data);
   }
 
   return new Response(JSON.stringify(cleaned_data), {
@@ -162,17 +171,17 @@ async function getConsultation(req) {
       "#idConsulta": "idConsulta",
     },
     ExpressionAttributeValues: { ":userId": userId, ":idConsulta": idConsulta },
-    Key: { userId, idConsulta: id },
+    // removed Key: { userId, idConsulta: id } — Scan doesn't use Key and 'id' was undefined
   };
 
   const result = await docClient.send(new ScanCommand(params));
 
   let cleaned_data = {};
 
-  if (result != null) {
+  if (result != null && Array.isArray(result.Items) && result.Items.length > 0) {
     const item = result.Items[0];
 
-    const idRecetas = item.idRecetas;
+    const idRecetas = item.idRecetas ?? [];
 
     const recipes = [];
 
@@ -182,7 +191,7 @@ async function getConsultation(req) {
       recipes.push({ idReceta: idReceta, receta: recipe });
     }
 
-    const idDiagnosticos = item.idDiagnosticos;
+    const idDiagnosticos = item.idDiagnosticos ?? [];
 
     const diagnosises = [];
 
@@ -195,15 +204,15 @@ async function getConsultation(req) {
       });
     }
 
-    const idProcedmientos = item.idProcedmientos;
+    const idProcedimientos = item.idProcedimientos ?? [];
 
     const procedures = [];
 
-    for (const idProcedmiento of idProcedmientos) {
-      const procedure = await getProcedureFromId(idProcedmiento);
+    for (const idProcedimiento of idProcedimientos) {
+      const procedure = await getProcedureFromId(idProcedimiento);
 
       procedures.push({
-        idProcedmiento: idProcedmiento,
+        idProcedimiento: idProcedimiento,
         procedimiento: procedure,
       });
     }
@@ -211,7 +220,7 @@ async function getConsultation(req) {
     cleaned_data = {
       userId: item.userId,
       idConsulta: item.idConsulta,
-      profesional: getProfessionalFromId(item.idProfesional),
+      profesional: await getProfessionalFromId(item.idProfesional),
       recetas: recipes,
       diagnosticos: diagnosises,
       procedimientos: procedures,
@@ -277,7 +286,7 @@ async function updateConsultation(req) {
         "#idProfesional": "idProfesional",
         "#idRecetas": "idRecetas",
         "#idDiagnosticos": "idDiagnosticos",
-        "#idProcedimientos": "idProcedmimientos",
+        "#idProcedimientos": "idProcedimientos",
         "#razonConsulta": "razonConsulta",
         "#lugar": "lugar",
         "#fechaAtencion": "fechaAtencion",
@@ -325,11 +334,11 @@ async function getProfessionalFromId(idProfesional) {
     FilterExpression: "#idProfesional = :idProfesional",
     ExpressionAttributeNames: { "#idProfesional": "idProfesional" },
     ExpressionAttributeValues: { ":idProfesional": idProfesional },
-    Key: { idProfesional: idProfesional },
+    // removed Key: { idProfesional: idProfesional } - Scan doesn't take Key
   };
 
   const result = await docClient.send(new ScanCommand(params));
-  if (result != null) {
+  if (result != null && Array.isArray(result.Items) && result.Items.length > 0) {
     return result.Items[0];
   } else return null;
 }
@@ -347,33 +356,31 @@ async function getProcedureFromId(idProcedimiento, userId) {
       ":userId": userId,
       ":idProcedimiento": idProcedimiento,
     },
-    Key: { userId, idProcedimiento: idProcedimiento },
   };
 
   const result = await docClient.send(new ScanCommand(params));
 
-  if (result != null) {
+  if (result != null && Array.isArray(result.Items) && result.Items.length > 0) {
     return result.Items[0];
   } else return null;
 }
 
-async function getRecipeFromId(idReceta, userId) {
+async function getRecipeFromId(idReceta) {
   const params = {
     TableName: recipeTableName,
     FilterExpression: "#idReceta = :idReceta",
     ExpressionAttributeNames: { "#idReceta": "idReceta" },
     ExpressionAttributeValues: { ":idReceta": idReceta },
-    Key: { userId, idReceta: idReceta },
   };
 
   const result = await docClient.send(new ScanCommand(params));
 
-  if (result != null) {
+  if (result != null && Array.isArray(result.Items) && result.Items.length > 0) {
     const item = result.Items[0] ?? {};
 
     if (item == null) return null;
 
-    const idMedicamentos = item.idMedicamentos;
+    const idMedicamentos = item.idMedicamentos ?? [];
     const meds = [];
 
     for (const idMedicamento of idMedicamentos) {
@@ -395,32 +402,31 @@ async function getMedFromId(idMedicamento) {
     FilterExpression: "#idMedicamento = :idMedicamento",
     ExpressionAttributeNames: { "#idMedicamento": "idMedicamento" },
     ExpressionAttributeValues: { ":idMedicamento": idMedicamento },
-    Key: { idMedicamento },
+    // removed Key
   };
 
   const result = await docClient.send(new ScanCommand(params));
-  if (result != null) {
+  if (result != null && Array.isArray(result.Items) && result.Items.length > 0) {
     return result.Items[0];
   } else return null;
 }
 
-async function getDiagnosisFromId(idDiagnosis, userId) {
+async function getDiagnosisFromId(idDiagnosis) {
   const params = {
     TableName: diagnosisTableName,
     FilterExpression: "#idDiagnostico = :idDiagnostico",
     ExpressionAttributeNames: { "#idDiagnostico": "idDiagnostico" },
     ExpressionAttributeValues: { ":idDiagnostico": idDiagnosis },
-    Key: { userId, idDiagnostico: idDiagnosis },
   };
 
   const result = await docClient.send(new ScanCommand(params));
 
-  if (result != null) {
+  if (result != null && Array.isArray(result.Items) && result.Items.length > 0) {
     const item = result.Items[0] ?? {};
 
     if (item == null) return null;
 
-    const idExamenes = item.idExamenes;
+    const idExamenes = item.idExamenes ?? [];
     const exams = [];
 
     for (const idExamen of idExamenes) {
@@ -442,11 +448,10 @@ async function getExamFromId(idExamen) {
     FilterExpression: "#idExamen = :idExamen",
     ExpressionAttributeNames: { "#idExamen": "idExamen" },
     ExpressionAttributeValues: { ":idExamen": idExamen },
-    Key: { idExamen },
   };
 
   const result = await docClient.send(new ScanCommand(params));
-  if (result != null) {
+  if (result != null && Array.isArray(result.Items) && result.Items.length > 0) {
     return result.Items[0];
   } else return null;
 }

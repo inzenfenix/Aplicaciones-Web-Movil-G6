@@ -1,6 +1,7 @@
 import {
   DynamoDBClient,
 } from "@aws-sdk/client-dynamodb";
+
 import {
   DynamoDBDocumentClient,
   PutCommand,
@@ -8,6 +9,7 @@ import {
   UpdateCommand,
   DeleteCommand,
 } from "@aws-sdk/lib-dynamodb";
+
 import { v4 as uuidv4 } from "uuid";
 import { AutoRouter } from "itty-router";
 
@@ -63,61 +65,76 @@ export const proceduresHandler = async (event) => {
   }
 };
 
+//
 // GET /procedures/{userId}
+//
 async function getProcedures(req) {
-  const { userId }  = req.params;
-  const params = {
-    TableName: tableName,
-    FilterExpression: "#userId = :userId",
-    ExpressionAttributeNames: { "#userId": "userId" },
-    ExpressionAttributeValues: { ":userId": userId },
-    Key: { userId },
-  };
+  const { userId } = req.params;
 
-  const result = await docClient.send(new ScanCommand(params));
+  try {
+    const result = await docClient.send(
+      new ScanCommand({
+        TableName: tableName,
+        FilterExpression: "#userId = :userId",
+        ExpressionAttributeNames: { "#userId": "userId" },
+        ExpressionAttributeValues: { ":userId": userId },
+      })
+    );
 
-  const items = result.Items;
+    return new Response(JSON.stringify(result.Items ?? []), {
+      status: 200,
+      headers,
+    });
+  } catch (err) {
+    return new Response(JSON.stringify({ error: "Error fetching procedures", err }), {
+      status: 400,
+      headers,
+    });
+  }
+}
 
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify(items),
-  };
-};
-
+//
 // GET /procedures/{userId}/procedure/{idProcedimiento}
+//
 async function getProcedure(req) {
+  const { userId, idProcedimiento } = req.params;
 
-  const { userId, idProcedimiento }  = req.params;
+  try {
+    const result = await docClient.send(
+      new ScanCommand({
+        TableName: tableName,
+        FilterExpression:
+          "#userId = :userId AND #idProcedimiento = :idProcedimiento",
+        ExpressionAttributeNames: {
+          "#userId": "userId",
+          "#idProcedimiento": "idProcedimiento",
+        },
+        ExpressionAttributeValues: {
+          ":userId": userId,
+          ":idProcedimiento": idProcedimiento,
+        },
+      })
+    );
 
-  const params = {
-    TableName: tableName,
-    FilterExpression:
-      "#userId = :userId and #idProcedimiento = :idProcedimiento",
-    ExpressionAttributeNames: {
-      "#userId": "userId",
-      "#idProcedimiento": "idProcedimiento",
-    },
-    ExpressionAttributeValues: { ":userId": userId, ":idProcedimiento": idProcedimiento },
-    Key: { userId, idProcedimiento },
-  };
+    return new Response(JSON.stringify(result.Items ?? []), {
+      status: 200,
+      headers,
+    });
+  } catch (err) {
+    return new Response(JSON.stringify({ error: "Error fetching procedure", err }), {
+      status: 400,
+      headers,
+    });
+  }
+}
 
-  const result = await docClient.send(new ScanCommand(params));
-
-  const items = result.Items;
-
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify(items),
-  };
-};
-
+//
 // POST /procedures
+//
 async function createProcedure(req) {
   const body = await req.json();
-
   const id = uuidv4();
+
   await docClient.send(
     new PutCommand({
       TableName: tableName,
@@ -130,61 +147,65 @@ async function createProcedure(req) {
       },
     })
   );
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify({ id, ...body }),
-  };
-};
 
+  return new Response(JSON.stringify({ id, ...body }), {
+    status: 200,
+    headers,
+  });
+}
+
+//
 // PUT /procedures/{userId}/procedure/{idProcedimiento}
+//
 async function updateProcedure(req) {
-  const { userId, idProcedimiento }  = req.params;
+  const { userId, idProcedimiento } = req.params;
   const body = await req.json();
+
   await docClient.send(
     new UpdateCommand({
       TableName: tableName,
       Key: { userId, idProcedimiento },
       UpdateExpression: `
         SET 
-          #idProcedimiento = :idProcedimiento, 
           #nombre = :nombre, 
           #tipoProcedimiento = :tipoProcedimiento,
-          #descripcion = :descripcion`,
+          #descripcion = :descripcion
+      `,
       ExpressionAttributeNames: {
-        "#idProcedimiento": "idProcedimiento",
         "#nombre": "nombre",
         "#tipoProcedimiento": "tipoProcedimiento",
         "#descripcion": "descripcion",
       },
       ExpressionAttributeValues: {
-        ":idMedicamentos": body.idMedicamentos,
         ":nombre": body.nombre,
         ":tipoProcedimiento": body.tipoProcedimiento,
         ":descripcion": body.descripcion,
       },
+      ReturnValues: "ALL_NEW",
     })
   );
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify({ idProcedimiento, ...body }),
-  };
-};
 
+  return new Response(JSON.stringify({ idProcedimiento, ...body }), {
+    status: 200,
+    headers,
+  });
+}
+
+//
 // DELETE /procedures/{userId}/procedure/{idProcedimiento}
+//
 async function deleteProcedure(req) {
   const { userId, idProcedimiento } = req.params;
-  
+
   await docClient.send(
     new DeleteCommand({
       TableName: tableName,
       Key: { userId, idProcedimiento },
     })
   );
-  return {
-    statusCode: 200,
+
+  return new Response(JSON.stringify({ deleted: idProcedimiento }), {
+    status: 200,
     headers,
-    body: JSON.stringify({ deleted: idProcedimiento }),
-  };
-};
+  });
+}

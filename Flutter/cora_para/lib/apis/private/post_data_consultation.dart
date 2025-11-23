@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class DataConsultationAPI {
   static Future<int?> execute({
@@ -16,8 +17,9 @@ class DataConsultationAPI {
       ),
     );
 
+    final apiUrl = dotenv.env['API_URL'];
     final url =
-        "https://qfptnbgte8.execute-api.us-east-2.amazonaws.com/HistoricConsultations";
+        "$apiUrl/HistoricConsultations";
     final curDateTime = DateTime.now().toIso8601String();
 
     try {
