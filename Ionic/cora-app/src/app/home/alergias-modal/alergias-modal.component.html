@@ -5,69 +5,157 @@
       <ion-button (click)="cancel()">Cerrar</ion-button>
     </ion-buttons>
   </ion-toolbar>
-  <ion-searchbar [debounce]="500" placeholder="Buscar..." animated="true" />
+
+  <ion-searchbar
+    [debounce]="500"
+    placeholder="Buscar..."
+    animated="true"
+  ></ion-searchbar>
 </ion-header>
+
 <ion-content class="ion-padding" style="overflow-y: auto">
+
+  <!-- ADD NEW ALLERGY BUTTON -->
   <ion-button shape="round" (click)="toggleInputAccordion()">
     <span> Añadir alergía </span>
-    <lucide-angular [img]="add" />
+    <lucide-angular [img]="add"></lucide-angular>
   </ion-button>
+
+  <!-- ADD ALLERGY ACCORDION -->
   <ion-accordion-group #accordionAlergiasGroup>
-  <ion-accordion value="anadir-data">
-    <div class="ion-padding" slot="content">
-      <ion-input
-        [(ngModel)]="newAllergy"
-        label-placement="floating"
-        fill="solid"
-        placeholder="Ingresar alergía"
-        style="margin-bottom: 5px; padding: 10px 10px"
-      ></ion-input>
+    <ion-accordion value="anadir-data">
+      <div class="ion-padding" slot="content">
 
-      <div>
-        <ion-button shape="round" (click)="addAlergy(newAllergy)">
-          <span> Confirmar </span>
-        </ion-button>
+        <ion-input
+          [(ngModel)]="newAlergeno"
+          label-placement="floating"
+          fill="solid"
+          placeholder="Ingresar alergeno"
+          style="margin-bottom: 10px"
+        ></ion-input>
 
-        <ion-button
-          shape="round"
-          fill="outline"
-          (click)="toggleInputAccordion()"
-        >
-          <span> Cancelar </span>
-        </ion-button>
-      </div>
-    </div>
-  </ion-accordion>
-</ion-accordion-group>
+        <ion-input
+          [(ngModel)]="newTipoAlergeno"
+          label-placement="floating"
+          fill="solid"
+          placeholder="Tipo de alergía"
+          style="margin-bottom: 10px"
+        ></ion-input>
 
-  <ion-item-divider />
-  <ion-list>
-  @if (allergies$ | async; as allergies) {
-    @if (allergies.length > 0) {
-      @for (allergy of allergies; track allergy.id) {
-        <ion-item>
-          <ion-label>{{ allergy.allergen }}</ion-label>
-          <ion-button fill="outline" color="danger" >
-            Eliminar
+        <div>
+          <ion-button shape="round" (click)="addAllergy()">
+            <span> Confirmar </span>
           </ion-button>
-        </ion-item>
-      }
-    } @else {
-      <ion-item>
-        <ion-label>No se encontraron resultados.</ion-label>
-      </ion-item>
-    }
-  } @else {
-    <ion-item>
-      <ion-label>Cargando...</ion-label>
-    </ion-item>
-  }
-</ion-list>
 
+          <ion-button shape="round" fill="outline" (click)="toggleInputAccordion()">
+            <span> Cancelar </span>
+          </ion-button>
+        </div>
+
+      </div>
+    </ion-accordion>
+  </ion-accordion-group>
+
+  <ion-item-divider></ion-item-divider>
+
+  <!-- ALLERGIES LIST -->
+  <ion-list>
+    @if (allergies$ | async; as allergies) {
+
+      @if (allergies.length > 0) {
+
+        @for (allergy of allergies; track allergy.idAlergia) {
+
+          <ion-item lines="full">
+
+            <!-- EDIT MODE -->
+            @if (isEditing === allergy.idAlergia) {
+
+              <div style="width: 100%;">
+
+                <ion-input
+                  [(ngModel)]="editedAlergeno"
+                  label="Alergeno"
+                  fill="solid"
+                  style="margin-bottom: 8px"
+                ></ion-input>
+
+                <ion-input
+                  [(ngModel)]="editedTipoAlergeno"
+                  label="Tipo"
+                  fill="solid"
+                  style="margin-bottom: 8px"
+                ></ion-input>
+
+                <div style="display: flex; gap: 8px;">
+
+                  <ion-button size="small" (click)="updateAllergy(allergy.idAlergia)">
+                    <lucide-angular [img]="edit"></lucide-angular>
+                    Guardar
+                  </ion-button>
+
+                  <ion-button size="small" fill="outline" (click)="cancelEdit()">
+                    Cancelar
+                  </ion-button>
+
+                </div>
+
+              </div>
+
+            } @else {
+
+              <!-- VIEW MODE -->
+              <ion-label>
+                <h2>{{ allergy.alergeno }}</h2>
+                <p style="opacity: 0.7;">{{ allergy.tipoAlergeno }}</p>
+              </ion-label>
+
+              <ion-button
+                fill="outline"
+                size="small"
+                color="primary"
+                (click)="startEdit(allergy)"
+              >
+                <lucide-angular [img]="edit"></lucide-angular>
+              </ion-button>
+
+              <ion-button
+                fill="outline"
+                color="danger"
+                size="small"
+                (click)="deleteAllergy(allergy.idAlergia)"
+              >
+                <lucide-angular [img]="trash"></lucide-angular>
+              </ion-button>
+
+            }
+
+          </ion-item>
+
+        }
+
+      } @else {
+
+        <ion-item>
+          <ion-label>No se encontraron resultados.</ion-label>
+        </ion-item>
+
+      }
+
+    } @else {
+
+      <ion-item>
+        <ion-label>Cargando...</ion-label>
+      </ion-item>
+
+    }
+  </ion-list>
 
   <ion-infinite-scroll (ionInfinite)="onIonInfinite($event)">
     <ion-infinite-scroll-content></ion-infinite-scroll-content>
   </ion-infinite-scroll>
+
 </ion-content>
-<ion-item-divider />
-<ion-footer style="padding: 5px 10px"> </ion-footer>
+
+<ion-item-divider></ion-item-divider>
+<ion-footer style="padding: 5px 10px"></ion-footer>

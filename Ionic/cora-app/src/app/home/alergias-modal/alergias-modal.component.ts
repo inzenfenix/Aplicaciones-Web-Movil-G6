@@ -1,6 +1,7 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+
 import {
   InfiniteScrollCustomEvent,
   IonButton,
@@ -22,7 +23,15 @@ import {
   IonInput,
   ModalController,
 } from '@ionic/angular/standalone';
-import { ChartPie, LucideAngularModule, Plus, Trash2, Edit } from 'lucide-angular';
+
+import {
+  ChartPie,
+  LucideAngularModule,
+  Plus,
+  Trash2,
+  Edit,
+} from 'lucide-angular';
+
 import { AllergiesApi, Allergy } from '../../services/allergies/allergies-api';
 
 @Component({
@@ -31,7 +40,7 @@ import { AllergiesApi, Allergy } from '../../services/allergies/allergies-api';
   styleUrls: ['./alergias-modal.component.scss'],
   standalone: true,
   imports: [
-    CommonModule, // 👈 gives async pipe, *ngIf, *ngFor
+    CommonModule,
     FormsModule,
     IonInput,
     IonAccordion,
@@ -53,7 +62,7 @@ import { AllergiesApi, Allergy } from '../../services/allergies/allergies-api';
     LucideAngularModule,
   ],
 })
-export class AlergiasModalComponent {
+export class AlergiasModalComponent implements OnInit {
   @ViewChild('accordionAlergiasGroup', { static: true })
   accordionGroup!: IonAccordionGroup;
 
@@ -64,132 +73,149 @@ export class AlergiasModalComponent {
 
   items: string[] = [];
 
-  // Expose observables for async pipe
   allergies$ = this.allergiesService.allergies$;
   loading$ = this.allergiesService.loading$;
   error$ = this.allergiesService.error$;
 
-  // UI state
   showToast = false;
   toastMessage = '';
-  isAdding = false;
-  isEditing: string | null = null;
-  editedName = '';
+
+  isEditing: string | null = null; // idAlergia being edited
+  editedAlergeno = '';
+  editedTipoAlergeno = '';
+
+  newAlergeno = '';
+  newTipoAlergeno = '';
+
+  @Input() userId!: string;
 
   constructor(
     private modalCtrl: ModalController,
     private allergiesService: AllergiesApi
   ) {}
 
+  ngOnInit() {
+    this.allergiesService.startPolling(this.userId);
+  }
+
+  // --------------------------
+  // Accordion toggle
+  // --------------------------
+  toggleInputAccordion() {
+    const isOpen = this.accordionGroup.value === 'anadir-data';
+    this.accordionGroup.value = isOpen ? undefined : 'anadir-data';
+  }
+
+  // --------------------------
+  // Add Allergy
+  // --------------------------
+  async addAllergy() {
+    if (!this.newAlergeno || !this.newTipoAlergeno) {
+      this.presentToast('Todos los campos son obligatorios');
+      return;
+    }
+
+    try {
+      await this.allergiesService
+        .addAllergy({
+          userId: this.userId,
+          alergeno: this.newAlergeno,
+          tipoAlergeno: this.newTipoAlergeno,
+        })
+        .toPromise();
+
+      this.presentToast('Alergia añadida');
+      this.newAlergeno = '';
+      this.newTipoAlergeno = '';
+      this.toggleInputAccordion();
+    } catch (err) {
+      this.presentToast('Error al añadir alergia');
+    }
+  }
+
+  // --------------------------
+  // Begin Edit
+  // --------------------------
+  startEdit(allergy: Allergy) {
+    this.isEditing = allergy.idAlergia;
+
+    this.editedAlergeno = allergy.alergeno;
+    this.editedTipoAlergeno = allergy.tipoAlergeno;
+  }
+
+  // --------------------------
+  // Cancel Edit
+  // --------------------------
+  cancelEdit() {
+    this.isEditing = null;
+    this.editedAlergeno = '';
+    this.editedTipoAlergeno = '';
+  }
+
+  // --------------------------
+  // Update Allergy
+  // --------------------------
+  async updateAllergy(idAlergia: string) {
+    if (!this.editedAlergeno || !this.editedTipoAlergeno) {
+      this.presentToast('Todos los campos son obligatorios');
+      return;
+    }
+
+    try {
+      await this.allergiesService
+        .updateAllergy(idAlergia, {
+          alergeno: this.editedAlergeno,
+          tipoAlergeno: this.editedTipoAlergeno,
+        })
+        .toPromise();
+
+      this.presentToast('Alergia actualizada');
+      this.cancelEdit();
+    } catch (err) {
+      this.presentToast('Error al actualizar alergia');
+    }
+  }
+
+  // --------------------------
+  // Delete Allergy
+  // --------------------------
+  async deleteAllergy(idAlergia: string) {
+    try {
+      await this.allergiesService.deleteAllergy(idAlergia).toPromise();
+      this.presentToast('Alergia eliminada');
+    } catch (err) {
+      this.presentToast('Error al eliminar alergia');
+    }
+  }
+
+  // --------------------------
+  // Toast
+  // --------------------------
+  presentToast(message: string) {
+    this.toastMessage = message;
+    this.showToast = true;
+    setTimeout(() => (this.showToast = false), 2000);
+  }
+
+  // --------------------------
+  // Infinite Scroll (unchanged)
+  // --------------------------
   private generateItems() {
-    const count = this.items.length + 1;
+    const c = this.items.length + 1;
     for (let i = 0; i < 5; i++) {
-      this.items.push(`${count + i}`);
+      this.items.push(`${c + i}`);
     }
   }
 
   onIonInfinite(event: InfiniteScrollCustomEvent) {
     this.generateItems();
-    setTimeout(() => {
-      event.target.complete();
-    }, 500);
+    setTimeout(() => event.target.complete(), 500);
   }
 
-  toggleInputAccordion = () => {
-    const nativeEl = this.accordionGroup;
-    if (nativeEl.value === 'anadir-data') {
-      nativeEl.value = undefined;
-    } else {
-      nativeEl.value = 'anadir-data';
-    }
-  };
-
-  handleInputNewAllergy(event: Event) {
-    const target = event.target as HTMLIonSearchbarElement;
-    const value = target.value ? target.value.trim() : '';
-
-    if (value === '') {
-      this.showToastMessage('Please enter an allergy name');
-      return;
-    }
-
-    this.addAlergy(value);
-    target.value = ''; // clear input
-  }
-
-  startEdit(allergy: Allergy) {
-    this.isEditing = allergy.id;
-    //this.editedName = allergy.name;
-  }
-
-  cancelEdit() {
-    this.isEditing = null;
-    this.editedName = '';
-  }
-
-  /*saveEdit(allergy: Allergy) {
-    const newName = this.editedName.trim();
-    if (newName === '') {
-      this.showToastMessage('Allergy name cannot be empty');
-      return;
-    }
-
-    if (newName === allergy.name) {
-      this.cancelEdit();
-      return;
-    }
-
-    this.allergiesService.updateAllergy(allergy.id, newName).subscribe({
-      next: () => {
-        this.showToastMessage(`Updated: ${newName}`);
-        this.cancelEdit();
-      },
-      error: (error) => {
-        this.showToastMessage(`Failed to update: ${newName}`);
-        console.error('Error updating allergy:', error);
-      },
-    });
-  }*/
-/*
-  delete(allergy: Allergy) {
-    this.allergiesService.deleteAllergy(allergy.id).subscribe({
-      next: () => {
-        this.showToastMessage(`Deleted: ${allergy.name}`);
-      },
-      error: (error) => {
-        this.showToastMessage(`Failed to delete: ${allergy.name}`);
-        console.error('Error deleting allergy:', error);
-      },
-    });
-  }
-*/
-  refreshAllergies() {
-    this.allergiesService.refreshAllergies();
-    this.showToastMessage('Refreshing allergies...');
-  }
-
-  private showToastMessage(message: string) {
-    this.toastMessage = message;
-    this.showToast = true;
-  }
-
+  // --------------------------
+  // Close Modal
+  // --------------------------
   cancel() {
-    return this.modalCtrl.dismiss(null, 'cancel');
+    this.modalCtrl.dismiss();
   }
-
-  newAllergy = '';
-
-addAlergy(name: string) {
-  const trimmed = name.trim();
-  if (!trimmed) return;
-
-  this.allergiesService.addAllergy(trimmed).subscribe({
-    next: () => {
-      this.newAllergy = ''; // clear input
-      this.toggleInputAccordion();
-    },
-    error: (err) => console.error('Error adding allergy:', err),
-  });
-}
-
 }

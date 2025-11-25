@@ -36,6 +36,8 @@ provider:
         - OPTIONS
         - GET
         - POST
+        - PUT
+        - DELETE
 
 resources:
   Resources:

@@ -19,8 +19,8 @@ const tableName = process.env.TYPE_MEDS_TABLE;
 // === Common Headers ===
 const headers = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Credentials": true,
-  "Content-Type": "application/json",
+  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Methods": "OPTIONS,POST,GET,PUT,DELETE",
 };
 
 // === Router Setup ===

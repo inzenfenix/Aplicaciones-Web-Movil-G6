@@ -76,6 +76,8 @@ export class HomePage implements OnInit {
   readonly chartPie = ChartPie;
   readonly circleGauge = CircleGauge;
 
+  public userId = "12345678-9";
+
   constructor(private modalCtrl: ModalController) {}
 
   ngOnInit() {}
@@ -83,8 +85,13 @@ export class HomePage implements OnInit {
   async openAlergiasModal() {
     const modal = await this.modalCtrl.create({
       component: AlergiasModalComponent,
+      componentProps:{
+        userId: this.userId,
+      }
     });
-    await modal.present();
+    modal.present();
+
+    await modal.onWillDismiss();
   }
 
   async openHabitosModal() {

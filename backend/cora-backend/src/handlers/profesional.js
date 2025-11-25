@@ -20,7 +20,8 @@ const tableName = process.env.PROFESSIONAL_TABLE;
 
 const headers = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Credentials": true,
+  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Methods": "OPTIONS,POST,GET,PUT,DELETE",
 };
 
 // Routing

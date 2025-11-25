@@ -19,8 +19,8 @@ const medsTableName = process.env.MEDS_TABLE;
 
 const headers = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Credentials": true,
-  "Content-Type": "application/json",
+  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Methods": "OPTIONS,POST,GET,PUT,DELETE",
 };
 
 // small helper to create Response objects

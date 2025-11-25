@@ -1,5 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { environment } from 'src/environments/environment';
+
 import {
   InfiniteScrollCustomEvent,
   IonButton,
@@ -9,7 +11,6 @@ import {
   IonTitle,
   IonToolbar,
   IonSearchbar,
-  IonFooter,
   IonItemDivider,
   IonList,
   IonItem,
@@ -23,12 +24,10 @@ import {
   LoadingController,
   ToastController,
   IonChip,
-  IonIcon,
   IonCard,
   IonCardHeader,
   IonCardSubtitle,
   IonCardContent,
-  IonImg,
   IonSpinner
 } from '@ionic/angular/standalone';
 import { ChartPie, LucideAngularModule, Plus, Camera, Check, Trash2, FileUp } from 'lucide-angular';
@@ -55,7 +54,6 @@ import * as pdfjsLib from 'pdfjs-dist';
     IonItem,
     IonList,
     IonItemDivider,
-    IonFooter,
     IonSearchbar,
     FormsModule,
     IonToolbar,
@@ -66,12 +64,10 @@ import * as pdfjsLib from 'pdfjs-dist';
     IonContent,
     LucideAngularModule,
     IonChip,
-    IonIcon,
     IonCard,
     IonCardHeader,
     IonCardSubtitle,
     IonCardContent,
-    IonImg,
     IonSpinner
   ]
 })
@@ -100,9 +96,9 @@ export class RecetasModalComponent implements OnInit {
   private awsConfig = {
     region: "us-east-1", // Generalmente es us-east-1 para estudiantes
     credentials: {
-      accessKeyId: "ASIAQ3EGPJ2M4JD3X3IY",     // <--- PEGA TU ACCESS KEY AQUÍ
-      secretAccessKey: "Kmt9HH4FXHuvgW4rlyByvPZzDPiriwx89dFuH1zU",     // <--- PEGA TU SECRET KEY AQUÍ
-      sessionToken: "IQoJb3JpZ2luX2VjEH4aCXVzLXdlc3QtMiJHMEUCIQCL9tOagaNu+lua8Kgv8R4bA4hYeUVfCykcPCUt/MK83gIgfVuR9k2V1BveyY9Tf6r0HMwvpfyoK11FBCxVmn+Sp0squgIIRxAAGgwwNTgyNjQwODAwMjUiDATqSjesZ3PGZX5gryqXAkc8cIjferdauJ7cFqIhEuSRxnz4DnxkFPsQNCwT8SBw+coAx+KgTL6Ld1HBMVEynu5zDFL80BV2A8QTYyYf55alxONr04FSW3keFocFNzqU/dlWUI546PVt6gerNl+CUlwnoP+Bke+ax8WadV0/7i7EnpzjFtyppN8fCJfBkjdZDi/25NOmAP8bsQlIMhtHX7PLnZbMTHkbkezN/TtL30z5hssYSCtLs0eso4PIWzFkYFSpM272AP56H7BbaqfESnAnzDckDpavvuN07rGzrCCA119Q5DRZoT70K8Fthia6x+i8AV/U/THExpbEiQYUD6Z08M56Q8ZL7jJ+wWGvBtHoAcB/vOT9DKxl3jG3eHG4/Xppm/WBMDCl+43JBjqdAbwP0UrvBIlbDQXHHKPyWaqtPVgeFO+7PoLlPFdCHe5vCAXRxQYbrKp9fA3ea3PdWOCqb/iUA4UZQlK6pxQKZXnmMoymfqPpA6AAssqM3MZWiwmRbEbbnJfWU9gqpkgtJYdFJOJnw5mFSOo2dJ9ZToELded5Xi7THgOI9DMvMUin+2DHxyyH93kQNEAJB75RH0p8uiAPZEb+fG8K+ns="         // <--- ¡OBLIGATORIO EN CUENTAS DE ESTUDIANTE!
+      accessKeyId: environment.AWS_ACCESS_KEY_ID,     // <--- PEGA TU ACCESS KEY AQUÍ
+      secretAccessKey: environment.AWS_SECRET_ACCESS_KEY_ID,     // <--- PEGA TU SECRET KEY AQUÍ
+      sessionToken: environment.AWS_SESSION_TOKEN         // <--- ¡OBLIGATORIO EN CUENTAS DE ESTUDIANTE!
     }
   };
 

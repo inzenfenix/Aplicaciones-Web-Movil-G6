@@ -17,8 +17,8 @@ const tableName = process.env.ALLERGIES_TABLE;
 
 const headers = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Credentials": "true",
-  "Content-Type": "application/json",
+  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Methods": "OPTIONS,POST,GET,PUT,DELETE",
 };
 
 // Helper to standardize Response output
@@ -30,6 +30,13 @@ const jsonResponse = (status, data) =>
 
 // Router
 const router = AutoRouter();
+
+router.options("/*", () =>
+  new Response(null, {
+    status: 204,
+    headers,
+  })
+);
 
 router
   .get("/allergies/:userId", getAllergies)
