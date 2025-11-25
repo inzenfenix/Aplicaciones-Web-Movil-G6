@@ -12,11 +12,12 @@
 el siguiente comando se puede utilizar para la configuración:
 
 ### PRECAUCIÓN
-    > EL SISTEMA NECESITA UN ROL LLAMADO (LabRole), con los permisos necesarios para utilizar API Gateway (REST API y WebSocket), Lambda y Dynamo.
+> EL SISTEMA NECESITA UN ROL LLAMADO (LabRole), con los permisos necesarios para utilizar API Gateway (REST API y WebSocket), Lambda y Dynamo.
 
     ``` bash
     aws configure
     ```
+
 2. Para inicializar el backend se utiliza los siguientes comandos (dentro de la carpeta: **cora-backend**):
 
     ``` bash
