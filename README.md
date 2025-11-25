@@ -11,6 +11,9 @@
 1. Para inicializar el sistema se necesita tener las credenciales de AWS funcionales con permisos administrativos,
 el siguiente comando se puede utilizar para la configuración:
 
+### PRECAUCIÓN
+    > EL SISTEMA NECESITA UN ROL LLAMADO (LabRole), con los permisos necesarios para utilizar API Gateway (REST API y WebSocket), Lambda y Dynamo.
+
     ``` bash
     aws configure
     ```
@@ -46,4 +49,14 @@ el siguiente comando se puede utilizar para la configuración:
 
     ```
     BACKEND_ADDRESS=<BACKEND_URL>
+    ```
+
+    ### IONIC
+    - Como Ionic utiliza su propia sistema de .env, es parte de environment.ts
+    ``` json
+        # Los datos de amazon son específicamente para probar el sistema de lector de recetas
+        AWS_ACCESS_KEY_ID: <KEY>,
+        AWS_SECRET_ACCESS_KEY_ID: <SECRET_KEY>,
+        AWS_SESSION_TOKEN: <SESSION_TOKEN>,
+        API_URL:<BACKEND_URL>
     ```
