@@ -4,82 +4,200 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Aws\DynamoDb\DynamoDbClient;
-use Aws\Exception\AwsException;
 
 class DashboardController extends Controller
 {
+    private $ddb;
+
+    public function __construct()
+    {
+        $this->ddb = new DynamoDbClient([
+            'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
+            'version' => 'latest',
+        ]);
+    }
+
     public function index()
     {
         try {
-            // Obtener datos reales de DynamoDB
-            $alergiasData = $this->getAlergiasPorGravedad();
-        } catch (\Exception $e) {
-            // Si hay error, usar datos de ejemplo basados en tu data
-            $alergiasData = [
-                'gravedades' => ['leve', 'moderada', 'alta'],
-                'cantidades' => [1, 1, 6] // Basado en tus datos: 1 leve, 1 moderada, 2 altas
-            ];
-        }
+            // Obtener distribución por especialidad desde CORA_Consultation
+            $counts = $this->getEspecialidadDistribution();
+            
+            // Obtener distribución por género desde CORA_Medical_Record
+            $genderCounts = $this->getGenderDistribution();
 
-        return view('Dashboard/index', ['alergiasData' => $alergiasData]);
+            // Obtener consultas mensuales desde CORA_HistoricConsultation
+            $monthlyConsultations = $this->getMonthlyConsultations();
+
+            // Obtener distribución de alergias desde CORA_Allergies
+            $allergyCounts = $this->getAllergyDistribution();
+
+            return view('Dashboard.index', compact('counts', 'genderCounts', 'monthlyConsultations', 'allergyCounts'));
+
+        } catch (\Exception $e) {
+            \Log::error('Error loading dashboard: ' . $e->getMessage());
+            return view('Dashboard.index', [
+                'counts' => [],
+                'genderCounts' => ['Masculino' => 0, 'Femenino' => 0, 'Otro' => 0],
+                'monthlyConsultations' => array_fill(0, 12, 0),
+                'allergyCounts' => []
+            ]);
+        }
     }
 
-    private function getAlergiasPorGravedad()
+    private function getEspecialidadDistribution()
     {
         try {
-            // Scan para obtener todos los registros de la tabla Alergias
-            $result = $this->dynamoDb->scan([
-                'TableName' => 'Alergias', // Nombre de tu tabla en DynamoDB
-                'Select' => 'ALL_ATTRIBUTES'
+            $result = $this->ddb->scan([
+                'TableName' => 'CORA_Consultation',
             ]);
 
-            $alergias = $result['Items'];
+            $counts = [];
             
-            // Contar alergias por gravedad
-            $conteoGravedad = [];
-            
-            foreach ($alergias as $alergia) {
-                $gravedad = $this->extractAttribute($alergia, 'gravedad');
-                if ($gravedad) {
-                    if (!isset($conteoGravedad[$gravedad])) {
-                        $conteoGravedad[$gravedad] = 0;
+            if (isset($result['Items'])) {
+                foreach ($result['Items'] as $item) {
+                    if (isset($item['idProfesional']['M']['especialidad']['S'])) {
+                        $especialidad = $item['idProfesional']['M']['especialidad']['S'];
+                        if (!isset($counts[$especialidad])) {
+                            $counts[$especialidad] = 0;
+                        }
+                        $counts[$especialidad]++;
                     }
-                    $conteoGravedad[$gravedad]++;
                 }
             }
 
-            // Ordenar por nivel de gravedad
-            $ordenGravedad = ['leve', 'moderada', 'alta'];
-            $gravedades = [];
-            $cantidades = [];
+            arsort($counts);
+            return array_slice($counts, 0, 7, true);
 
-            foreach ($ordenGravedad as $nivel) {
-                if (isset($conteoGravedad[$nivel])) {
-                    $gravedades[] = ucfirst($nivel);
-                    $cantidades[] = $conteoGravedad[$nivel];
-                }
-            }
-
-            return [
-                'gravedades' => $gravedades,
-                'cantidades' => $cantidades
-            ];
-
-        } catch (AwsException $e) {
-            // Si hay error con DynamoDB, lanzar excepción para usar datos de ejemplo
-            throw new \Exception('Error connecting to DynamoDB: ' . $e->getMessage());
+        } catch (\Exception $e) {
+            \Log::error('Error fetching especialidad distribution: ' . $e->getMessage());
+            return [];
         }
     }
 
-    private function extractAttribute($item, $attribute)
+    private function getGenderDistribution()
     {
-        if (isset($item[$attribute])) {
-            if (isset($item[$attribute]['S'])) {
-                return $item[$attribute]['S']; // String
-            } elseif (isset($item[$attribute]['N'])) {
-                return $item[$attribute]['N']; // Number
+        try {
+            $result = $this->ddb->scan([
+                'TableName' => 'CORA_Medical_Record',
+            ]);
+
+            $genderCounts = [
+                'Masculino' => 0,
+                'Femenino' => 0,
+                'Otro' => 0
+            ];
+            
+            if (isset($result['Items'])) {
+                foreach ($result['Items'] as $item) {
+                    if (isset($item['sexo']['S'])) {
+                        $sexo = $item['sexo']['S'];
+                        
+                        // Normalizar valores
+                        if (strtolower($sexo) === 'masculino' || strtolower($sexo) === 'male' || strtolower($sexo) === 'm') {
+                            $genderCounts['Masculino']++;
+                        } elseif (strtolower($sexo) === 'femenino' || strtolower($sexo) === 'female' || strtolower($sexo) === 'f') {
+                            $genderCounts['Femenino']++;
+                        } else {
+                            $genderCounts['Otro']++;
+                        }
+                    }
+                }
             }
+
+            return $genderCounts;
+
+        } catch (\Exception $e) {
+            \Log::error('Error fetching gender distribution: ' . $e->getMessage());
+            return ['Masculino' => 0, 'Femenino' => 0, 'Otro' => 0];
         }
-        return null;
+    }
+
+    private function getMonthlyConsultations()
+    {
+        try {
+            $result = $this->ddb->scan([
+                'TableName' => 'CORA_HistoricConsultation',
+            ]);
+
+            // Inicializar array con 12 meses (0 = Enero, 11 = Diciembre)
+            $monthCounts = array_fill(0, 12, 0);
+            $currentYear = date('Y');
+
+            if (isset($result['Items'])) {
+                foreach ($result['Items'] as $item) {
+                    // Buscar campo de fecha (puede ser 'fecha', 'fechaConsulta', 'fechaAtencion', etc.)
+                    $fecha = null;
+                    
+                    if (isset($item['fecha']['S'])) {
+                        $fecha = $item['fecha']['S'];
+                    } elseif (isset($item['fechaConsulta']['S'])) {
+                        $fecha = $item['fechaConsulta']['S'];
+                    } elseif (isset($item['fechaAtencion']['S'])) {
+                        $fecha = $item['fechaAtencion']['S'];
+                    } elseif (isset($item['createdAt']['S'])) {
+                        $fecha = $item['createdAt']['S'];
+                    }
+
+                    if ($fecha) {
+                        // Parsear la fecha (formato ISO: 2025-11-23T17:10:03.779Z)
+                        try {
+                            $timestamp = strtotime($fecha);
+                            $year = date('Y', $timestamp);
+                            $month = (int)date('n', $timestamp); // 1-12
+                            
+                            // Solo contar consultas del año actual
+                            if ($year == $currentYear) {
+                                $monthCounts[$month - 1]++; // Convertir a índice 0-11
+                            }
+                        } catch (\Exception $e) {
+                            \Log::warning('Error parsing date: ' . $fecha);
+                            continue;
+                        }
+                    }
+                }
+            }
+
+            return $monthCounts;
+
+        } catch (\Exception $e) {
+            \Log::error('Error fetching monthly consultations: ' . $e->getMessage());
+            return array_fill(0, 12, 0);
+        }
+    }
+
+    private function getAllergyDistribution()
+    {
+        try {
+            $result = $this->ddb->scan([
+                'TableName' => 'CORA_Allergies',
+            ]);
+
+            $allergyCounts = [];
+            
+            if (isset($result['Items'])) {
+                foreach ($result['Items'] as $item) {
+                    // Contar por tipo de alérgeno
+                    if (isset($item['tipoAlergeno']['S'])) {
+                        $tipo = $item['tipoAlergeno']['S'];
+                        
+                        if (!isset($allergyCounts[$tipo])) {
+                            $allergyCounts[$tipo] = 0;
+                        }
+                        $allergyCounts[$tipo]++;
+                    }
+                }
+            }
+
+            // Ordenar de mayor a menor
+            arsort($allergyCounts);
+            
+            // Retornar solo los top 5-7 tipos
+            return array_slice($allergyCounts, 0, 7, true);
+
+        } catch (\Exception $e) {
+            \Log::error('Error fetching allergy distribution: ' . $e->getMessage());
+            return [];
+        }
     }
 }

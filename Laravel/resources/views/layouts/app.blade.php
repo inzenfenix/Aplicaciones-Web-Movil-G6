@@ -5,11 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>{{ config('app.name', 'Cora') }}</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome (para iconos) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -19,18 +25,30 @@
         @auth
         <!-- Topbar con background celeste y rutas al medio -->
         <nav class="dashboard-topbar">
-            <div class="topbar-routes">
-                <a href="{{ url('/inicio') }}" class="route-link {{ request()->is('inicio') ? 'active' : '' }}">Inicio</a>
-                <!-- <a href="{{ url('/') }}" class="route-link {{ request()->is('reports') ? 'active' : '' }}">Buscador</a> -->
-                <!-- <a href="{{ url('/alergias') }}" class="route-link {{ request()->is('alergias') ? 'active' : '' }}">Alergias</a> -->
-                <a href="{{ url('/dashboard') }}" class="route-link {{ request()->is('dashboard') ? 'active' : '' }}">Dashboard</a>
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center">
+                    <!-- Botón para volver a la página de inicio -->
+                    <a href="{{ url('/inicio') }}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-home me-1"></i>Volver al Inicio
+                    </a>
+                    
+                    <!-- Rutas de navegación al centro -->
+                    <div class="topbar-routes mx-auto">
+                        <a href="{{ url('/inicio') }}" class="route-link {{ request()->is('inicio') ? 'active' : '' }}">Inicio</a>
+                        <a href="{{url('/historialConsultas')}}" class="route-link {{ request()->is('historialConsultas') ? 'active' : '' }}">Historial de Consultas</a>
+                        <a href="{{ url('/dashboard') }}" class="route-link {{ request()->is('dashboard') ? 'active' : '' }}">Dashboard</a>
+                        <a href="{{ url('/patients') }}" class="route-link {{ request()->is('patients') ? 'active' : '' }}">Buscador</a>
+                    </div>
+                    
+                    <!-- Botón de cerrar sesión a la derecha -->
+                    <form method="POST" action="{{ route('logout') }}" class="m-0">
+                        @csrf
+                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                            <i class="fas fa-sign-out-alt me-1"></i>Cerrar sesión
+                        </button>
+                    </form>
+                </div>
             </div>
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button type="submit" class="btn btn-outline-danger btn-sm">
-                    Cerrar sesión
-                </button>
-            </form>
         </nav>
         @endauth
         <!-- Page Content -->
@@ -42,7 +60,7 @@
     <style>
     .dashboard-topbar {
         background: linear-gradient(135deg, #81dbffff, #81dbffff);
-        padding: 0 20px;
+        padding: 15px 20px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         border-bottom: 1px solid #81dbffff;
     }
@@ -52,9 +70,6 @@
         justify-content: center;
         align-items: center;
         gap: 30px;
-        height: 60px;
-        margin: 0 auto;
-        max-width: 1200px;
     }
 
     .route-link {
@@ -66,6 +81,7 @@
         border-radius: 6px;
         transition: all 0.3s ease;
         position: relative;
+        white-space: nowrap;
     }
 
     .route-link:hover {
@@ -92,17 +108,60 @@
         border-radius: 50%;
     }
 
+    .btn-outline-primary {
+        border-color: #0d6efd;
+        color: #0d6efd;
+        background-color: rgba(255, 255, 255, 0.9);
+        font-weight: 500;
+    }
+
+    .btn-outline-primary:hover {
+        background-color: #0d6efd;
+        color: white;
+        border-color: #0d6efd;
+    }
+
+    .btn-outline-danger {
+        border-color: #dc3545;
+        color: #dc3545;
+        background-color: rgba(255, 255, 255, 0.9);
+        font-weight: 500;
+    }
+
+    .btn-outline-danger:hover {
+        background-color: #dc3545;
+        color: white;
+        border-color: #dc3545;
+    }
+
     /* Responsive */
-    @media (max-width: 768px) {
-        .dashboard-topbar {
-            padding: 0 10px;
+    @media (max-width: 992px) {
+        .dashboard-topbar .d-flex {
+            flex-direction: column;
+            gap: 15px;
         }
 
         .topbar-routes {
-            gap: 15px;
-            height: 50px;
             flex-wrap: wrap;
-            padding: 10px 0;
+            gap: 15px;
+        }
+
+        form {
+            width: 100%;
+        }
+
+        form button {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-topbar {
+            padding: 10px;
+        }
+
+        .topbar-routes {
+            gap: 10px;
         }
 
         .route-link {
@@ -116,10 +175,6 @@
     }
 
     @media (max-width: 480px) {
-        .topbar-routes {
-            gap: 10px;
-        }
-
         .route-link {
             font-size: 13px;
             padding: 5px 10px;
