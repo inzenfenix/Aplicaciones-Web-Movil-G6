@@ -1,49 +1,50 @@
 <ion-header [translucent]="true">
-  <ion-toolbar>
+  <ion-toolbar color="primary">
     <ion-title>Dashboard</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="ion-padding">
+<ion-content [fullscreen]="true" class="ion-padding dashboard-content">
 
   <!-- Botón flotante modo oscuro -->
   <div class="dark-mode-toggle">
-    <ion-button (click)="toggleDarkMode()" fill="solid" size="small">
+    <ion-button (click)="toggleDarkMode()" fill="solid" size="small" shape="round">
       <ion-icon [name]="darkMode ? 'sunny' : 'moon'"></ion-icon>
     </ion-button>
   </div>
 
   <div class="dashboard-container">
-    <ion-grid>
+    
+    <ion-grid fixed>
 
-      <ion-row>
-        <!-- Historial: ocupa toda la columna izquierda (1x3) -->
-        <ion-col size="12" size-md="6" rowspan="3">
-          <ion-card class="historial-card">
+      <!-- Primera fila: Historial + Peso -->
+      <ion-row class="ion-align-items-stretch">
+        <ion-col size="12" size-md="6">
+          <ion-card class="historial-card soft-card">
             <ion-card-header>
               <ion-card-title>Historial de Atención Médica</ion-card-title>
             </ion-card-header>
             <ion-card-content>
-              <ion-list>
-                <ion-item>
+              <ion-list lines="none">
+                <ion-item class="historial-item">
                   <ion-label>
                     <h2>Consulta general</h2>
                     <p>12/09/2025 — Dr. Pérez</p>
                   </ion-label>
                 </ion-item>
-                <ion-item>
+                <ion-item class="historial-item">
                   <ion-label>
                     <h2>Control de tiroides</h2>
                     <p>02/08/2025 — Dra. Muñoz</p>
                   </ion-label>
                 </ion-item>
-                <ion-item>
+                <ion-item class="historial-item">
                   <ion-label>
                     <h2>Ecografía abdominal</h2>
                     <p>18/07/2025 — Dr. Salinas</p>
                   </ion-label>
                 </ion-item>
-                <ion-item>
+                <ion-item class="historial-item">
                   <ion-label>
                     <h2>Vacunación anual</h2>
                     <p>05/05/2025 — Enfermera Rojas</p>
@@ -54,9 +55,8 @@
           </ion-card>
         </ion-col>
 
-        <!-- Peso: fila 1 derecha -->
         <ion-col size="12" size-md="6">
-          <ion-card class="chart-card">
+          <ion-card class="chart-card soft-card">
             <ion-card-header>
               <ion-card-title>Peso</ion-card-title>
             </ion-card-header>
@@ -71,10 +71,10 @@
         </ion-col>
       </ion-row>
 
-      <!-- Presión Arterial: fila 2 derecha -->
-      <ion-row>
+      <!-- Segunda fila: Presión Arterial + Frecuencia Cardíaca -->
+      <ion-row class="ion-align-items-stretch">
         <ion-col size="12" size-md="6">
-          <ion-card class="chart-card">
+          <ion-card class="chart-card soft-card">
             <ion-card-header>
               <ion-card-title>Presión Arterial</ion-card-title>
             </ion-card-header>
@@ -87,18 +87,15 @@
             </ion-card-content>
           </ion-card>
         </ion-col>
-      </ion-row>
 
-      <!-- Glucosa: fila 3 derecha -->
-      <ion-row>
         <ion-col size="12" size-md="6">
-          <ion-card class="chart-card">
+          <ion-card class="chart-card soft-card">
             <ion-card-header>
-              <ion-card-title>Glucosa</ion-card-title>
+              <ion-card-title>Frecuencia Cardíaca</ion-card-title>
             </ion-card-header>
             <ion-card-content>
               <canvas baseChart
-                      [data]="glucosaData"
+                      [data]="frecuenciaData"
                       [options]="chartOptions"
                       chartType="line">
               </canvas>
@@ -106,8 +103,44 @@
           </ion-card>
         </ion-col>
       </ion-row>
-
     </ion-grid>
   </div>
+</ion-content>
 
-  </ion-content>
+<style>
+  .dashboard-content {
+    --background: var(--ion-color-dark, #1e1e1e);
+  }
+
+  .dark-mode-toggle {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 20;
+  }
+
+  .soft-card {
+    border-radius: 18px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    padding-bottom: 8px;
+  }
+
+  .historial-item h2 {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .historial-item p {
+    font-size: 0.8rem;
+    opacity: 0.7;
+  }
+
+  ion-card-title {
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+
+  .chart-card canvas {
+    max-height: 250px;
+  }
+</style>

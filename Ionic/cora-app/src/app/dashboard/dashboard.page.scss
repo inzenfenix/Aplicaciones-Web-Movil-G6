@@ -1,7 +1,6 @@
 .dashboard-container {
   width: 100%;
   margin: 0 auto;
-  background-color: rgb(202, 189, 189);
   border-radius: 12px;
 }
 
@@ -27,43 +26,8 @@ canvas {
   height: 250px !important;
 }
 
-body {
-  --ion-background-color: #ffffff;
-  --ion-text-color: #000000;
-  --ion-toolbar-background: #f8f8f8;
-  --ion-card-background: #ffffff;
-  --ion-item-background: #ffffff;
-}
-
-body.dark {
-  --ion-background-color: #121212;
-  --ion-text-color: #ffffff;
-  --ion-toolbar-background: #1e1e1e;
-  --ion-card-background: #1e1e1e;
-  --ion-item-background: #1e1e1e;
-}
-
 @media (max-width: 768px) {
   canvas {
     height: 200px !important;
   }
-}
-
-.dark-mode-toggle {
-  position: fixed;
-  top: 50%;
-  left: 10px;
-  transform: translateY(-50%);
-  z-index: 999;
-}
-
-.dark-mode-toggle ion-button {
-  --background: var(--ion-color-primary);
-  --color: white;
-  border-radius: 8px;
-  width: 50px;
-  height: 50px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }

@@ -17,8 +17,7 @@ import {
   IonItem,
   IonLabel,
   IonButton,
-  IonIcon
-} from '@ionic/angular/standalone';
+  IonIcon, IonToggle } from '@ionic/angular/standalone';
 
 import { NgChartsModule } from 'ng2-charts';
 import { ChartOptions, ChartData } from 'chart.js';
@@ -28,7 +27,7 @@ import { ChartOptions, ChartData } from 'chart.js';
   templateUrl: './dashboard.page.html',
   styleUrls: ['./dashboard.page.scss'],
   standalone: true,
-  imports: [
+  imports: [IonToggle, 
     CommonModule,
     FormsModule,
     NgChartsModule,
@@ -54,53 +53,45 @@ export class DashboardPage implements OnInit {
 
   darkMode = false;
 
-  // Configuración común para todos los gráficos
+  // Shared chart options
   chartOptions: ChartOptions<'line'> = {
     responsive: true,
     plugins: {
       legend: {
         display: true,
-        labels: { color: '#000' } // color de los labels en light mode
+        labels: { color: '#ffffff' }
       },
       tooltip: { enabled: true }
     },
     scales: {
       x: {
         ticks: {
-          autoSkip: false,  // no omitir ningún label
+          autoSkip: false,
           maxRotation: 45,
-          minRotation: 0,
           font: { size: 12, family: 'Arial' },
-          color: '#000'
+          color: '#ffffff'
         },
-        grid: {
-          drawTicks: true,
-          color: '#e0e0e0'
-        }
+        grid: { color: 'rgba(255,255,255,0.1)' }
       },
       y: {
         beginAtZero: true,
-        ticks: { color: '#000', font: { size: 12 } },
-        grid: { color: '#e0e0e0' }
+        ticks: { color: '#ffffff', font: { size: 12 } },
+        grid: { color: 'rgba(255,255,255,0.1)' }
       }
     },
-    layout: {
-      padding: { top: 10, right: 10, bottom: 20, left: 10 }
-    }
+    layout: { padding: { top: 10, right: 10, bottom: 20, left: 10 } }
   };
 
-  // Datos de gráficos
+  // Weight data
   pesoData: ChartData<'line'> = {
     labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo'],
     datasets: [
       {
         label: 'Peso (kg)',
         data: [85, 86, 87, 92, 90],
-        borderColor: '#3880ff',
-        backgroundColor: '#3880ff',
+        borderColor: '#4fd1c5',
+        backgroundColor: '#4fd1c5',
         fill: false,
-        type: 'line',
-        pointStyle: 'circle',
         pointRadius: 6,
         pointHoverRadius: 8,
         tension: 0.3
@@ -108,35 +99,16 @@ export class DashboardPage implements OnInit {
     ]
   };
 
+  // Blood pressure data
   presionData: ChartData<'line'> = {
-    labels: ['01/03', '05/05', '10/05', '15/06', '20/08', '01/09', '23/09', '17/10', '15/11', '20/12'],
-    datasets: [
-      {
-        label: 'Presión Arterial',
-        data: [120, 132, 133, 145, 124, 121, 113, 156, 142, 118],
-        borderColor: '#10dc60',
-        backgroundColor: '#10dc60',
-        fill: false,
-        type: 'line',
-        pointStyle: 'circle',
-        pointRadius: 6,
-        pointHoverRadius: 8,
-        tension: 0.3
-      }
-    ]
-  };
-
-  glucosaData: ChartData<'line'> = {
     labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo'],
     datasets: [
       {
-        label: 'Glucosa (mg/dL)',
-        data: [98, 123, 117, 103, 100],
-        borderColor: '#ffce00',
-        backgroundColor: '#ffce00',
+        label: 'Presión (mmHg)',
+        data: [120, 118, 121, 125, 119],
+        borderColor: '#ff6b6b',
+        backgroundColor: '#ff6b6b',
         fill: false,
-        type: 'line',
-        pointStyle: 'circle',
         pointRadius: 6,
         pointHoverRadius: 8,
         tension: 0.3
@@ -144,12 +116,53 @@ export class DashboardPage implements OnInit {
     ]
   };
 
-  constructor() { }
+  // Heartbeat frequency data
+  frecuenciaData: ChartData<'line'> = {
+    labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo'],
+    datasets: [
+      {
+        label: 'Frecuencia Cardíaca (bpm)',
+        data: [70, 72, 75, 78, 74],
+        borderColor: '#f9c74f',
+        backgroundColor: '#f9c74f',
+        fill: false,
+        pointRadius: 6,
+        pointHoverRadius: 8,
+        tension: 0.3
+      }
+    ]
+  };
 
-  ngOnInit() { }
+  constructor() {}
 
+  ngOnInit() {}
+
+  // Toggle dark mode + adjust chart colors
   toggleDarkMode() {
     this.darkMode = !this.darkMode;
     document.body.classList.toggle('dark', this.darkMode);
+
+    const textColor = this.darkMode ? '#ffffff' : '#000000';
+    const gridColor = this.darkMode ? 'rgba(255,255,255,0.1)' : '#e0e0e0';
+
+    this.chartOptions = {
+      ...this.chartOptions,
+      plugins: {
+        ...this.chartOptions.plugins,
+        legend: { labels: { color: textColor } }
+      },
+      scales: {
+        x: {
+          ...this.chartOptions.scales?.['x'],
+          ticks: { ...this.chartOptions.scales?.['x']?.ticks, color: textColor },
+          grid: { color: gridColor }
+        },
+        y: {
+          ...this.chartOptions.scales?.['y'],
+          ticks: { ...this.chartOptions.scales?.['y']?.ticks, color: textColor },
+          grid: { color: gridColor }
+        }
+      }
+    };
   }
 }
