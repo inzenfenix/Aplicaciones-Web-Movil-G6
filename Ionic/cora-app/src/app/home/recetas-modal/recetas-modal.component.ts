@@ -107,6 +107,7 @@ export class RecetasModalComponent implements OnInit {
     private loadingCtrl: LoadingController,
     private toastCtrl: ToastController
   ) {
+    // set worker for pdfjs
     pdfjsLib.GlobalWorkerOptions.workerSrc = './assets/pdf.worker.min.mjs';
   }
 
@@ -143,23 +144,59 @@ export class RecetasModalComponent implements OnInit {
   }
 
   // --- CÁMARA ---
+  /**
+   * Use CameraResultType.Uri to avoid heavy base64 conversion on the main thread.
+   * Fallback to Prompt if direct camera access fails in the environment (browser).
+   */
   async escanearReceta() {
     this.limpiarSeleccion();
 
+    let loading: HTMLIonLoadingElement | null = null;
     try {
-      const image = await CapacitorCamera.getPhoto({
-        quality: 90,
-        allowEditing: true, // Recortar ayuda a AWS también
-        resultType: CameraResultType.DataUrl,
-        source: CameraSource.Camera,
+      loading = await this.loadingCtrl.create({
+        message: 'Abriendo cámara...',
+        spinner: 'bubbles'
       });
+      await loading.present();
 
-      if (image.dataUrl) {
-        this.imagenCapturada = image.dataUrl;
-        await this.procesarImagenAWS(image.dataUrl);
+      // First try direct camera; if it fails (browser blocked), fallback to Prompt
+      let image: any = null;
+      try {
+        image = await CapacitorCamera.getPhoto({
+          quality: 85,
+          resultType: CameraResultType.Uri, // IMPORTANT: uri avoids base64 freeze
+          source: CameraSource.Camera,
+          correctOrientation: true
+        });
+      } catch (err) {
+        // Fallback for browsers or if CameraSource.Camera is blocked
+        console.warn('CameraSource.Camera failed, falling back to Prompt', err);
+        image = await CapacitorCamera.getPhoto({
+          quality: 85,
+          resultType: CameraResultType.Uri,
+          source: CameraSource.Prompt,
+          correctOrientation: true
+        });
+      }
+
+      // image.webPath is a safe URI (blob or file path)
+      if (image && (image.webPath || image.path)) {
+        const webPath = image.webPath ?? image.path;
+        // show preview (use webPath so UI shows instantly)
+        this.imagenCapturada = webPath;
+
+        // fetch bytes and process them for AWS Textract
+        await this.procesarImagenAWS(webPath);
+      } else {
+        // unexpected shape (safety)
+        console.warn('Camera returned unexpected payload:', image);
+        this.presentToast('No se encontró imagen.');
       }
     } catch (error) {
-      console.error('Cancelado u error:', error);
+      console.error('Cancelado u error en cámara:', error);
+      this.presentToast('Cancelado o error al abrir la cámara.');
+    } finally {
+      if (loading) await loading.dismiss();
     }
   }
 
@@ -211,19 +248,33 @@ export class RecetasModalComponent implements OnInit {
       const dataUrl = canvas.toDataURL('image/jpeg', 0.8); // JPEG es más ligero para AWS
       this.imagenCapturada = dataUrl;
       
-      loading.dismiss(); 
-      
       await this.procesarImagenAWS(dataUrl);
 
     } catch (error: any) {
-      loading.dismiss();
       console.error('Error PDF:', error);
       this.presentToast('Error al leer PDF: ' + (error.message || error));
+    } finally {
+      await loading.dismiss();
     }
   }
 
-  // --- LOGICA AWS TEXTRACT (NUEVA) ---
-  async procesarImagenAWS(imagenBase64: string) {
+  // --- HELPER: fetch bytes from a URI (webPath) ---
+  private async fetchBytesFromWebPath(webPath: string): Promise<Uint8Array> {
+    // webPath can be:
+    // - data:... (data URL) -> handled elsewhere
+    // - blob/file scheme or http(s) blob -> fetch works
+    const response = await fetch(webPath);
+    const buffer = await response.arrayBuffer();
+    return new Uint8Array(buffer);
+  }
+
+  // --- LOGICA AWS TEXTRACT ---
+  /**
+   * procesarImagenAWS accepts either:
+   *  - a data URL (starts with 'data:') -> used by PDF flow, or
+   *  - a webPath/URI from CameraResultType.Uri -> we fetch the bytes
+   */
+  async procesarImagenAWS(imagenPathOrDataUrl: string) {
     const loading = await this.loadingCtrl.create({
       message: 'AWS AI leyendo letra manuscrita...',
       spinner: 'bubbles'
@@ -231,31 +282,35 @@ export class RecetasModalComponent implements OnInit {
     await loading.present();
 
     try {
-      // 1. Convertir base64 a Uint8Array (Bytes) que AWS necesita
-      const base64Data = imagenBase64.split(',')[1];
-      const binaryString = window.atob(base64Data);
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
+      let bytes: Uint8Array;
+
+      if (imagenPathOrDataUrl.startsWith('data:')) {
+        // existing code for data URLs (PDF)
+        const base64Data = imagenPathOrDataUrl.split(',')[1];
+        const binaryString = window.atob(base64Data);
+        bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+      } else {
+        // imagePathOrDataUrl is a webPath/URI -> fetch bytes
+        bytes = await this.fetchBytesFromWebPath(imagenPathOrDataUrl);
       }
 
-      // 2. Inicializar cliente AWS
+      // initialize AWS Textract client
       const client = new TextractClient(this.awsConfig);
 
-      // 3. Crear comando de detección
+      // build command (DetectDocumentTextCommand)
       const command = new DetectDocumentTextCommand({
         Document: {
           Bytes: bytes
         }
       });
 
-      // 4. Enviar a AWS
       const response = await client.send(command);
 
-      // 5. Procesar respuesta
-      // Textract devuelve 'BLOCKS'. Nos interesan los de tipo 'LINE'.
+      // extract lines
       let lineas: string[] = [];
-      
       if (response.Blocks) {
         lineas = response.Blocks
           .filter(block => block.BlockType === 'LINE' && block.Text)
@@ -270,20 +325,19 @@ export class RecetasModalComponent implements OnInit {
         this.textosDetectados = lineas;
         this.mostrandoOpciones = true;
       }
-
     } catch (error: any) {
       console.error('Error AWS:', error);
-      let msg = error.message || error;
-      
+      let msg = (error && error.message) ? error.message : String(error);
+
       if (msg.includes('ExpiredToken')) {
         msg = 'Tus credenciales de estudiante caducaron. Actualízalas en el código.';
       } else if (msg.includes('Network Error') || msg.includes('CORS')) {
         msg = 'Error de conexión (Posible bloqueo CORS en navegador).';
       }
-      
+
       this.presentToast(`Error: ${msg}`);
     } finally {
-      loading.dismiss();
+      await loading.dismiss();
     }
   }
 
