@@ -61,3 +61,44 @@ el siguiente comando se puede utilizar para la configuración:
         AWS_SESSION_TOKEN: <SESSION_TOKEN>,
         API_URL:<BACKEND_URL>
     ```
+
+# Cora App - Frontend Ionic
+
+Este es el frontend de la aplicación móvil **Cora**, desarrollada con **Ionic** y **Angular**. La aplicación incluye funcionalidades como el lector de recetas e integración con servicios AWS.
+
+## 📋 Requisitos Previos
+
+Antes de comenzar, asegúrate de tener instalado lo siguiente en tu sistema:
+
+1.  **Node.js** (Se recomienda la versión LTS más reciente).
+2.  **NPM** (Viene incluido con Node.js).
+3.  **Ionic CLI**: Instálalo globalmente ejecutando:
+    ```bash
+    npm install -g @ionic/cli
+    ```
+
+## 🚀 Instalación y Configuración
+
+Sigue estos pasos para echar a andar el proyecto localmente:
+
+1.  **Clonar el repositorio** (si aún no lo has hecho) y navegar a la carpeta del frontend:
+    ```bash
+    cd ruta/a/tu/proyecto/Ionic/cora-app
+    ```
+
+2.  **Instalar dependencias**:
+    Este proyecto utiliza librerías específicas como `@aws-sdk/client-dynamodb`, `chart.js` y `lucide-angular`. Instálalas ejecutando:
+    ```bash
+    npm install
+    ```
+
+3.  **Configuración de Entorno (AWS)**:
+    Dado que el proyecto utiliza el SDK de AWS para DynamoDB, es probable que necesites configurar tus credenciales o endpoints.
+    * Revisa el archivo `src/environments/environment.ts` y asegúrate de que las claves de acceso o la configuración de la región sean correctas para tu entorno de desarrollo local.
+
+## 🏃‍♂️ Ejecución
+
+Para iniciar el servidor de desarrollo local y ver la aplicación en tu navegador:
+
+```bash
+ionic serve    
