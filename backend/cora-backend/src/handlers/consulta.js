@@ -184,51 +184,56 @@ async function getConsultation(req) {
 
     const idRecetas = item.idRecetas ?? [];
 
-    const recipes = [];
 
-    for (const idReceta of idRecetas) {
-      const recipe = await getRecipeFromId(idReceta, userId);
+      const recipes = [];
 
-      recipes.push({ idReceta: idReceta, receta: recipe });
-    }
+      for (const idReceta of idRecetas) {
+        const recipe = await getRecipeFromId(idReceta);
 
-    const idDiagnosticos = item.idDiagnosticos ?? [];
+        recipes.push({ idReceta: idReceta, receta: recipe });
+      }
 
-    const diagnosises = [];
+      const idDiagnosticos = item.idDiagnosticos ?? [];
 
-    for (const idDiagnostico of idDiagnosticos) {
-      const diagnosis = await getDiagnosisFromId(idDiagnostico, userId);
+      const diagnosises = [];
 
-      diagnosises.push({
-        idDiagnostico: idDiagnostico,
-        diagnostico: diagnosis,
-      });
-    }
+      for (const idDiagnostico of idDiagnosticos) {
+        const diagnosis = await getDiagnosisFromId(idDiagnostico);
 
-    const idProcedimientos = item.idProcedimientos ?? [];
+        diagnosises.push({
+          idDiagnostico: idDiagnostico,
+          diagnostico: diagnosis,
+        });
+      }
 
-    const procedures = [];
 
-    for (const idProcedimiento of idProcedimientos) {
-      const procedure = await getProcedureFromId(idProcedimiento);
+      const idProcedimientos = item.idProcedimientos ?? [];
+      
 
-      procedures.push({
-        idProcedimiento: idProcedimiento,
-        procedimiento: procedure,
-      });
-    }
+      const procedures = [];
 
-    cleaned_data = {
-      userId: item.userId,
-      idConsulta: item.idConsulta,
-      profesional: await getProfessionalFromId(item.idProfesional),
-      recetas: recipes,
-      diagnosticos: diagnosises,
-      procedimientos: procedures,
-      razonConsulta: item.razonConsulta,
-      lugar: item.lugar,
-      fechaAtencion: item.fechaAtencion,
-    };
+      for (const idProcedimiento of idProcedimientos) {
+        const procedure = await getProcedureFromId(idProcedimiento, userId);
+
+        procedures.push({
+          idProcedimiento: idProcedimiento,
+          procedimiento: procedure,
+        });
+      }
+
+      const professional = await getProfessionalFromId(item.idProfesional);
+
+      cleaned_data = {
+        userId: item.userId,
+        idConsulta: item.idConsulta,
+        profesional: professional,
+        recetas: recipes,
+        diagnosticos: diagnosises,
+        procedimientos: procedures,
+        razonConsulta: item.razonConsulta,
+        lugar: item.lugar,
+        fechaAtencion: item.fechaAtencion,
+      };
   }
 
   return new Response(JSON.stringify(cleaned_data), {
