@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Http;
 
 class PatientController extends Controller
 {
-    private $baseUrl = 'https://xz5lorj4p4.execute-api.us-east-1.amazonaws.com';
+    private $baseUrl = 'https://34lte9hcq6.execute-api.us-east-1.amazonaws.com';
 
     /**
      * Obtener todos los pacientes
