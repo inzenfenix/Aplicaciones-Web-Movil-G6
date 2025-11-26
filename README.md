@@ -101,4 +101,136 @@ Sigue estos pasos para echar a andar el proyecto localmente:
 Para iniciar el servidor de desarrollo local y ver la aplicación en tu navegador:
 
 ```bash
-ionic serve    
+ionic serve
+```
+### Laravel
+   # CORA - Sistema de Gestión Médica
+
+   Sistema de gestión médica con Laravel y AWS DynamoDB.
+
+   ---
+
+   ## Requisitos Previos
+
+    - **PHP** >= 8.1
+    - **Composer**
+    - **Node.js** y **NPM**
+    - **MySQL** >= 8.0 (para autenticación)
+    - **Cuenta AWS activa** (para DynamoDB)
+
+   ### Verificar instalaciones:
+    ```bash
+    php -v
+    composer -v
+    node -v
+    npm -v
+    mysql --version
+    ```
+
+   ---
+
+   ## Instalación
+
+   ### 1. Clonar/Descargar el proyecto
+    ```bash
+    cd Laravel
+    ```
+
+   ### 2. Instalar dependencias PHP
+    ```bash
+    composer install
+    ```
+
+   ### 3. **OBLIGATORIO: Instalar AWS SDK para DynamoDB**
+    ```bash
+    composer require aws/aws-sdk-php
+    ```
+
+   ### 4. Instalar dependencias Node
+    ```bash
+    npm install
+    ```
+
+   ### 5. Configurar entorno
+    ```bash
+   # Windows
+    copy .env.example .env
+
+   # Mac/Linux
+    cp .env.example .env
+
+    php artisan key:generate
+    ```
+
+   ### 6. **Crear Base de Datos MySQL**
+
+    Abre tu cliente MySQL (phpMyAdmin, MySQL Workbench, o terminal):
+
+    ```sql
+    CREATE DATABASE cora_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    ```
+
+   ### 7. **Configurar `.env`**
+
+    Abre el archivo `.env` y configura:
+
+    ```env
+   # ========== APLICACIÓN ==========
+    APP_NAME=CORA
+    APP_ENV=local
+    APP_KEY=base64:... (generado automáticamente)
+    APP_DEBUG=true
+    APP_URL=http://localhost:8000
+
+   # ========== BASE DE DATOS MYSQL (PARA AUTENTICACIÓN) ==========
+    DB_CONNECTION=mysql
+    DB_HOST=127.0.0.1
+    DB_PORT=3306
+    DB_DATABASE=cora_db
+    DB_USERNAME=root
+    DB_PASSWORD=          # Tu contraseña de MySQL (vacío si no tienes)
+
+   # ========== CONFIGURACIÓN DYNAMODB (PARA GESTIÓN MÉDICA) ==========
+    DYNAMODB_CONNECTION=
+    DYNAMODB_TABLE_PREFIX=
+    DYNAMODB_ENDPOINT=
+
+   # ========== CREDENCIALES AWS (PARA DYNAMODB) ==========
+    AWS_DEFAULT_REGION=us-east-1
+    AWS_USE_PATH_STYLE_ENDPOINT=false
+    ```
+   ### 9. **Ejecutar Migraciones**
+
+    Crea las tablas de autenticación en MySQL:
+
+    ```bash
+    php artisan migrate
+    ```
+
+    Esto creará las tablas: `users`, `password_resets`, `failed_jobs`, etc.
+
+   ### 10. **Ejecutar Seeders (Crear Usuario de Ejemplo)**
+
+    Ejecuta el seeder para crear el usuario de prueba:
+
+    ```bash
+    php artisan db:seed
+    ```
+
+   **Usuario de ejemplo creado:**
+    - **Email:** `test@example.com`
+    - **Contraseña:** `holamundo1234`
+
+   ### 11. Compilar assets
+    ```bash
+    npm run dev
+    ```
+
+   ### 12. Iniciar servidor
+    ```bash
+    php artisan serve
+    ```
+
+    Accede en: `http://localhost:8000`
+
+   ---
