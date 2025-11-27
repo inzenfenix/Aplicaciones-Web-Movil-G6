@@ -12,6 +12,14 @@
 el siguiente comando se puede utilizar para la configuración:
 
 ### PRECAUCIÓN
+
+## SI NO SE DESEA CREAR EL SISTEMA BACKEND, ES POSIBLE USAR LAS SIGUIENTES URLS PARA LA DEMOSTRACIÓN DE LOS SISTEMAS
+
+### API_URL: https://34lte9hcq6.execute-api.us-east-1.amazonaws.com
+### WEBSOCKET: wss://bstp8p0fvg.execute-api.us-east-1.amazonaws.com/dev/
+
+### PARA USAR AWS TEXTRACT ES NECESARIO SUS PROPIAS CREDENCIALES
+
 > EL SISTEMA NECESITA UN ROL LLAMADO (LabRole), con los permisos necesarios para utilizar API Gateway (REST API y WebSocket), Lambda y Dynamo.
 
     ``` bash
